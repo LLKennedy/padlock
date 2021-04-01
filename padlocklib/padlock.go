@@ -1,4 +1,4 @@
-package server
+package padlocklib
 
 import (
 	"fmt"
@@ -7,14 +7,14 @@ import (
 	"github.com/miekg/pkcs11/p11"
 )
 
-// Padlock is a padlock server
-type Padlock struct {
+// Server is a padlock server
+type Server struct {
 	modulesMx *sync.RWMutex
 	modules   map[string]p11.Module
 }
 
 // Connect connects to an HSM
-func (p *Padlock) Connect(path string) error {
+func (p *Server) Connect(path string) error {
 	if p == nil || p.modulesMx == nil {
 		return fmt.Errorf("nil padlock handle")
 	}
