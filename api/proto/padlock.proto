@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+option go_package = "github.com/LLKennedy/padlock/padlockpb";
+
+service Padlock {
+	// Auth RPCs
+
+	// Hello initiates a session with the application, generating an authentication token
+	rpc Hello(AuthHello) returns (AuthToken);
+	// ApplicationListModules lists modules already connected to the application
+	rpc ApplicationListModules(ApplicationListModulesRequest) returns (ApplicationListModulesResponse);
+	// ApplicationConnectRequest connects a new module to the application
+	rpc ApplicationConnectRequest(ApplicationConnectRequest) returns (stream ApplicationConnectUpdate);
+}
+
+message AuthHello {
+
+}
+ 
+message AuthToken {
+	bytes data = 1;
+}
+
+message ApplicationListModulesRequest {
+	AuthToken auth = 1;
+}
+
+message ApplicationListModulesResponse {
+	repeated string modules = 1;
+}
+
+message ApplicationConnectRequest {
+	AuthToken auth = 1;
+	string module = 2;
+}
+
+message ApplicationConnectUpdate {
+	// oneof update {
+	// 	bool logged_in = 1;
+	// }
+}
+
+message ModuleListSlotsRequest {
+
+}

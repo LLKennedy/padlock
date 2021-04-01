@@ -7,14 +7,14 @@ import (
 	"github.com/miekg/pkcs11/p11"
 )
 
-// Server is a padlock server
-type Server struct {
+// Application is a Padlock application, maintaining module and session state for an entire multi-threaded application.
+type Application struct {
 	modulesMx *sync.RWMutex
 	modules   map[string]p11.Module
 }
 
 // Connect connects to an HSM
-func (p *Server) Connect(path string) error {
+func (p *Application) Connect(path string) error {
 	if p == nil || p.modulesMx == nil {
 		return fmt.Errorf("nil padlock handle")
 	}
