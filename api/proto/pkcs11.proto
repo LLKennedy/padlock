@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package padlock;
+
+option go_package = "github.com/LLKennedy/padlock/padlockpb";
+
+message Slot {
+	string SlotDescription = 1;
+	string ManufacturerID = 2;
+	uint64 Flags = 3;
+	Version HardwareVersion = 4;
+	Version FirmwareVersion = 5;
+}
+
+message Version {
+	uint32 Major = 1;
+	uint32 Minor = 2;
+}
