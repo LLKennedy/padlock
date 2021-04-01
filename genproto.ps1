@@ -4,13 +4,15 @@ go get google.golang.org/grpc@v1.34.0
 go install github.com/LLKennedy/mercury/cmd/protoc-gen-mercury@v0.9.0
 go install github.com/LLKennedy/protoc-gen-tsjson@v0.5.0
 
-$Directory = "./api/proto/*"
+$CurrentDirectory = $(Resolve-Path -Path .).Path + "/"
+$ProtoPath = $CurrentDirectory + "api/proto/"
+$Directory = $ProtoPath + "*"
 $IncludeRule = "*.proto"
 $GoPBPath = "./api/padlockpb"
 $TSPBPath = "./src"
 $ProtoFiles = Get-ChildItem -path $Directory -Include $IncludeRule
 foreach ($file in $ProtoFiles) {
-	protoc --proto_path="$($file.DirectoryName)" --proto_path="$($file.DirectoryName)/" --go_out=paths=source_relative:$GoPBPath --go-grpc_out=paths=source_relative:$GoPBPath $file.FullName # --tsjson_out=$TSPBPath --mercury_out=$TSPBPath 
+	protoc --proto_path=$ProtoPath --go_out=paths=source_relative:$GoPBPath --go-grpc_out=paths=source_relative:$GoPBPath $file.FullName # --tsjson_out=$TSPBPath --mercury_out=$TSPBPath 
 }
 
 go build $GoPBPath
