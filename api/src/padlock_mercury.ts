@@ -7,4 +7,22 @@
  */
 
 import * as mercury from "@llkennedy/mercury";
+import { ApplicationListModulesRequest as padlock__ApplicationListModulesRequest, AuthHello as padlock__AuthHello, ModuleListSlotsRequest as padlock__ModuleListSlotsRequest, ModuleListSlotsResponse as padlock__ModuleListSlotsResponse, AuthToken as padlock__AuthToken, ApplicationListModulesResponse as padlock__ApplicationListModulesResponse, ApplicationConnectRequest as padlock__ApplicationConnectRequest, ApplicationConnectUpdate as padlock__ApplicationConnectUpdate } from "padlock";
 
+export class PadlockClient extends mercury.Client {
+	constructor(basePath: string | undefined = "localhost/api/Padlock", useTLS: boolean | undefined = true, client: mercury.AxiosInstance | undefined = undefined) {
+		super(basePath, useTLS, client);
+	}
+	public async Hello(req: padlock__AuthHello): Promise<padlock__AuthToken> {
+		return this.SendUnary("Hello", mercury.HTTPMethod.POST, req, padlock__AuthToken.Parse);
+	}
+	public async ApplicationListModules(req: padlock__ApplicationListModulesRequest): Promise<padlock__ApplicationListModulesResponse> {
+		return this.SendUnary("ApplicationListModules", mercury.HTTPMethod.POST, req, padlock__ApplicationListModulesResponse.Parse);
+	}
+	public async ApplicationConnect(req: padlock__ApplicationConnectRequest): Promise<mercury.ServerStream<padlock__ApplicationConnectRequest, padlock__ApplicationConnectUpdate>> {
+		return this.StartServerStream<padlock__ApplicationConnectRequest, padlock__ApplicationConnectUpdate>("ApplicationConnect", req, padlock__ApplicationConnectUpdate.Parse);
+	}
+	public async ModuleListSlots(req: padlock__ModuleListSlotsRequest): Promise<padlock__ModuleListSlotsResponse> {
+		return this.SendUnary("ModuleListSlots", mercury.HTTPMethod.POST, req, padlock__ModuleListSlotsResponse.Parse);
+	}
+}

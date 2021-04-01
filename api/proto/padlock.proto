@@ -13,20 +13,20 @@ import "pkcs11.proto";
 service Padlock {
 	// Auth RPCs
 
-	// Hello initiates a session with the application, generating an authentication token
-	rpc Hello(AuthHello) returns (AuthToken);
+	// PostHello initiates a session with the application, generating an authentication token
+	rpc PostHello(AuthHello) returns (AuthToken);
 
 	// Application RPCs
 
-	// ApplicationListModules lists modules already connected to the application
-	rpc ApplicationListModules(ApplicationListModulesRequest) returns (ApplicationListModulesResponse);
-	// ApplicationConnect connects a new module to the application
-	rpc ApplicationConnect(ApplicationConnectRequest) returns (stream ApplicationConnectUpdate);
+	// PostApplicationListModules lists modules already connected to the application
+	rpc PostApplicationListModules(ApplicationListModulesRequest) returns (ApplicationListModulesResponse);
+	// PostApplicationConnect connects a new module to the application
+	rpc PostApplicationConnect(ApplicationConnectRequest) returns (stream ApplicationConnectUpdate);
 
 	// Module RPCs
 
-	// ModuleListSlots
-	rpc ModuleListSlots(ModuleListSlotsRequest) returns (ModuleListSlotsResponse);
+	// PostModuleListSlots
+	rpc PostModuleListSlots(ModuleListSlotsRequest) returns (ModuleListSlotsResponse);
 }
 
 message AuthHello {

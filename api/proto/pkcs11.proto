@@ -17,6 +17,6 @@ message Slot {
 }
 
 message Version {
-	uint32 Major = 1;
-	uint32 Minor = 2;
+	// uint32 Major = 1;
+	// uint32 Minor = 2;
 }
