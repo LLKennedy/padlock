@@ -7,7 +7,7 @@
  */
 
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
-import { Slot as padlock__Slot } from "pkcs11";
+import { Slot as padlock__Slot } from "./pkcs11";
 
 /** A message */
 export class AuthHello extends Object implements tsjson.ProtoJSONCompatible {

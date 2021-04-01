@@ -43,13 +43,21 @@ export class Slot extends Object implements tsjson.ProtoJSONCompatible {
 
 /** A message */
 export class Version extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public Major?: number;
+	/** A field */
+	public Minor?: number;
 	public ToProtoJSON(): Object {
 		return {
+			Major: tsjson.ToProtoJSON.Number(this.Major),
+			Minor: tsjson.ToProtoJSON.Number(this.Minor),
 		};
 	}
 	public static async Parse(data: any): Promise<Version> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new Version();
+		res.Major = await tsjson.Parse.Number(objData, "Major", "Major");
+		res.Minor = await tsjson.Parse.Number(objData, "Minor", "Minor");
 		return res;
 	}
 }

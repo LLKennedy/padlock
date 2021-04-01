@@ -7,7 +7,7 @@
  */
 
 import * as mercury from "@llkennedy/mercury";
-import { ApplicationListModulesRequest as padlock__ApplicationListModulesRequest, AuthHello as padlock__AuthHello, ModuleListSlotsRequest as padlock__ModuleListSlotsRequest, ModuleListSlotsResponse as padlock__ModuleListSlotsResponse, AuthToken as padlock__AuthToken, ApplicationListModulesResponse as padlock__ApplicationListModulesResponse, ApplicationConnectRequest as padlock__ApplicationConnectRequest, ApplicationConnectUpdate as padlock__ApplicationConnectUpdate } from "padlock";
+import { ModuleListSlotsRequest as padlock__ModuleListSlotsRequest, ModuleListSlotsResponse as padlock__ModuleListSlotsResponse, AuthHello as padlock__AuthHello, ApplicationListModulesRequest as padlock__ApplicationListModulesRequest, ApplicationListModulesResponse as padlock__ApplicationListModulesResponse, ApplicationConnectRequest as padlock__ApplicationConnectRequest, ApplicationConnectUpdate as padlock__ApplicationConnectUpdate, AuthToken as padlock__AuthToken } from "./padlock";
 
 export class PadlockClient extends mercury.Client {
 	constructor(basePath: string | undefined = "localhost/api/Padlock", useTLS: boolean | undefined = true, client: mercury.AxiosInstance | undefined = undefined) {
