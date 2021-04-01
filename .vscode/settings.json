@@ -1,7 +1,8 @@
 {
 	"protoc": {
 		"options": [
-			"--proto_path=${workspaceRoot}/api/proto"
+			"--proto_path=${workspaceRoot}/api/proto/",
+			"--proto_path=${workspaceRoot}/api/node_modules/@llkennedy/protoc-gen-tsjson/"
 		]
 	}
 }

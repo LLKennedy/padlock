@@ -4,6 +4,10 @@ package padlock;
 
 option go_package = "github.com/LLKennedy/padlock/padlockpb";
 
+import "tsjson.proto";
+option (tsjson.npm_package) = "@llkdemo/padlock";
+option (tsjson.import_path) = "padlock";
+
 import "pkcs11.proto";
 
 service Padlock {

@@ -6,13 +6,14 @@ go install github.com/LLKennedy/protoc-gen-tsjson@v0.5.0
 
 $CurrentDirectory = $(Resolve-Path -Path .).Path + "/"
 $ProtoPath = $CurrentDirectory + "api/proto/"
+$TSJSONPath = $CurrentDirectory + "api/node_modules/@llkennedy/protoc-gen-tsjson/"
 $Directory = $ProtoPath + "*"
 $IncludeRule = "*.proto"
 $GoPBPath = "./api/padlockpb"
-$TSPBPath = "./src"
+$TSPBPath = "./api/src"
 $ProtoFiles = Get-ChildItem -path $Directory -Include $IncludeRule
 foreach ($file in $ProtoFiles) {
-	protoc --proto_path=$ProtoPath --go_out=paths=source_relative:$GoPBPath --go-grpc_out=paths=source_relative:$GoPBPath $file.FullName # --tsjson_out=$TSPBPath --mercury_out=$TSPBPath 
+	protoc --proto_path=$ProtoPath --proto_path=$TSJSONPath --go_out=paths=source_relative:$GoPBPath --go-grpc_out=paths=source_relative:$GoPBPath --tsjson_out=$TSPBPath --mercury_out=$TSPBPath $file.FullName
 }
 
 go build $GoPBPath
