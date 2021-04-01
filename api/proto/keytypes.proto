@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package padlock;
+
+import "tsjson.proto";
+option (tsjson.npm_package) = "@llkdemo/padlock";
+option (tsjson.import_path) = "keytypes";
+
+option go_package = "github.com/LLKennedy/padlock/padlockpb";
+
+enum KeyType {
+	CKK_UNDEFINED_UNKNOWN                = 0;
+	CKK_RSA                              = 1;
+	CKK_DSA                              = 2;
+	CKK_DH                               = 3;
+	CKK_ECDSA                            = 4;
+	CKK_EC                               = 5;
+	CKK_X9_42_DH                         = 6;
+	CKK_KEA                              = 7;
+	CKK_GENERIC_SECRET                   = 8;
+	CKK_RC2                              = 9;
+	CKK_RC4                              = 10;
+	CKK_DES                              = 11;
+	CKK_DES2                             = 12;
+	CKK_DES3                             = 13;
+	CKK_CAST                             = 14;
+	CKK_CAST3                            = 15;
+	CKK_CAST5                            = 16;
+	CKK_CAST128                          = 17;
+	CKK_RC5                              = 18;
+	CKK_IDEA                             = 19;
+	CKK_SKIPJACK                         = 20;
+	CKK_BATON                            = 21;
+	CKK_JUNIPER                          = 22;
+	CKK_CDMF                             = 23;
+	CKK_AES                              = 24;
+	CKK_BLOWFISH                         = 25;
+	CKK_TWOFISH                          = 26;
+	CKK_SECURID                          = 27;
+	CKK_HOTP                             = 28;
+	CKK_ACTI                             = 29;
+	CKK_CAMELLIA                         = 30;
+	CKK_ARIA                             = 31;
+	CKK_SHA512_224_HMAC                  = 32;
+	CKK_SHA512_256_HMAC                  = 33;
+	CKK_SHA512_T_HMAC                    = 34;
+	CKK_SHA_1_HMAC                       = 35;
+	CKK_SHA224_HMAC                      = 36;
+	CKK_SHA256_HMAC                      = 37;
+	CKK_SHA384_HMAC                      = 38;
+	CKK_SHA512_HMAC                      = 39;
+	CKK_SEED                             = 40;
+	CKK_GOSTR3410                        = 41;
+	CKK_GOSTR3411                        = 42;
+	CKK_GOST28147                        = 43;
+	CKK_SHA3_224_HMAC                    = 44;
+	CKK_SHA3_256_HMAC                    = 45;
+	CKK_SHA3_384_HMAC                    = 46;
+	CKK_SHA3_512_HMAC                    = 47;
+	CKK_VENDOR_DEFINED                   = 48;
+}

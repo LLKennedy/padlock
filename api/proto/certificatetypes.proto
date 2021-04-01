@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package padlock;
+
+import "tsjson.proto";
+option (tsjson.npm_package) = "@llkdemo/padlock";
+option (tsjson.import_path) = "keytypes";
+
+option go_package = "github.com/LLKennedy/padlock/padlockpb";
+
+enum CertificateType {
+	CKC_UNDEFINED_UNKNOWN                = 0;
+	CKC_X_509                            = 1;
+	CKC_X_509_ATTR_CERT                  = 2;
+	CKC_WTLS                             = 3;
+	CKC_VENDOR_DEFINED                   = 4;
+};

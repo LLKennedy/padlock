@@ -18,8 +18,8 @@ service Padlock {
 
 	// Application RPCs
 
-	// PostApplicationListModules lists modules already connected to the application
-	rpc PostApplicationListModules(ApplicationListModulesRequest) returns (ApplicationListModulesResponse);
+	// GetApplicationListModules lists modules already connected to the application
+	rpc GetApplicationListModules(ApplicationListModulesRequest) returns (ApplicationListModulesResponse);
 	// PostApplicationConnect connects a new module to the application
 	rpc PostApplicationConnect(ApplicationConnectRequest) returns (stream ApplicationConnectUpdate);
 
@@ -27,6 +27,8 @@ service Padlock {
 
 	// PostModuleListSlots
 	rpc PostModuleListSlots(ModuleListSlotsRequest) returns (ModuleListSlotsResponse);
+	// GetModuleInfo gets info for a specific module
+	rpc GetModuleInfo(ModuleInfoRequest) returns (ModuleInfoResponse);
 }
 
 message AuthHello {
@@ -42,7 +44,7 @@ message ApplicationListModulesRequest {
 }
 
 message ApplicationListModulesResponse {
-	repeated string modules = 1;
+	map<string, ModuleInfo> modules = 1;
 }
 
 message ApplicationConnectRequest {
@@ -52,14 +54,36 @@ message ApplicationConnectRequest {
 
 message ApplicationConnectUpdate {
 	oneof update {
-		bool logged_in = 1;
+		ModuleInfo info = 1;
+		bool logged_in = 2;
+		ModuleListSlotsResponse changed_slots = 3;
 	}
+}
+
+message ModuleInfoRequest {
+	AuthToken auth = 1;
+	string module = 2;
+}
+
+message ModuleInfoResponse {
+	ModuleInfo info = 1;
 }
 
 message ModuleListSlotsRequest {
 	AuthToken auth = 1;
+	string module = 2;
 }
 
 message ModuleListSlotsResponse {
-	repeated Slot slots = 1;
+	repeated SlotInfo slots = 1;
+}
+
+message SlotListMechanismsRequest {
+	AuthToken auth = 1;
+	string module = 2;
+	uint64 slot = 3;
+}
+
+message SlotListMechanismsResponse {
+	
 }

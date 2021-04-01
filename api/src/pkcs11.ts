@@ -7,36 +7,163 @@
  */
 
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
+import { MechanismType as padlock__MechanismType } from "mechanisms";
 
 /** A message */
-export class Slot extends Object implements tsjson.ProtoJSONCompatible {
+export class ModuleInfo extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
-	public SlotDescription?: string;
+	public cryptokiVersion?: Version;
 	/** A field */
-	public ManufacturerID?: string;
+	public manufacturerId?: string;
 	/** A field */
-	public Flags?: number;
+	public flags?: number;
 	/** A field */
-	public HardwareVersion?: Version;
+	public libraryDescription?: string;
 	/** A field */
-	public FirmwareVersion?: Version;
+	public libraryVersion?: Version;
 	public ToProtoJSON(): Object {
 		return {
-			SlotDescription: tsjson.ToProtoJSON.String(this.SlotDescription),
-			ManufacturerID: tsjson.ToProtoJSON.String(this.ManufacturerID),
-			Flags: tsjson.ToProtoJSON.StringNumber(this.Flags),
-			HardwareVersion: this.HardwareVersion?.ToProtoJSON(),
-			FirmwareVersion: this.FirmwareVersion?.ToProtoJSON(),
+			cryptokiVersion: this.cryptokiVersion?.ToProtoJSON(),
+			manufacturerId: tsjson.ToProtoJSON.String(this.manufacturerId),
+			flags: tsjson.ToProtoJSON.StringNumber(this.flags),
+			libraryDescription: tsjson.ToProtoJSON.String(this.libraryDescription),
+			libraryVersion: this.libraryVersion?.ToProtoJSON(),
 		};
 	}
-	public static async Parse(data: any): Promise<Slot> {
+	public static async Parse(data: any): Promise<ModuleInfo> {
 		let objData: Object = tsjson.AnyToObject(data);
-		let res = new Slot();
-		res.SlotDescription = await tsjson.Parse.String(objData, "SlotDescription", "SlotDescription");
-		res.ManufacturerID = await tsjson.Parse.String(objData, "ManufacturerID", "ManufacturerID");
-		res.Flags = await tsjson.Parse.Number(objData, "Flags", "Flags");
-		res.HardwareVersion = await tsjson.Parse.Message(objData, "HardwareVersion", "HardwareVersion", Version.Parse);
-		res.FirmwareVersion = await tsjson.Parse.Message(objData, "FirmwareVersion", "FirmwareVersion", Version.Parse);
+		let res = new ModuleInfo();
+		res.cryptokiVersion = await tsjson.Parse.Message(objData, "cryptokiVersion", "cryptoki_version", Version.Parse);
+		res.manufacturerId = await tsjson.Parse.String(objData, "manufacturerId", "manufacturer_id");
+		res.flags = await tsjson.Parse.Number(objData, "flags", "flags");
+		res.libraryDescription = await tsjson.Parse.String(objData, "libraryDescription", "library_description");
+		res.libraryVersion = await tsjson.Parse.Message(objData, "libraryVersion", "library_version", Version.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class SlotInfo extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public id?: number;
+	/** A field */
+	public slotDescription?: string;
+	/** A field */
+	public manufacturerId?: string;
+	/** A field */
+	public flags?: number;
+	/** A field */
+	public hardwareVersion?: Version;
+	/** A field */
+	public firmwareVersion?: Version;
+	/** A field */
+	public tokenInfo?: TokenInfo;
+	public ToProtoJSON(): Object {
+		return {
+			id: tsjson.ToProtoJSON.StringNumber(this.id),
+			slotDescription: tsjson.ToProtoJSON.String(this.slotDescription),
+			manufacturerId: tsjson.ToProtoJSON.String(this.manufacturerId),
+			flags: tsjson.ToProtoJSON.StringNumber(this.flags),
+			hardwareVersion: this.hardwareVersion?.ToProtoJSON(),
+			firmwareVersion: this.firmwareVersion?.ToProtoJSON(),
+			tokenInfo: this.tokenInfo?.ToProtoJSON(),
+		};
+	}
+	public static async Parse(data: any): Promise<SlotInfo> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new SlotInfo();
+		res.id = await tsjson.Parse.Number(objData, "id", "id");
+		res.slotDescription = await tsjson.Parse.String(objData, "slotDescription", "slot_description");
+		res.manufacturerId = await tsjson.Parse.String(objData, "manufacturerId", "manufacturer_id");
+		res.flags = await tsjson.Parse.Number(objData, "flags", "flags");
+		res.hardwareVersion = await tsjson.Parse.Message(objData, "hardwareVersion", "hardware_version", Version.Parse);
+		res.firmwareVersion = await tsjson.Parse.Message(objData, "firmwareVersion", "firmware_version", Version.Parse);
+		res.tokenInfo = await tsjson.Parse.Message(objData, "tokenInfo", "token_info", TokenInfo.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class TokenInfo extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public label?: string;
+	/** A field */
+	public manufacturerId?: string;
+	/** A field */
+	public model?: string;
+	/** A field */
+	public serialNumber?: string;
+	/** A field */
+	public flags?: number;
+	/** A field */
+	public maxSessionCount?: number;
+	/** A field */
+	public sessionCount?: number;
+	/** A field */
+	public maxRwSessionCount?: number;
+	/** A field */
+	public rwSessionCount?: number;
+	/** A field */
+	public maxPinLen?: number;
+	/** A field */
+	public minPinLen?: number;
+	/** A field */
+	public totalPublicMemory?: number;
+	/** A field */
+	public freePublicMemory?: number;
+	/** A field */
+	public totalPrivateMemory?: number;
+	/** A field */
+	public freePrivateMemory?: number;
+	/** A field */
+	public hardwareVersion?: Version;
+	/** A field */
+	public firmwareVersion?: Version;
+	/** A field */
+	public utctime?: string;
+	public ToProtoJSON(): Object {
+		return {
+			label: tsjson.ToProtoJSON.String(this.label),
+			manufacturerId: tsjson.ToProtoJSON.String(this.manufacturerId),
+			model: tsjson.ToProtoJSON.String(this.model),
+			serialNumber: tsjson.ToProtoJSON.String(this.serialNumber),
+			flags: tsjson.ToProtoJSON.StringNumber(this.flags),
+			maxSessionCount: tsjson.ToProtoJSON.StringNumber(this.maxSessionCount),
+			sessionCount: tsjson.ToProtoJSON.StringNumber(this.sessionCount),
+			maxRwSessionCount: tsjson.ToProtoJSON.StringNumber(this.maxRwSessionCount),
+			rwSessionCount: tsjson.ToProtoJSON.StringNumber(this.rwSessionCount),
+			maxPinLen: tsjson.ToProtoJSON.StringNumber(this.maxPinLen),
+			minPinLen: tsjson.ToProtoJSON.StringNumber(this.minPinLen),
+			totalPublicMemory: tsjson.ToProtoJSON.StringNumber(this.totalPublicMemory),
+			freePublicMemory: tsjson.ToProtoJSON.StringNumber(this.freePublicMemory),
+			totalPrivateMemory: tsjson.ToProtoJSON.StringNumber(this.totalPrivateMemory),
+			freePrivateMemory: tsjson.ToProtoJSON.StringNumber(this.freePrivateMemory),
+			hardwareVersion: this.hardwareVersion?.ToProtoJSON(),
+			firmwareVersion: this.firmwareVersion?.ToProtoJSON(),
+			utctime: tsjson.ToProtoJSON.String(this.utctime),
+		};
+	}
+	public static async Parse(data: any): Promise<TokenInfo> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new TokenInfo();
+		res.label = await tsjson.Parse.String(objData, "label", "label");
+		res.manufacturerId = await tsjson.Parse.String(objData, "manufacturerId", "manufacturer_id");
+		res.model = await tsjson.Parse.String(objData, "model", "model");
+		res.serialNumber = await tsjson.Parse.String(objData, "serialNumber", "serial_number");
+		res.flags = await tsjson.Parse.Number(objData, "flags", "flags");
+		res.maxSessionCount = await tsjson.Parse.Number(objData, "maxSessionCount", "max_session_count");
+		res.sessionCount = await tsjson.Parse.Number(objData, "sessionCount", "session_count");
+		res.maxRwSessionCount = await tsjson.Parse.Number(objData, "maxRwSessionCount", "max_rw_session_count");
+		res.rwSessionCount = await tsjson.Parse.Number(objData, "rwSessionCount", "rw_session_count");
+		res.maxPinLen = await tsjson.Parse.Number(objData, "maxPinLen", "max_pin_len");
+		res.minPinLen = await tsjson.Parse.Number(objData, "minPinLen", "min_pin_len");
+		res.totalPublicMemory = await tsjson.Parse.Number(objData, "totalPublicMemory", "total_public_memory");
+		res.freePublicMemory = await tsjson.Parse.Number(objData, "freePublicMemory", "free_public_memory");
+		res.totalPrivateMemory = await tsjson.Parse.Number(objData, "totalPrivateMemory", "total_private_memory");
+		res.freePrivateMemory = await tsjson.Parse.Number(objData, "freePrivateMemory", "free_private_memory");
+		res.hardwareVersion = await tsjson.Parse.Message(objData, "hardwareVersion", "hardware_version", Version.Parse);
+		res.firmwareVersion = await tsjson.Parse.Message(objData, "firmwareVersion", "firmware_version", Version.Parse);
+		res.utctime = await tsjson.Parse.String(objData, "utctime", "utctime");
 		return res;
 	}
 }
@@ -58,6 +185,23 @@ export class Version extends Object implements tsjson.ProtoJSONCompatible {
 		let res = new Version();
 		res.Major = await tsjson.Parse.Number(objData, "Major", "Major");
 		res.Minor = await tsjson.Parse.Number(objData, "Minor", "Minor");
+		return res;
+	}
+}
+
+/** A message */
+export class Mechanism extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public type?: padlock__MechanismType;
+	public ToProtoJSON(): Object {
+		return {
+			type: tsjson.ToProtoJSON.Enum(padlock__MechanismType, this.type),
+		};
+	}
+	public static async Parse(data: any): Promise<Mechanism> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new Mechanism();
+		res.type = await tsjson.Parse.Enum(objData, "type", "type", padlock__MechanismType);
 		return res;
 	}
 }

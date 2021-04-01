@@ -8,15 +8,52 @@ option (tsjson.import_path) = "pkcs11";
 
 option go_package = "github.com/LLKennedy/padlock/padlockpb";
 
-message Slot {
-	string SlotDescription = 1;
-	string ManufacturerID = 2;
-	uint64 Flags = 3;
-	Version HardwareVersion = 4;
-	Version FirmwareVersion = 5;
+import "mechanisms.proto";
+
+message ModuleInfo {
+	Version cryptoki_version = 1;
+	string manufacturer_id = 2;
+	uint64 flags = 3;
+	string library_description = 4;
+	Version library_version = 5;
+}
+
+message SlotInfo {
+	uint64 id = 1;
+	string slot_description = 2;
+	string manufacturer_id = 3;
+	uint64 flags = 4;
+	Version hardware_version = 5;
+	Version firmware_version = 6;
+	TokenInfo token_info = 7;
+}
+
+message TokenInfo {
+	string label = 1;
+	string manufacturer_id = 2;
+	string model = 3;
+	string serial_number = 4;
+	uint64 flags = 5;
+	uint64 max_session_count = 6;
+	uint64 session_count = 7;
+	uint64 max_rw_session_count = 8;
+	uint64 rw_session_count = 9;
+	uint64 max_pin_len = 10;
+	uint64 min_pin_len = 11;
+	uint64 total_public_memory = 12;
+	uint64 free_public_memory = 13;
+	uint64 total_private_memory = 14;
+	uint64 free_private_memory = 15;
+	Version hardware_version = 16;
+	Version firmware_version = 17;
+	string utctime = 18;
 }
 
 message Version {
 	uint32 Major = 1;
 	uint32 Minor = 2;
+}
+
+message Mechanism {
+	MechanismType type = 1;
 }

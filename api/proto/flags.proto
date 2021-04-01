@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package padlock;
+
+import "tsjson.proto";
+option (tsjson.npm_package) = "@llkdemo/padlock";
+option (tsjson.import_path) = "flags";
+
+option go_package = "github.com/LLKennedy/padlock/padlockpb";
+
+enum FlagType {
+	CKF_UNDEFINED_UNKNOWN                = 0;
+	CKF_TOKEN_PRESENT                    = 1;
+	CKF_REMOVABLE_DEVICE                 = 2;
+	CKF_HW_SLOT                          = 3;
+	CKF_RNG                              = 4;
+	CKF_WRITE_PROTECTED                  = 5;
+	CKF_LOGIN_REQUIRED                   = 6;
+	CKF_USER_PIN_INITIALIZED             = 7;
+	CKF_RESTORE_KEY_NOT_NEEDED           = 8;
+	CKF_CLOCK_ON_TOKEN                   = 9;
+	CKF_PROTECTED_AUTHENTICATION_PATH    = 10;
+	CKF_DUAL_CRYPTO_OPERATIONS           = 11;
+	CKF_TOKEN_INITIALIZED                = 12;
+	CKF_SECONDARY_AUTHENTICATION         = 13;
+	CKF_USER_PIN_COUNT_LOW               = 14;
+	CKF_USER_PIN_FINAL_TRY               = 15;
+	CKF_USER_PIN_LOCKED                  = 16;
+	CKF_USER_PIN_TO_BE_CHANGED           = 17;
+	CKF_SO_PIN_COUNT_LOW                 = 18;
+	CKF_SO_PIN_FINAL_TRY                 = 19;
+	CKF_SO_PIN_LOCKED                    = 20;
+	CKF_SO_PIN_TO_BE_CHANGED             = 21;
+	CKF_ERROR_STATE                      = 22;
+	CKF_RW_SESSION                       = 23;
+	CKF_SERIAL_SESSION                   = 24;
+	CKF_ARRAY_ATTRIBUTE                  = 25;
+	CKF_HW                               = 26;
+	CKF_ENCRYPT                          = 27;
+	CKF_DECRYPT                          = 28;
+	CKF_DIGEST                           = 29;
+	CKF_SIGN                             = 30;
+	CKF_SIGN_RECOVER                     = 31;
+	CKF_VERIFY                           = 32;
+	CKF_VERIFY_RECOVER                   = 33;
+	CKF_GENERATE                         = 34;
+	CKF_GENERATE_KEY_PAIR                = 35;
+	CKF_WRAP                             = 36;
+	CKF_UNWRAP                           = 37;
+	CKF_DERIVE                           = 38;
+	CKF_EC_F_P                           = 39;
+	CKF_EC_F_2M                          = 40;
+	CKF_EC_ECPARAMETERS                  = 41;
+	CKF_EC_NAMEDCURVE                    = 42;
+	CKF_EC_UNCOMPRESS                    = 43;
+	CKF_EC_COMPRESS                      = 44;
+	CKF_EXTENSION                        = 45;
+	CKF_LIBRARY_CANT_CREATE_OS_THREADS   = 46;
+	CKF_OS_LOCKING_OK                    = 47;
+	CKF_DONT_BLOCK                       = 48;
+	CKF_NEXT_OTP                         = 49;
+	CKF_EXCLUDE_TIME                     = 50;
+	CKF_EXCLUDE_COUNTER                  = 51;
+	CKF_EXCLUDE_CHALLENGE                = 52;
+	CKF_EXCLUDE_PIN                      = 53;
+	CKF_USER_FRIENDLY_OTP                = 54;
+}

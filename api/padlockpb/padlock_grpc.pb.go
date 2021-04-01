@@ -19,12 +19,14 @@ const _ = grpc.SupportPackageIsVersion7
 type PadlockClient interface {
 	// PostHello initiates a session with the application, generating an authentication token
 	PostHello(ctx context.Context, in *AuthHello, opts ...grpc.CallOption) (*AuthToken, error)
-	// PostApplicationListModules lists modules already connected to the application
-	PostApplicationListModules(ctx context.Context, in *ApplicationListModulesRequest, opts ...grpc.CallOption) (*ApplicationListModulesResponse, error)
+	// GetApplicationListModules lists modules already connected to the application
+	GetApplicationListModules(ctx context.Context, in *ApplicationListModulesRequest, opts ...grpc.CallOption) (*ApplicationListModulesResponse, error)
 	// PostApplicationConnect connects a new module to the application
 	PostApplicationConnect(ctx context.Context, in *ApplicationConnectRequest, opts ...grpc.CallOption) (Padlock_PostApplicationConnectClient, error)
 	// PostModuleListSlots
 	PostModuleListSlots(ctx context.Context, in *ModuleListSlotsRequest, opts ...grpc.CallOption) (*ModuleListSlotsResponse, error)
+	// GetModuleInfo gets info for a specific module
+	GetModuleInfo(ctx context.Context, in *ModuleInfoRequest, opts ...grpc.CallOption) (*ModuleInfoResponse, error)
 }
 
 type padlockClient struct {
@@ -44,9 +46,9 @@ func (c *padlockClient) PostHello(ctx context.Context, in *AuthHello, opts ...gr
 	return out, nil
 }
 
-func (c *padlockClient) PostApplicationListModules(ctx context.Context, in *ApplicationListModulesRequest, opts ...grpc.CallOption) (*ApplicationListModulesResponse, error) {
+func (c *padlockClient) GetApplicationListModules(ctx context.Context, in *ApplicationListModulesRequest, opts ...grpc.CallOption) (*ApplicationListModulesResponse, error) {
 	out := new(ApplicationListModulesResponse)
-	err := c.cc.Invoke(ctx, "/padlock.Padlock/PostApplicationListModules", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/GetApplicationListModules", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,18 +96,29 @@ func (c *padlockClient) PostModuleListSlots(ctx context.Context, in *ModuleListS
 	return out, nil
 }
 
+func (c *padlockClient) GetModuleInfo(ctx context.Context, in *ModuleInfoRequest, opts ...grpc.CallOption) (*ModuleInfoResponse, error) {
+	out := new(ModuleInfoResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/GetModuleInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PadlockServer is the server API for Padlock service.
 // All implementations must embed UnimplementedPadlockServer
 // for forward compatibility
 type PadlockServer interface {
 	// PostHello initiates a session with the application, generating an authentication token
 	PostHello(context.Context, *AuthHello) (*AuthToken, error)
-	// PostApplicationListModules lists modules already connected to the application
-	PostApplicationListModules(context.Context, *ApplicationListModulesRequest) (*ApplicationListModulesResponse, error)
+	// GetApplicationListModules lists modules already connected to the application
+	GetApplicationListModules(context.Context, *ApplicationListModulesRequest) (*ApplicationListModulesResponse, error)
 	// PostApplicationConnect connects a new module to the application
 	PostApplicationConnect(*ApplicationConnectRequest, Padlock_PostApplicationConnectServer) error
 	// PostModuleListSlots
 	PostModuleListSlots(context.Context, *ModuleListSlotsRequest) (*ModuleListSlotsResponse, error)
+	// GetModuleInfo gets info for a specific module
+	GetModuleInfo(context.Context, *ModuleInfoRequest) (*ModuleInfoResponse, error)
 	mustEmbedUnimplementedPadlockServer()
 }
 
@@ -116,14 +129,17 @@ type UnimplementedPadlockServer struct {
 func (UnimplementedPadlockServer) PostHello(context.Context, *AuthHello) (*AuthToken, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostHello not implemented")
 }
-func (UnimplementedPadlockServer) PostApplicationListModules(context.Context, *ApplicationListModulesRequest) (*ApplicationListModulesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PostApplicationListModules not implemented")
+func (UnimplementedPadlockServer) GetApplicationListModules(context.Context, *ApplicationListModulesRequest) (*ApplicationListModulesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationListModules not implemented")
 }
 func (UnimplementedPadlockServer) PostApplicationConnect(*ApplicationConnectRequest, Padlock_PostApplicationConnectServer) error {
 	return status.Errorf(codes.Unimplemented, "method PostApplicationConnect not implemented")
 }
 func (UnimplementedPadlockServer) PostModuleListSlots(context.Context, *ModuleListSlotsRequest) (*ModuleListSlotsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostModuleListSlots not implemented")
+}
+func (UnimplementedPadlockServer) GetModuleInfo(context.Context, *ModuleInfoRequest) (*ModuleInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetModuleInfo not implemented")
 }
 func (UnimplementedPadlockServer) mustEmbedUnimplementedPadlockServer() {}
 
@@ -156,20 +172,20 @@ func _Padlock_PostHello_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Padlock_PostApplicationListModules_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Padlock_GetApplicationListModules_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ApplicationListModulesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PadlockServer).PostApplicationListModules(ctx, in)
+		return srv.(PadlockServer).GetApplicationListModules(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/padlock.Padlock/PostApplicationListModules",
+		FullMethod: "/padlock.Padlock/GetApplicationListModules",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PadlockServer).PostApplicationListModules(ctx, req.(*ApplicationListModulesRequest))
+		return srv.(PadlockServer).GetApplicationListModules(ctx, req.(*ApplicationListModulesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -213,6 +229,24 @@ func _Padlock_PostModuleListSlots_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Padlock_GetModuleInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ModuleInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).GetModuleInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/GetModuleInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).GetModuleInfo(ctx, req.(*ModuleInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Padlock_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "padlock.Padlock",
 	HandlerType: (*PadlockServer)(nil),
@@ -222,12 +256,16 @@ var _Padlock_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Padlock_PostHello_Handler,
 		},
 		{
-			MethodName: "PostApplicationListModules",
-			Handler:    _Padlock_PostApplicationListModules_Handler,
+			MethodName: "GetApplicationListModules",
+			Handler:    _Padlock_GetApplicationListModules_Handler,
 		},
 		{
 			MethodName: "PostModuleListSlots",
 			Handler:    _Padlock_PostModuleListSlots_Handler,
+		},
+		{
+			MethodName: "GetModuleInfo",
+			Handler:    _Padlock_GetModuleInfo_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

@@ -7,7 +7,7 @@
  */
 
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
-import { Slot as padlock__Slot } from "./pkcs11";
+import { ModuleInfo as padlock__ModuleInfo, SlotInfo as padlock__SlotInfo } from "pkcs11";
 
 /** A message */
 export class AuthHello extends Object implements tsjson.ProtoJSONCompatible {
@@ -59,16 +59,16 @@ export class ApplicationListModulesRequest extends Object implements tsjson.Prot
 /** A message */
 export class ApplicationListModulesResponse extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
-	public modules?: string[];
+	public modules?: ReadonlyMap<string, padlock__ModuleInfo | null>;
 	public ToProtoJSON(): Object {
 		return {
-			modules: tsjson.ToProtoJSON.Repeated(tsjson.ToProtoJSON.String, this.modules),
+			modules: tsjson.ToProtoJSON.Map(val => val?.ToProtoJSON(), this.modules),
 		};
 	}
 	public static async Parse(data: any): Promise<ApplicationListModulesResponse> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new ApplicationListModulesResponse();
-		res.modules = await tsjson.Parse.Repeated(objData, "modules", "modules", tsjson.PrimitiveParse.String());
+		res.modules = await tsjson.Parse.Map(objData, "modules", "modules", val => val, tsjson.Parse.Message({"value":val}, "value", "value", padlock__ModuleInfo.Parse));
 		return res;
 	}
 }
@@ -97,16 +97,62 @@ export class ApplicationConnectRequest extends Object implements tsjson.ProtoJSO
 /** A message */
 export class ApplicationConnectUpdate extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
+	public info?: padlock__ModuleInfo;
+	/** A field */
 	public loggedIn?: boolean;
+	/** A field */
+	public changedSlots?: ModuleListSlotsResponse;
 	public ToProtoJSON(): Object {
 		return {
+			info: this.info?.ToProtoJSON(),
 			loggedIn: tsjson.ToProtoJSON.Bool(this.loggedIn),
+			changedSlots: this.changedSlots?.ToProtoJSON(),
 		};
 	}
 	public static async Parse(data: any): Promise<ApplicationConnectUpdate> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new ApplicationConnectUpdate();
+		res.info = await tsjson.Parse.Message(objData, "info", "info", padlock__ModuleInfo.Parse);
 		res.loggedIn = await tsjson.Parse.Bool(objData, "loggedIn", "logged_in");
+		res.changedSlots = await tsjson.Parse.Message(objData, "changedSlots", "changed_slots", ModuleListSlotsResponse.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class ModuleInfoRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public auth?: AuthToken;
+	/** A field */
+	public module?: string;
+	public ToProtoJSON(): Object {
+		return {
+			auth: this.auth?.ToProtoJSON(),
+			module: tsjson.ToProtoJSON.String(this.module),
+		};
+	}
+	public static async Parse(data: any): Promise<ModuleInfoRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ModuleInfoRequest();
+		res.auth = await tsjson.Parse.Message(objData, "auth", "auth", AuthToken.Parse);
+		res.module = await tsjson.Parse.String(objData, "module", "module");
+		return res;
+	}
+}
+
+/** A message */
+export class ModuleInfoResponse extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public info?: padlock__ModuleInfo;
+	public ToProtoJSON(): Object {
+		return {
+			info: this.info?.ToProtoJSON(),
+		};
+	}
+	public static async Parse(data: any): Promise<ModuleInfoResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ModuleInfoResponse();
+		res.info = await tsjson.Parse.Message(objData, "info", "info", padlock__ModuleInfo.Parse);
 		return res;
 	}
 }
@@ -115,15 +161,19 @@ export class ApplicationConnectUpdate extends Object implements tsjson.ProtoJSON
 export class ModuleListSlotsRequest extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
 	public auth?: AuthToken;
+	/** A field */
+	public module?: string;
 	public ToProtoJSON(): Object {
 		return {
 			auth: this.auth?.ToProtoJSON(),
+			module: tsjson.ToProtoJSON.String(this.module),
 		};
 	}
 	public static async Parse(data: any): Promise<ModuleListSlotsRequest> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new ModuleListSlotsRequest();
 		res.auth = await tsjson.Parse.Message(objData, "auth", "auth", AuthToken.Parse);
+		res.module = await tsjson.Parse.String(objData, "module", "module");
 		return res;
 	}
 }
@@ -131,7 +181,7 @@ export class ModuleListSlotsRequest extends Object implements tsjson.ProtoJSONCo
 /** A message */
 export class ModuleListSlotsResponse extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
-	public slots?: padlock__Slot[];
+	public slots?: padlock__SlotInfo[];
 	public ToProtoJSON(): Object {
 		return {
 			slots: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.slots),
@@ -140,7 +190,45 @@ export class ModuleListSlotsResponse extends Object implements tsjson.ProtoJSONC
 	public static async Parse(data: any): Promise<ModuleListSlotsResponse> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new ModuleListSlotsResponse();
-		res.slots = await tsjson.Parse.Repeated(objData, "slots", "slots", padlock__Slot.Parse);
+		res.slots = await tsjson.Parse.Repeated(objData, "slots", "slots", padlock__SlotInfo.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class SlotListMechanismsRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public auth?: AuthToken;
+	/** A field */
+	public module?: string;
+	/** A field */
+	public slot?: number;
+	public ToProtoJSON(): Object {
+		return {
+			auth: this.auth?.ToProtoJSON(),
+			module: tsjson.ToProtoJSON.String(this.module),
+			slot: tsjson.ToProtoJSON.StringNumber(this.slot),
+		};
+	}
+	public static async Parse(data: any): Promise<SlotListMechanismsRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new SlotListMechanismsRequest();
+		res.auth = await tsjson.Parse.Message(objData, "auth", "auth", AuthToken.Parse);
+		res.module = await tsjson.Parse.String(objData, "module", "module");
+		res.slot = await tsjson.Parse.Number(objData, "slot", "slot");
+		return res;
+	}
+}
+
+/** A message */
+export class SlotListMechanismsResponse extends Object implements tsjson.ProtoJSONCompatible {
+	public ToProtoJSON(): Object {
+		return {
+		};
+	}
+	public static async Parse(data: any): Promise<SlotListMechanismsResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new SlotListMechanismsResponse();
 		return res;
 	}
 }
