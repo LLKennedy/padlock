@@ -7,7 +7,7 @@
  */
 
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
-import { SlotInfo as padlock__SlotInfo, ModuleInfo as padlock__ModuleInfo, Mechanism as padlock__Mechanism, Attribute as padlock__Attribute } from "./pkcs11";
+import { ModuleInfo as padlock__ModuleInfo, SlotInfo as padlock__SlotInfo, Mechanism as padlock__Mechanism, Attribute as padlock__Attribute } from "./pkcs11";
 import { AttributeType as padlock__AttributeType } from "./attributes";
 
 /** A message */
@@ -313,19 +313,19 @@ export class SlotOpenSessionRequest extends Object implements tsjson.ProtoJSONCo
 /** A message */
 export class SlotOpenSessionUpdate extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
-	public uuid?: string;
+	public id?: SessionID;
 	/** A field */
 	public loggedIn?: boolean;
 	public ToProtoJSON(): Object {
 		return {
-			uuid: tsjson.ToProtoJSON.String(this.uuid),
+			id: this.id?.ToProtoJSON(),
 			loggedIn: tsjson.ToProtoJSON.Bool(this.loggedIn),
 		};
 	}
 	public static async Parse(data: any): Promise<SlotOpenSessionUpdate> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new SlotOpenSessionUpdate();
-		res.uuid = await tsjson.Parse.String(objData, "uuid", "uuid");
+		res.id = await tsjson.Parse.Message(objData, "id", "id", SessionID.Parse);
 		res.loggedIn = await tsjson.Parse.Bool(objData, "loggedIn", "logged_in");
 		return res;
 	}
@@ -334,20 +334,46 @@ export class SlotOpenSessionUpdate extends Object implements tsjson.ProtoJSONCom
 /** A message */
 export class SessionID extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
-	public slot?: SlotID;
-	/** A field */
 	public uuid?: string;
 	public ToProtoJSON(): Object {
 		return {
-			slot: this.slot?.ToProtoJSON(),
 			uuid: tsjson.ToProtoJSON.String(this.uuid),
 		};
 	}
 	public static async Parse(data: any): Promise<SessionID> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new SessionID();
-		res.slot = await tsjson.Parse.Message(objData, "slot", "slot", SlotID.Parse);
 		res.uuid = await tsjson.Parse.String(objData, "uuid", "uuid");
+		return res;
+	}
+}
+
+/** A message */
+export class SessionCloseRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public id?: SessionID;
+	public ToProtoJSON(): Object {
+		return {
+			id: this.id?.ToProtoJSON(),
+		};
+	}
+	public static async Parse(data: any): Promise<SessionCloseRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new SessionCloseRequest();
+		res.id = await tsjson.Parse.Message(objData, "id", "id", SessionID.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class SessionCloseResponse extends Object implements tsjson.ProtoJSONCompatible {
+	public ToProtoJSON(): Object {
+		return {
+		};
+	}
+	public static async Parse(data: any): Promise<SessionCloseResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new SessionCloseResponse();
 		return res;
 	}
 }
@@ -406,41 +432,20 @@ export class SessionLogoutResponse extends Object implements tsjson.ProtoJSONCom
 /** A message */
 export class SessionListObjectsRequest extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
-	public id?: SessionID;
+	public id?: string;
 	/** A field */
 	public template?: padlock__Attribute[];
 	public ToProtoJSON(): Object {
 		return {
-			id: this.id?.ToProtoJSON(),
+			id: tsjson.ToProtoJSON.String(this.id),
 			template: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.template),
 		};
 	}
 	public static async Parse(data: any): Promise<SessionListObjectsRequest> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new SessionListObjectsRequest();
-		res.id = await tsjson.Parse.Message(objData, "id", "id", SessionID.Parse);
+		res.id = await tsjson.Parse.String(objData, "id", "id");
 		res.template = await tsjson.Parse.Repeated(objData, "template", "template", padlock__Attribute.Parse);
-		return res;
-	}
-}
-
-/** A message */
-export class ObjectID extends Object implements tsjson.ProtoJSONCompatible {
-	/** A field */
-	public session?: SessionID;
-	/** A field */
-	public uuid?: string;
-	public ToProtoJSON(): Object {
-		return {
-			session: this.session?.ToProtoJSON(),
-			uuid: tsjson.ToProtoJSON.String(this.uuid),
-		};
-	}
-	public static async Parse(data: any): Promise<ObjectID> {
-		let objData: Object = tsjson.AnyToObject(data);
-		let res = new ObjectID();
-		res.session = await tsjson.Parse.Message(objData, "session", "session", SessionID.Parse);
-		res.uuid = await tsjson.Parse.String(objData, "uuid", "uuid");
 		return res;
 	}
 }
@@ -448,19 +453,23 @@ export class ObjectID extends Object implements tsjson.ProtoJSONCompatible {
 /** A message */
 export class ObjectListAttributeValuesRequest extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
-	public id?: ObjectID;
+	public sessionId?: SessionID;
+	/** A field */
+	public objectId?: string;
 	/** A field */
 	public requestedAttributes?: padlock__AttributeType[];
 	public ToProtoJSON(): Object {
 		return {
-			id: this.id?.ToProtoJSON(),
+			sessionId: this.sessionId?.ToProtoJSON(),
+			objectId: tsjson.ToProtoJSON.String(this.objectId),
 			requestedAttributes: tsjson.ToProtoJSON.Repeated(val => tsjson.ToProtoJSON.Enum(padlock__AttributeType, val), this.requestedAttributes),
 		};
 	}
 	public static async Parse(data: any): Promise<ObjectListAttributeValuesRequest> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new ObjectListAttributeValuesRequest();
-		res.id = await tsjson.Parse.Message(objData, "id", "id", ObjectID.Parse);
+		res.sessionId = await tsjson.Parse.Message(objData, "sessionId", "session_id", SessionID.Parse);
+		res.objectId = await tsjson.Parse.String(objData, "objectId", "object_id");
 		res.requestedAttributes = await tsjson.Parse.Repeated(objData, "requestedAttributes", "requested_attributes", tsjson.PrimitiveParse.Enum(padlock__AttributeType));
 		return res;
 	}

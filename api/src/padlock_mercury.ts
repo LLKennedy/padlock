@@ -7,8 +7,8 @@
  */
 
 import * as mercury from "@llkennedy/mercury";
-import { ApplicationConnectRequest as padlock__ApplicationConnectRequest, SlotInitTokenRequest as padlock__SlotInitTokenRequest, SlotOpenSessionRequest as padlock__SlotOpenSessionRequest, ApplicationListModulesResponse as padlock__ApplicationListModulesResponse, AuthHello as padlock__AuthHello, ModuleInfoResponse as padlock__ModuleInfoResponse, SlotListMechanismsRequest as padlock__SlotListMechanismsRequest, ModuleListSlotsResponse as padlock__ModuleListSlotsResponse, AuthToken as padlock__AuthToken, ModuleInfoRequest as padlock__ModuleInfoRequest, SessionListObjectsRequest as padlock__SessionListObjectsRequest, SessionID as padlock__SessionID, ModuleListSlotsRequest as padlock__ModuleListSlotsRequest, ApplicationConnectUpdate as padlock__ApplicationConnectUpdate, SlotOpenSessionUpdate as padlock__SlotOpenSessionUpdate, SessionLoginRequest as padlock__SessionLoginRequest, SessionLoginResponse as padlock__SessionLoginResponse, SlotInitTokenResponse as padlock__SlotInitTokenResponse, SessionLogoutResponse as padlock__SessionLogoutResponse, SlotListMechanismsResponse as padlock__SlotListMechanismsResponse, ApplicationListModulesRequest as padlock__ApplicationListModulesRequest, ObjectListAttributeValuesRequest as padlock__ObjectListAttributeValuesRequest } from "./padlock";
-import { Attribute as padlock__Attribute, P11Object as padlock__P11Object } from "./pkcs11";
+import { ApplicationConnectRequest as padlock__ApplicationConnectRequest, SessionListObjectsRequest as padlock__SessionListObjectsRequest, ModuleListSlotsRequest as padlock__ModuleListSlotsRequest, SessionID as padlock__SessionID, AuthHello as padlock__AuthHello, SlotOpenSessionRequest as padlock__SlotOpenSessionRequest, ModuleListSlotsResponse as padlock__ModuleListSlotsResponse, SlotInitTokenResponse as padlock__SlotInitTokenResponse, SessionCloseResponse as padlock__SessionCloseResponse, ObjectListAttributeValuesRequest as padlock__ObjectListAttributeValuesRequest, SessionLogoutResponse as padlock__SessionLogoutResponse, AuthToken as padlock__AuthToken, SlotOpenSessionUpdate as padlock__SlotOpenSessionUpdate, SessionLoginRequest as padlock__SessionLoginRequest, SlotListMechanismsRequest as padlock__SlotListMechanismsRequest, SessionCloseRequest as padlock__SessionCloseRequest, SlotInitTokenRequest as padlock__SlotInitTokenRequest, ModuleInfoResponse as padlock__ModuleInfoResponse, ApplicationConnectUpdate as padlock__ApplicationConnectUpdate, SlotListMechanismsResponse as padlock__SlotListMechanismsResponse, ApplicationListModulesRequest as padlock__ApplicationListModulesRequest, ModuleInfoRequest as padlock__ModuleInfoRequest, SessionLoginResponse as padlock__SessionLoginResponse, ApplicationListModulesResponse as padlock__ApplicationListModulesResponse } from "./padlock";
+import { P11Object as padlock__P11Object, Attribute as padlock__Attribute } from "./pkcs11";
 
 export class ExposedPadlockClient extends mercury.Client {
 	constructor(basePath: string | undefined = "localhost/api/ExposedPadlock", useTLS: boolean | undefined = true, client: mercury.AxiosInstance | undefined = undefined) {
@@ -37,6 +37,9 @@ export class ExposedPadlockClient extends mercury.Client {
 	}
 	public async SlotOpenSession(req: padlock__SlotOpenSessionRequest): Promise<mercury.ServerStream<padlock__SlotOpenSessionRequest, padlock__SlotOpenSessionUpdate>> {
 		return this.StartServerStream<padlock__SlotOpenSessionRequest, padlock__SlotOpenSessionUpdate>("SlotOpenSession", req, padlock__SlotOpenSessionUpdate.Parse);
+	}
+	public async SessionClose(req: padlock__SessionCloseRequest): Promise<padlock__SessionCloseResponse> {
+		return this.SendUnary("SessionClose", mercury.HTTPMethod.DELETE, req, padlock__SessionCloseResponse.Parse);
 	}
 	public async SessionLogin(req: padlock__SessionLoginRequest): Promise<padlock__SessionLoginResponse> {
 		return this.SendUnary("SessionLogin", mercury.HTTPMethod.PUT, req, padlock__SessionLoginResponse.Parse);

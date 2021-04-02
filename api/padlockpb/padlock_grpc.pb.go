@@ -33,6 +33,8 @@ type ExposedPadlockClient interface {
 	PostSlotInitToken(ctx context.Context, in *SlotInitTokenRequest, opts ...grpc.CallOption) (*SlotInitTokenResponse, error)
 	// GetSlotOpenSession creates a session on the slot
 	GetSlotOpenSession(ctx context.Context, in *SlotOpenSessionRequest, opts ...grpc.CallOption) (ExposedPadlock_GetSlotOpenSessionClient, error)
+	// DeleteSessionClose closes the session
+	DeleteSessionClose(ctx context.Context, in *SessionCloseRequest, opts ...grpc.CallOption) (*SessionCloseResponse, error)
 	// PutSessionLogin logs into the session at the application level
 	PutSessionLogin(ctx context.Context, in *SessionLoginRequest, opts ...grpc.CallOption) (*SessionLoginResponse, error)
 	// PutSessionLogout logs out of the session at the application level
@@ -169,6 +171,15 @@ func (x *exposedPadlockGetSlotOpenSessionClient) Recv() (*SlotOpenSessionUpdate,
 	return m, nil
 }
 
+func (c *exposedPadlockClient) DeleteSessionClose(ctx context.Context, in *SessionCloseRequest, opts ...grpc.CallOption) (*SessionCloseResponse, error) {
+	out := new(SessionCloseResponse)
+	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/DeleteSessionClose", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *exposedPadlockClient) PutSessionLogin(ctx context.Context, in *SessionLoginRequest, opts ...grpc.CallOption) (*SessionLoginResponse, error) {
 	out := new(SessionLoginResponse)
 	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/PutSessionLogin", in, out, opts...)
@@ -271,6 +282,8 @@ type ExposedPadlockServer interface {
 	PostSlotInitToken(context.Context, *SlotInitTokenRequest) (*SlotInitTokenResponse, error)
 	// GetSlotOpenSession creates a session on the slot
 	GetSlotOpenSession(*SlotOpenSessionRequest, ExposedPadlock_GetSlotOpenSessionServer) error
+	// DeleteSessionClose closes the session
+	DeleteSessionClose(context.Context, *SessionCloseRequest) (*SessionCloseResponse, error)
 	// PutSessionLogin logs into the session at the application level
 	PutSessionLogin(context.Context, *SessionLoginRequest) (*SessionLoginResponse, error)
 	// PutSessionLogout logs out of the session at the application level
@@ -309,6 +322,9 @@ func (UnimplementedExposedPadlockServer) PostSlotInitToken(context.Context, *Slo
 }
 func (UnimplementedExposedPadlockServer) GetSlotOpenSession(*SlotOpenSessionRequest, ExposedPadlock_GetSlotOpenSessionServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetSlotOpenSession not implemented")
+}
+func (UnimplementedExposedPadlockServer) DeleteSessionClose(context.Context, *SessionCloseRequest) (*SessionCloseResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSessionClose not implemented")
 }
 func (UnimplementedExposedPadlockServer) PutSessionLogin(context.Context, *SessionLoginRequest) (*SessionLoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PutSessionLogin not implemented")
@@ -485,6 +501,24 @@ func (x *exposedPadlockGetSlotOpenSessionServer) Send(m *SlotOpenSessionUpdate) 
 	return x.ServerStream.SendMsg(m)
 }
 
+func _ExposedPadlock_DeleteSessionClose_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionCloseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExposedPadlockServer).DeleteSessionClose(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.ExposedPadlock/DeleteSessionClose",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExposedPadlockServer).DeleteSessionClose(ctx, req.(*SessionCloseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ExposedPadlock_PutSessionLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SessionLoginRequest)
 	if err := dec(in); err != nil {
@@ -592,6 +626,10 @@ var _ExposedPadlock_serviceDesc = grpc.ServiceDesc{
 			Handler:    _ExposedPadlock_PostSlotInitToken_Handler,
 		},
 		{
+			MethodName: "DeleteSessionClose",
+			Handler:    _ExposedPadlock_DeleteSessionClose_Handler,
+		},
+		{
 			MethodName: "PutSessionLogin",
 			Handler:    _ExposedPadlock_PutSessionLogin_Handler,
 		},
@@ -645,6 +683,8 @@ type PadlockClient interface {
 	SlotInitToken(ctx context.Context, in *SlotInitTokenRequest, opts ...grpc.CallOption) (*SlotInitTokenResponse, error)
 	// SlotOpenSession creates a session on the slot
 	SlotOpenSession(ctx context.Context, in *SlotOpenSessionRequest, opts ...grpc.CallOption) (Padlock_SlotOpenSessionClient, error)
+	// SessionClose closes the session
+	SessionClose(ctx context.Context, in *SessionCloseRequest, opts ...grpc.CallOption) (*SessionCloseResponse, error)
 	// SessionLogin logs into the session at the application level
 	SessionLogin(ctx context.Context, in *SessionLoginRequest, opts ...grpc.CallOption) (*SessionLoginResponse, error)
 	// SessionLogout logs out of the session at the application level
@@ -781,6 +821,15 @@ func (x *padlockSlotOpenSessionClient) Recv() (*SlotOpenSessionUpdate, error) {
 	return m, nil
 }
 
+func (c *padlockClient) SessionClose(ctx context.Context, in *SessionCloseRequest, opts ...grpc.CallOption) (*SessionCloseResponse, error) {
+	out := new(SessionCloseResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/SessionClose", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *padlockClient) SessionLogin(ctx context.Context, in *SessionLoginRequest, opts ...grpc.CallOption) (*SessionLoginResponse, error) {
 	out := new(SessionLoginResponse)
 	err := c.cc.Invoke(ctx, "/padlock.Padlock/SessionLogin", in, out, opts...)
@@ -883,6 +932,8 @@ type PadlockServer interface {
 	SlotInitToken(context.Context, *SlotInitTokenRequest) (*SlotInitTokenResponse, error)
 	// SlotOpenSession creates a session on the slot
 	SlotOpenSession(*SlotOpenSessionRequest, Padlock_SlotOpenSessionServer) error
+	// SessionClose closes the session
+	SessionClose(context.Context, *SessionCloseRequest) (*SessionCloseResponse, error)
 	// SessionLogin logs into the session at the application level
 	SessionLogin(context.Context, *SessionLoginRequest) (*SessionLoginResponse, error)
 	// SessionLogout logs out of the session at the application level
@@ -921,6 +972,9 @@ func (UnimplementedPadlockServer) SlotInitToken(context.Context, *SlotInitTokenR
 }
 func (UnimplementedPadlockServer) SlotOpenSession(*SlotOpenSessionRequest, Padlock_SlotOpenSessionServer) error {
 	return status.Errorf(codes.Unimplemented, "method SlotOpenSession not implemented")
+}
+func (UnimplementedPadlockServer) SessionClose(context.Context, *SessionCloseRequest) (*SessionCloseResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SessionClose not implemented")
 }
 func (UnimplementedPadlockServer) SessionLogin(context.Context, *SessionLoginRequest) (*SessionLoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SessionLogin not implemented")
@@ -1097,6 +1151,24 @@ func (x *padlockSlotOpenSessionServer) Send(m *SlotOpenSessionUpdate) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Padlock_SessionClose_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionCloseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).SessionClose(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/SessionClose",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).SessionClose(ctx, req.(*SessionCloseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Padlock_SessionLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SessionLoginRequest)
 	if err := dec(in); err != nil {
@@ -1202,6 +1274,10 @@ var _Padlock_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SlotInitToken",
 			Handler:    _Padlock_SlotInitToken_Handler,
+		},
+		{
+			MethodName: "SessionClose",
+			Handler:    _Padlock_SessionClose_Handler,
 		},
 		{
 			MethodName: "SessionLogin",

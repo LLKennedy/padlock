@@ -289,7 +289,31 @@ func (h *handle) SlotOpenSession(req *padlockpb.SlotOpenSessionRequest, stream p
 		return err
 	}
 	log.Printf("Opening session for %s\n", id)
-	return h.UnimplementedExposedPadlockServer.GetSlotOpenSession(req, stream)
+	slot, err := h.getSlotByID(req.GetId().GetModule(), req.GetId().GetSlot())
+	if err != nil {
+		return err
+	}
+	session, err := slot.OpenSession()
+	if err != nil {
+		return status.Errorf(codes.Aborted, "opening session: %v", err)
+	}
+	sessID := uuid.New().String()
+	h.sessionMx.Lock()
+	h.sessions[sessID] = session
+	h.sessionAuth[sessID] = id.String()
+	h.sessionMx.Unlock()
+	err = stream.Send(&padlockpb.SlotOpenSessionUpdate{
+		Update: &padlockpb.SlotOpenSessionUpdate_Uuid{
+			Uuid: sessID,
+		},
+	})
+	if err != nil {
+		return status.Errorf(codes.Aborted, "could not return session ID to client: %v", err)
+	}
+	// TODO: hold stream open and give updates on login state changes
+	// For now, wait forever
+	<-make(chan struct{})
+	return nil
 }
 
 // SessionLogin logs into the session at the application level
@@ -331,3 +355,5 @@ func (h *handle) ObjectListAttributeValues(req *padlockpb.ObjectListAttributeVal
 	log.Printf("Listing attribute values for %s\n", id)
 	return h.UnimplementedExposedPadlockServer.GetObjectListAttributeValues(req, stream)
 }
+
+// FIXME: close session endpoint

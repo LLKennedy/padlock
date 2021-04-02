@@ -15,6 +15,7 @@ import (
 	"os"
 	"runtime/debug"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/LLKennedy/mercury"
@@ -23,6 +24,7 @@ import (
 	"github.com/LLKennedy/padlock/api/padlockpb"
 	"github.com/LLKennedy/padlock/padlocklib"
 	"github.com/google/uuid"
+	"github.com/miekg/pkcs11/p11"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
@@ -33,11 +35,14 @@ import (
 type handle struct {
 	padlockpb.UnimplementedExposedPadlockServer
 	padlockpb.UnimplementedPadlockServer
-	app      *padlocklib.Application
-	authkey  []byte
-	authData []byte
+	app       *padlocklib.Application
+	authkey   []byte
+	authData  []byte
+	sessionMx *sync.RWMutex
 	// Map session IDs to auth token IDs
-	sessions map[string]string
+	sessionAuth map[string]string
+	// Map session IDs to session handles
+	sessions map[string]p11.Session
 }
 
 // Config is the config for the server
@@ -63,10 +68,12 @@ func Serve(cfg Config) error {
 		return fmt.Errorf("generating auth data: %v", err)
 	}
 	h := &handle{
-		app:      padlocklib.NewApplication(),
-		authkey:  keyData,
-		authData: authData,
-		sessions: make(map[string]string, 1),
+		app:         padlocklib.NewApplication(),
+		authkey:     keyData,
+		authData:    authData,
+		sessionMx:   &sync.RWMutex{},
+		sessionAuth: make(map[string]string, 1),
+		sessions:    make(map[string]p11.Session, 1),
 	}
 	if cfg.FS == nil {
 		cfg.FS = os.DirFS("")
