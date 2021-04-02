@@ -203,7 +203,8 @@ message SessionLogoutResponse {
 }
 
 message SessionListObjectsRequest {
-	repeated Attribute template = 1;
+	SessionID id = 1;
+	repeated Attribute template = 2;
 }
 
 message ObjectID {

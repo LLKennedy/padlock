@@ -7,7 +7,7 @@
  */
 
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
-import { ModuleInfo as padlock__ModuleInfo, SlotInfo as padlock__SlotInfo, Mechanism as padlock__Mechanism, Attribute as padlock__Attribute } from "./pkcs11";
+import { SlotInfo as padlock__SlotInfo, ModuleInfo as padlock__ModuleInfo, Mechanism as padlock__Mechanism, Attribute as padlock__Attribute } from "./pkcs11";
 import { AttributeType as padlock__AttributeType } from "./attributes";
 
 /** A message */
@@ -406,15 +406,19 @@ export class SessionLogoutResponse extends Object implements tsjson.ProtoJSONCom
 /** A message */
 export class SessionListObjectsRequest extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
+	public id?: SessionID;
+	/** A field */
 	public template?: padlock__Attribute[];
 	public ToProtoJSON(): Object {
 		return {
+			id: this.id?.ToProtoJSON(),
 			template: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.template),
 		};
 	}
 	public static async Parse(data: any): Promise<SessionListObjectsRequest> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new SessionListObjectsRequest();
+		res.id = await tsjson.Parse.Message(objData, "id", "id", SessionID.Parse);
 		res.template = await tsjson.Parse.Repeated(objData, "template", "template", padlock__Attribute.Parse);
 		return res;
 	}

@@ -94,41 +94,81 @@ func (h *handle) ApplicationConnect(req *padlockpb.ApplicationConnectRequest, st
 
 // ModuleListSlots lists the slots on a module
 func (h *handle) ModuleListSlots(ctx context.Context, req *padlockpb.ModuleListSlotsRequest) (*padlockpb.ModuleListSlotsResponse, error) {
+	id, err := h.authenticate(req.GetAuth())
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Listing slots for %s\n", id)
 	return h.UnimplementedExposedPadlockServer.GetModuleListSlots(ctx, req)
 }
 
 // ModuleInfo gets info for a specific module
 func (h *handle) ModuleInfo(ctx context.Context, req *padlockpb.ModuleInfoRequest) (*padlockpb.ModuleInfoResponse, error) {
+	id, err := h.authenticate(req.GetAuth())
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Getting module info for %s\n", id)
 	return h.UnimplementedExposedPadlockServer.GetModuleInfo(ctx, req)
 }
 
 // SlotListMechanisms lists the mechanisms available on a slot
 func (h *handle) SlotListMechanisms(ctx context.Context, req *padlockpb.SlotListMechanismsRequest) (*padlockpb.SlotListMechanismsResponse, error) {
+	id, err := h.authenticate(req.GetId().GetAuth())
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Listing slot mechanisms for %s\n", id)
 	return h.UnimplementedExposedPadlockServer.GetSlotListMechanisms(ctx, req)
 }
 
 // SlotInitToken creates the token in the slot
 func (h *handle) SlotInitToken(ctx context.Context, req *padlockpb.SlotInitTokenRequest) (*padlockpb.SlotInitTokenResponse, error) {
+	id, err := h.authenticate(req.GetId().GetAuth())
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Initialising slot token for %s\n", id)
 	return h.UnimplementedExposedPadlockServer.PostSlotInitToken(ctx, req)
 }
 
 // SlotOpenSession creates a session on the slot
 func (h *handle) SlotOpenSession(req *padlockpb.SlotOpenSessionRequest, stream padlockpb.Padlock_SlotOpenSessionServer) error {
+	id, err := h.authenticate(req.GetId().GetAuth())
+	if err != nil {
+		return err
+	}
+	log.Printf("Opening session for %s\n", id)
 	return h.UnimplementedExposedPadlockServer.GetSlotOpenSession(req, stream)
 }
 
 // SessionLogin logs into the session at the application level
 func (h *handle) SessionLogin(ctx context.Context, req *padlockpb.SessionLoginRequest) (*padlockpb.SessionLoginResponse, error) {
+	id, err := h.authenticate(req.GetId().GetAuth())
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Logging into session for %s\n", id)
 	return h.UnimplementedExposedPadlockServer.PutSessionLogin(ctx, req)
 }
 
 // SessionLogout logs out of the session at the application level
 func (h *handle) SessionLogout(ctx context.Context, req *padlockpb.SessionID) (*padlockpb.SessionLogoutResponse, error) {
+	id, err := h.authenticate(req.GetSlot().GetAuth())
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Logging out of session for %s\n", id)
 	return h.UnimplementedExposedPadlockServer.PutSessionLogout(ctx, req)
 }
 
 // SessionListObjects lists the objects available in the session
 func (h *handle) SessionListObjects(req *padlockpb.SessionListObjectsRequest, stream padlockpb.Padlock_SessionListObjectsServer) error {
+	// id, err := h.authenticate(req.Get)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// log.Printf("Logging into session for %s\n", id)
 	return h.UnimplementedExposedPadlockServer.GetSessionListObjects(req, stream)
 }
 
