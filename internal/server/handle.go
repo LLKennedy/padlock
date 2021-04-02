@@ -2,6 +2,9 @@ package server
 
 import (
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
@@ -10,6 +13,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -20,14 +24,20 @@ import (
 	"github.com/LLKennedy/padlock/padlocklib"
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/status"
 )
 
 // handle is a handle to the Server object
 type handle struct {
 	padlockpb.UnimplementedExposedPadlockServer
 	padlockpb.UnimplementedPadlockServer
-	app *padlocklib.Application
+	app      *padlocklib.Application
+	authkey  []byte
+	authData []byte
+	// Map session IDs to auth token IDs
+	sessions map[string]string
 }
 
 // Config is the config for the server
@@ -42,8 +52,21 @@ type Config struct {
 
 // Serve creates a new server handle and starts serving traffic
 func Serve(cfg Config) error {
+	keyData := make([]byte, 32)
+	_, err := rand.Read(keyData)
+	if err != nil {
+		return fmt.Errorf("generating auth key: %v", err)
+	}
+	authData := make([]byte, 16)
+	_, err = rand.Read(authData)
+	if err != nil {
+		return fmt.Errorf("generating auth data: %v", err)
+	}
 	h := &handle{
-		app: padlocklib.NewApplication(),
+		app:      padlocklib.NewApplication(),
+		authkey:  keyData,
+		authData: authData,
+		sessions: make(map[string]string, 1),
 	}
 	if cfg.FS == nil {
 		cfg.FS = os.DirFS("")
@@ -165,10 +188,55 @@ func Serve(cfg Config) error {
 
 // UnaryInterceptor intercepts Unary RPCs
 func (h *handle) UnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
-	return handler(ctx, req)
+	methodName := "(unknown method name)"
+	defer func() {
+		if r := recover(); r != nil {
+			err = status.Errorf(codes.Internal, "caught panic in unary call %s: %v", methodName, r)
+			log.Printf("stack trace: %s\n", debug.Stack())
+		}
+	}()
+	methodName = info.FullMethod
+	log.Printf("%s: method called\n", methodName)
+	resp, err = handler(ctx, req)
+	_, ok := status.FromError(err)
+	if ok {
+		return
+	}
+	err = status.Errorf(codes.Internal, "endpoint %s returned with non-RPC error: %v", err)
+	return
 }
 
 // StreamInterceptor intercepts Stream RPCs
-func (h *handle) StreamInterceptor(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-	return handler(srv, ss)
+func (h *handle) StreamInterceptor(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
+	methodName := "(unknown method name)"
+	defer func() {
+		if r := recover(); r != nil {
+			err = status.Errorf(codes.Internal, "caught panic in unary call %s: %v", methodName, r)
+			log.Printf("stack trace: %s\n", debug.Stack())
+		}
+	}()
+	methodName = info.FullMethod
+	log.Printf("%s: method called\n", methodName)
+	err = handler(srv, ss)
+	_, ok := status.FromError(err)
+	if ok {
+		return
+	}
+	err = status.Errorf(codes.Internal, "endpoint %s returned with non-RPC error: %v", err)
+	return
+}
+
+func (h *handle) getGCM() cipher.AEAD {
+	if h == nil || h.authkey == nil {
+		return nil
+	}
+	key, err := aes.NewCipher(h.authkey)
+	if err != nil {
+		log.Printf("Could not get AES key as cipher block: %v\n", err)
+	}
+	crypt, err := cipher.NewGCM(key)
+	if err != nil {
+		log.Printf("Could not get AES key as GCM: %v\n", err)
+	}
+	return crypt
 }

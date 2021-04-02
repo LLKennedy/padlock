@@ -2,17 +2,49 @@ package server
 
 import (
 	"context"
+	"crypto/rand"
 	"log"
 
 	"github.com/LLKennedy/padlock/api/padlockpb"
 	"github.com/LLKennedy/padlock/padlocklib"
+	"github.com/google/uuid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Hello initiates a session with the application, generating an authentication token
 func (h *handle) Hello(ctx context.Context, req *padlockpb.AuthHello) (*padlockpb.AuthToken, error) {
+	id := uuid.New()
+	gcm := h.getGCM()
+	nonce := make([]byte, gcm.NonceSize())
+	_, err := rand.Read(nonce)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to generate nonce: %v", err)
+	}
+	encrypted := gcm.Seal(nil, nonce, []byte(id.String()), h.authData)
 	return &padlockpb.AuthToken{
-		Data: []byte("test"),
+		Data: append(nonce, encrypted...),
 	}, nil
+}
+
+func (h *handle) authenticate(auth *padlockpb.AuthToken) (id uuid.UUID, err error) {
+	gcm := h.getGCM()
+	if len(auth.GetData()) <= gcm.NonceSize() {
+		err = status.Error(codes.Unauthenticated, "insufficient auth data provided")
+		return
+	}
+	nonce := auth.GetData()[:gcm.NonceSize()]
+	data := auth.GetData()[gcm.NonceSize():]
+	decrypted, decryptErr := gcm.Open(nil, nonce, data, h.authData)
+	if decryptErr != nil {
+		err = status.Errorf(codes.Unauthenticated, "failed to decrypt auth data: %v", decryptErr)
+		return
+	}
+	id, err = uuid.ParseBytes(decrypted)
+	if err != nil {
+		err = status.Errorf(codes.Unauthenticated, "could not parse decrypted auth data as UUID: %v", err)
+	}
+	return
 }
 
 // ApplicationListModules lists modules already connected to the application
