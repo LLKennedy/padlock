@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"crypto/rand"
+	"log"
 
 	"github.com/LLKennedy/padlock/api/padlockpb"
 	"github.com/google/uuid"
@@ -52,6 +53,11 @@ func (h *handle) ApplicationListModules(ctx context.Context, req *padlockpb.Appl
 
 // ApplicationConnect connects a new module to the application
 func (h *handle) ApplicationConnect(req *padlockpb.ApplicationConnectRequest, stream padlockpb.Padlock_ApplicationConnectServer) error {
+	id, err := h.authenticate(req.GetAuth())
+	if err != nil {
+		return err
+	}
+	log.Printf("Connecting for %s\n", id)
 	module, err := h.app.Connect(req.GetModule())
 	if err != nil {
 		return status.Errorf(codes.NotFound, "connecting to module: %v", err)
@@ -108,7 +114,7 @@ func (h *handle) SlotInitToken(ctx context.Context, req *padlockpb.SlotInitToken
 
 // SlotOpenSession creates a session on the slot
 func (h *handle) SlotOpenSession(req *padlockpb.SlotOpenSessionRequest, stream padlockpb.Padlock_SlotOpenSessionServer) error {
-	return h.UnimplementedExposedPadlockServer.PostSlotOpenSession(req, stream)
+	return h.UnimplementedExposedPadlockServer.GetSlotOpenSession(req, stream)
 }
 
 // SessionLogin logs into the session at the application level
