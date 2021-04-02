@@ -3,10 +3,14 @@ package server
 import (
 	"context"
 	"crypto/rand"
+	"encoding/binary"
 	"log"
+	"reflect"
 
 	"github.com/LLKennedy/padlock/api/padlockpb"
 	"github.com/google/uuid"
+	"github.com/miekg/pkcs11"
+	"github.com/miekg/pkcs11/p11"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -64,7 +68,7 @@ func (h *handle) ApplicationConnect(req *padlockpb.ApplicationConnectRequest, st
 	}
 	info, err := module.Info()
 	if err != nil {
-		return status.Errorf(codes.NotFound, "listing slots on module: %v", err)
+		return status.Errorf(codes.Aborted, "listing slots on module: %v", err)
 	}
 	err = stream.Send(&padlockpb.ApplicationConnectUpdate{
 		Update: &padlockpb.ApplicationConnectUpdate_Info{
@@ -180,7 +184,7 @@ func (h *handle) ModuleInfo(ctx context.Context, req *padlockpb.ModuleInfoReques
 	}
 	info, err := module.Info()
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "listing slots on module: %v", err)
+		return nil, status.Errorf(codes.Aborted, "listing slots on module: %v", err)
 	}
 	parsedInfo := &padlockpb.ModuleInfo{
 		CryptokiVersion: &padlockpb.Version{
@@ -200,6 +204,31 @@ func (h *handle) ModuleInfo(ctx context.Context, req *padlockpb.ModuleInfoReques
 	}, nil
 }
 
+func (h *handle) getSlotByID(module string, id uint64) (slot p11.Slot, err error) {
+	m, exists := h.app.Modules[module]
+	if !exists {
+		err = status.Errorf(codes.NotFound, "no module for path %s")
+		return
+	}
+	slots, err := m.Slots()
+	if err != nil {
+		err = status.Errorf(codes.Aborted, "listing slots: %v", err)
+		return
+	}
+	for _, slot = range slots {
+		if id == uint64(slot.ID()) {
+			return
+		}
+	}
+	err = status.Errorf(codes.NotFound, "no slot found with ID %d", id)
+	return
+}
+
+type localMechanism struct {
+	mechanism *pkcs11.Mechanism
+	slot      p11.Slot
+}
+
 // SlotListMechanisms lists the mechanisms available on a slot
 func (h *handle) SlotListMechanisms(ctx context.Context, req *padlockpb.SlotListMechanismsRequest) (*padlockpb.SlotListMechanismsResponse, error) {
 	id, err := h.authenticate(req.GetId().GetAuth())
@@ -207,6 +236,31 @@ func (h *handle) SlotListMechanisms(ctx context.Context, req *padlockpb.SlotList
 		return nil, err
 	}
 	log.Printf("Listing slot mechanisms for %s\n", id)
+	slot, err := h.getSlotByID(req.GetId().GetModule(), req.GetId().GetSlot())
+	if err != nil {
+		return nil, err
+	}
+	mechanisms, err := slot.Mechanisms()
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "listing mechanisms: %v", err)
+	}
+	res := &padlockpb.SlotListMechanismsResponse{}
+	for _, mechanism := range mechanisms {
+		innerMech, _ := reflect.ValueOf(mechanism).FieldByName("mechanism").Interface().(*pkcs11.Mechanism)
+		info, err := mechanism.Info()
+		if err != nil {
+			return nil, status.Errorf(codes.Aborted, "getting mechanism info: %v", err)
+		}
+		flagData := make([]byte, 8)
+		binary.BigEndian.PutUint64(flagData, uint64(info.Flags))
+		newMech := &padlockpb.Mechanism{
+			Type:       MechanismP11toPB(innerMech.Mechanism),
+			MinKeySize: uint64(info.MinKeySize),
+			MaxKeySize: uint64(info.MaxKeySize),
+			Flags:      flagData, // TODO: trim this data down to size
+		}
+		res.Mechanisms = append(res.Mechanisms, newMech)
+	}
 	return h.UnimplementedExposedPadlockServer.GetSlotListMechanisms(ctx, req)
 }
 
@@ -217,7 +271,15 @@ func (h *handle) SlotInitToken(ctx context.Context, req *padlockpb.SlotInitToken
 		return nil, err
 	}
 	log.Printf("Initialising slot token for %s\n", id)
-	return h.UnimplementedExposedPadlockServer.PostSlotInitToken(ctx, req)
+	slot, err := h.getSlotByID(req.GetId().GetModule(), req.GetId().GetSlot())
+	if err != nil {
+		return nil, err
+	}
+	err = slot.InitToken(req.GetSecurityOfficerPin(), req.GetTokenLabel())
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "initialising token: %v", err)
+	}
+	return &padlockpb.SlotInitTokenResponse{}, nil
 }
 
 // SlotOpenSession creates a session on the slot
