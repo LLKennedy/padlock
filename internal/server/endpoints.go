@@ -10,7 +10,9 @@ import (
 
 // Hello initiates a session with the application, generating an authentication token
 func (h *handle) Hello(ctx context.Context, req *padlockpb.AuthHello) (*padlockpb.AuthToken, error) {
-	return h.UnimplementedExposedPadlockServer.PostHello(ctx, req)
+	return &padlockpb.AuthToken{
+		Data: []byte("test"),
+	}, nil
 }
 
 // ApplicationListModules lists modules already connected to the application
