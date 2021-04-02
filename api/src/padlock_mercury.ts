@@ -7,8 +7,8 @@
  */
 
 import * as mercury from "@llkennedy/mercury";
-import { SessionLogoutResponse as padlock__SessionLogoutResponse, SlotOpenSessionRequest as padlock__SlotOpenSessionRequest, SessionLoginRequest as padlock__SessionLoginRequest, ModuleInfoRequest as padlock__ModuleInfoRequest, ModuleInfoResponse as padlock__ModuleInfoResponse, SlotInitTokenResponse as padlock__SlotInitTokenResponse, SessionID as padlock__SessionID, ModuleListSlotsRequest as padlock__ModuleListSlotsRequest, SessionListObjectsRequest as padlock__SessionListObjectsRequest, ModuleListSlotsResponse as padlock__ModuleListSlotsResponse, ApplicationListModulesRequest as padlock__ApplicationListModulesRequest, SlotInitTokenRequest as padlock__SlotInitTokenRequest, AuthHello as padlock__AuthHello, SlotListMechanismsRequest as padlock__SlotListMechanismsRequest, SlotListMechanismsResponse as padlock__SlotListMechanismsResponse, SlotOpenSessionUpdate as padlock__SlotOpenSessionUpdate, AuthToken as padlock__AuthToken, ApplicationConnectUpdate as padlock__ApplicationConnectUpdate, ApplicationListModulesResponse as padlock__ApplicationListModulesResponse, SessionLoginResponse as padlock__SessionLoginResponse, ApplicationConnectRequest as padlock__ApplicationConnectRequest, ObjectListAttributeValuesRequest as padlock__ObjectListAttributeValuesRequest } from "padlock";
-import { Object as padlock__Object, Attribute as padlock__Attribute } from "pkcs11";
+import { SlotOpenSessionRequest as padlock__SlotOpenSessionRequest, ObjectListAttributeValuesRequest as padlock__ObjectListAttributeValuesRequest, ModuleListSlotsResponse as padlock__ModuleListSlotsResponse, AuthToken as padlock__AuthToken, SlotInitTokenRequest as padlock__SlotInitTokenRequest, ModuleInfoRequest as padlock__ModuleInfoRequest, ApplicationListModulesRequest as padlock__ApplicationListModulesRequest, SessionLoginResponse as padlock__SessionLoginResponse, SessionListObjectsRequest as padlock__SessionListObjectsRequest, SlotInitTokenResponse as padlock__SlotInitTokenResponse, ApplicationListModulesResponse as padlock__ApplicationListModulesResponse, ApplicationConnectUpdate as padlock__ApplicationConnectUpdate, ApplicationConnectRequest as padlock__ApplicationConnectRequest, SessionID as padlock__SessionID, ModuleInfoResponse as padlock__ModuleInfoResponse, SlotOpenSessionUpdate as padlock__SlotOpenSessionUpdate, ModuleListSlotsRequest as padlock__ModuleListSlotsRequest, SlotListMechanismsRequest as padlock__SlotListMechanismsRequest, SlotListMechanismsResponse as padlock__SlotListMechanismsResponse, SessionLoginRequest as padlock__SessionLoginRequest, AuthHello as padlock__AuthHello, SessionLogoutResponse as padlock__SessionLogoutResponse } from "./padlock";
+import { P11Object as padlock__P11Object, Attribute as padlock__Attribute } from "./pkcs11";
 
 export class PadlockClient extends mercury.Client {
 	constructor(basePath: string | undefined = "localhost/api/Padlock", useTLS: boolean | undefined = true, client: mercury.AxiosInstance | undefined = undefined) {
@@ -44,8 +44,8 @@ export class PadlockClient extends mercury.Client {
 	public async SessionLogout(req: padlock__SessionID): Promise<padlock__SessionLogoutResponse> {
 		return this.SendUnary("SessionLogout", mercury.HTTPMethod.PUT, req, padlock__SessionLogoutResponse.Parse);
 	}
-	public async SessionListObjects(req: padlock__SessionListObjectsRequest): Promise<mercury.ServerStream<padlock__SessionListObjectsRequest, padlock__Object>> {
-		return this.StartServerStream<padlock__SessionListObjectsRequest, padlock__Object>("SessionListObjects", req, padlock__Object.Parse);
+	public async SessionListObjects(req: padlock__SessionListObjectsRequest): Promise<mercury.ServerStream<padlock__SessionListObjectsRequest, padlock__P11Object>> {
+		return this.StartServerStream<padlock__SessionListObjectsRequest, padlock__P11Object>("SessionListObjects", req, padlock__P11Object.Parse);
 	}
 	public async ObjectListAttributeValues(req: padlock__ObjectListAttributeValuesRequest): Promise<mercury.ServerStream<padlock__ObjectListAttributeValuesRequest, padlock__Attribute>> {
 		return this.StartServerStream<padlock__ObjectListAttributeValuesRequest, padlock__Attribute>("ObjectListAttributeValues", req, padlock__Attribute.Parse);

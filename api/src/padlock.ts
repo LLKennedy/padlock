@@ -7,8 +7,8 @@
  */
 
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
-import { ModuleInfo as padlock__ModuleInfo, SlotInfo as padlock__SlotInfo, Mechanism as padlock__Mechanism, Attribute as padlock__Attribute } from "pkcs11";
-import { AttributeType as padlock__AttributeType } from "attributes";
+import { ModuleInfo as padlock__ModuleInfo, Attribute as padlock__Attribute, SlotInfo as padlock__SlotInfo, Mechanism as padlock__Mechanism } from "./pkcs11";
+import { AttributeType as padlock__AttributeType } from "./attributes";
 
 /** A message */
 export class AuthHello extends Object implements tsjson.ProtoJSONCompatible {
@@ -69,7 +69,7 @@ export class ApplicationListModulesResponse extends Object implements tsjson.Pro
 	public static async Parse(data: any): Promise<ApplicationListModulesResponse> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new ApplicationListModulesResponse();
-		res.modules = await tsjson.Parse.Map(objData, "modules", "modules", async val => val, async val => tsjson.Parse.Message({"value":val}, "value", "value", padlock__ModuleInfo.Parse));
+		res.modules = await tsjson.Parse.Map(objData, "modules", "modules", async val => val, async val => tsjson.Parse.Message({ "value": val }, "value", "value", padlock__ModuleInfo.Parse));
 		return res;
 	}
 }

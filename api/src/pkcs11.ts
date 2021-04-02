@@ -7,8 +7,8 @@
  */
 
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
-import { AttributeType as padlock__AttributeType } from "attributes";
-import { MechanismType as padlock__MechanismType } from "mechanisms";
+import { MechanismType as padlock__MechanismType } from "./mechanisms";
+import { AttributeType as padlock__AttributeType } from "./attributes";
 
 /** A message */
 export class ModuleInfo extends Object implements tsjson.ProtoJSONCompatible {
@@ -241,7 +241,7 @@ export class Attribute extends Object implements tsjson.ProtoJSONCompatible {
 }
 
 /** A message */
-export class Object extends Object implements tsjson.ProtoJSONCompatible {
+export class P11Object extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
 	public label?: string;
 	/** A field */
@@ -252,9 +252,9 @@ export class Object extends Object implements tsjson.ProtoJSONCompatible {
 			uuid: tsjson.ToProtoJSON.String(this.uuid),
 		};
 	}
-	public static async Parse(data: any): Promise<Object> {
+	public static async Parse(data: any): Promise<P11Object> {
 		let objData: Object = tsjson.AnyToObject(data);
-		let res = new Object();
+		let res = new P11Object();
 		res.label = await tsjson.Parse.String(objData, "label", "label");
 		res.uuid = await tsjson.Parse.String(objData, "uuid", "uuid");
 		return res;

@@ -67,7 +67,7 @@ message Attribute {
 	bytes value = 2;
 }
 
-message Object {
+message P11Object {
 	string label = 1;
 	string uuid = 2;
 }

@@ -203,7 +203,7 @@ func (c *padlockClient) GetSessionListObjects(ctx context.Context, in *SessionLi
 }
 
 type Padlock_GetSessionListObjectsClient interface {
-	Recv() (*Object, error)
+	Recv() (*P11Object, error)
 	grpc.ClientStream
 }
 
@@ -211,8 +211,8 @@ type padlockGetSessionListObjectsClient struct {
 	grpc.ClientStream
 }
 
-func (x *padlockGetSessionListObjectsClient) Recv() (*Object, error) {
-	m := new(Object)
+func (x *padlockGetSessionListObjectsClient) Recv() (*P11Object, error) {
+	m := new(P11Object)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -530,7 +530,7 @@ func _Padlock_GetSessionListObjects_Handler(srv interface{}, stream grpc.ServerS
 }
 
 type Padlock_GetSessionListObjectsServer interface {
-	Send(*Object) error
+	Send(*P11Object) error
 	grpc.ServerStream
 }
 
@@ -538,7 +538,7 @@ type padlockGetSessionListObjectsServer struct {
 	grpc.ServerStream
 }
 
-func (x *padlockGetSessionListObjectsServer) Send(m *Object) error {
+func (x *padlockGetSessionListObjectsServer) Send(m *P11Object) error {
 	return x.ServerStream.SendMsg(m)
 }
 

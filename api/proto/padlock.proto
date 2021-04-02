@@ -47,7 +47,7 @@ service Padlock {
 	// PutSessionLogout logs out of the session at the application level
 	rpc PutSessionLogout(SessionID) returns (SessionLogoutResponse);
 	// GetSessionListObjects lists the objects available in the session
-	rpc GetSessionListObjects(SessionListObjectsRequest) returns (stream Object);
+	rpc GetSessionListObjects(SessionListObjectsRequest) returns (stream P11Object);
 
 	// Object RPCs
 
