@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/LLKennedy/mercury"
+	"github.com/LLKennedy/mercury/httpapi"
 	"github.com/LLKennedy/mercury/logs"
 	"github.com/LLKennedy/padlock/api/padlockpb"
 	"github.com/LLKennedy/padlock/padlocklib"
@@ -23,6 +24,7 @@ import (
 
 // handle is a handle to the Server object
 type handle struct {
+	padlockpb.UnimplementedExposedPadlockServer
 	padlockpb.UnimplementedPadlockServer
 	app *padlocklib.Application
 }
@@ -89,47 +91,56 @@ func Serve(cfg Config) error {
 	mainCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	srv := grpc.NewServer(grpc.Creds(credentials.NewTLS(tlsConfig)), grpc.StreamInterceptor(h.StreamInterceptor), grpc.UnaryInterceptor(h.UnaryInterceptor))
-	proxySrv, err := mercury.NewServer(&padlockpb.UnimplementedPadlockServer{}, h, srv, true)
-	if err != nil {
-		return fmt.Errorf("creating mercury proxy: %v", err)
+	d := &dProxy{
+		srv: nil,
 	}
+	httpapi.RegisterExposedServiceServer(srv, d)
+	padlockpb.RegisterPadlockServer(srv, h)
 	errChan := make(chan error, 2)
 	go func() {
-		errChan <- proxySrv.Serve(grpcListener)
+		errChan <- srv.Serve(grpcListener)
 		cancel()
 	}()
 	var client *grpc.ClientConn
-	httpSrv := &http.Server{
-		Handler: http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			ctx, cancel := context.WithCancel(r.Context())
-			defer cancel()
-			go func() {
-				<-mainCtx.Done()
-				cancel()
-			}()
-			if client == nil {
-				http.Error(rw, "Server not read", http.StatusPreconditionFailed)
-			}
-			mercury.ProxyRequest(ctx, rw, r, r.URL.Path[1:], client, uuid.New().String(), logs.StdOutLogger{})
-		}),
-		TLSConfig: tlsConfig,
-	}
+	aborted := false
 	client, err = grpc.Dial(addr.String(), grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 	if err != nil {
 		log.Printf("First client connection attempt failed (%v), waiting for server startup...\n", err)
 		ticker := time.NewTicker(100 * time.Millisecond)
-	WAIT_LOOP:
-		for err != nil {
+		for err != nil && !aborted {
 			log.Printf("Client connection attempt failed: %v\n", err)
 			select {
 			case <-mainCtx.Done():
 				log.Println("Encountered error starting service(s) before getting client connection, aborting client connection")
-				break WAIT_LOOP
+				aborted = true
 			case <-ticker.C:
 				client, err = grpc.Dial(addr.String(), grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 			}
 		}
 		ticker.Stop()
+	}
+	var httpSrv *http.Server
+	if !aborted {
+		real, err := mercury.NewServer(&padlockpb.UnimplementedExposedPadlockServer{}, padlockpb.NewPadlockClient(client), srv, false)
+		if err != nil {
+			return fmt.Errorf("creating mercury proxy: %v", err)
+		}
+		d.srv = real
+		httpSrv = &http.Server{
+			Handler: http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+				ctx, cancel := context.WithCancel(r.Context())
+				defer cancel()
+				go func() {
+					<-mainCtx.Done()
+					cancel()
+				}()
+				if client == nil {
+					http.Error(rw, "Server not read", http.StatusPreconditionFailed)
+				}
+				mercury.ProxyRequest(ctx, rw, r, r.URL.Path[1:], client, uuid.New().String(), logs.StdOutLogger{})
+			}),
+			TLSConfig: tlsConfig,
+		}
 	}
 	go func() {
 		errChan <- httpSrv.Serve(httpListener)
