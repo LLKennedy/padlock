@@ -9,6 +9,7 @@ option (tsjson.npm_package) = "@llkdemo/padlock";
 option (tsjson.import_path) = "padlock";
 
 import "pkcs11.proto";
+import "attributes.proto";
 
 service Padlock {
 	// Auth RPCs
@@ -25,10 +26,33 @@ service Padlock {
 
 	// Module RPCs
 
-	// PostModuleListSlots
-	rpc PostModuleListSlots(ModuleListSlotsRequest) returns (ModuleListSlotsResponse);
+	// GetModuleListSlots lists the slots on a module
+	rpc GetModuleListSlots(ModuleListSlotsRequest) returns (ModuleListSlotsResponse);
 	// GetModuleInfo gets info for a specific module
 	rpc GetModuleInfo(ModuleInfoRequest) returns (ModuleInfoResponse);
+
+	// Slot RPCs
+
+	// GetSlotListMechanisms lists the mechanisms available on a slot
+	rpc GetSlotListMechanisms(SlotListMechanismsRequest) returns (SlotListMechanismsResponse);
+	// PostSlotInitToken creates the token in the slot
+	rpc PostSlotInitToken(SlotInitTokenRequest) returns (SlotInitTokenResponse);
+	// PostSlotOpenSession creates a session on the slot
+	rpc PostSlotOpenSession(SlotOpenSessionRequest) returns (stream SlotOpenSessionUpdate);
+
+	// Session RPCs
+
+	// PutSessionLogin logs into the session at the application level
+	rpc PutSessionLogin(SessionLoginRequest) returns (SessionLoginResponse);
+	// PutSessionLogout logs out of the session at the application level
+	rpc PutSessionLogout(SessionID) returns (SessionLogoutResponse);
+	// GetSessionListObjects lists the objects available in the session
+	rpc GetSessionListObjects(SessionListObjectsRequest) returns (stream Object);
+
+	// Object RPCs
+
+	// GetObjectListAttributeValues lists values for the requested attributes
+	rpc GetObjectListAttributeValues(ObjectListAttributeValuesRequest) returns (stream Attribute);
 }
 
 message AuthHello {
@@ -55,8 +79,7 @@ message ApplicationConnectRequest {
 message ApplicationConnectUpdate {
 	oneof update {
 		ModuleInfo info = 1;
-		bool logged_in = 2;
-		ModuleListSlotsResponse changed_slots = 3;
+		ModuleListSlotsResponse changed_slots = 2;
 	}
 }
 
@@ -78,12 +101,74 @@ message ModuleListSlotsResponse {
 	repeated SlotInfo slots = 1;
 }
 
-message SlotListMechanismsRequest {
+message SlotID {
 	AuthToken auth = 1;
 	string module = 2;
 	uint64 slot = 3;
 }
 
+message SlotListMechanismsRequest {
+	SlotID id = 1;
+}
+
 message SlotListMechanismsResponse {
-	
+	repeated Mechanism mechanisms = 1;
+}
+
+message SlotInitTokenRequest {
+	SlotID id = 1;
+	string security_officer_pin = 2;
+	string token_label = 3;
+}
+
+message SlotInitTokenResponse {
+
+}
+
+message SlotOpenSessionRequest {
+	SlotID id = 1;
+	bool write_session = 2;
+}
+
+message SlotOpenSessionUpdate {
+	oneof update {
+		// First response must be this UUID
+		string uuid = 2;
+		// Further responses must not be UUID
+		bool logged_in = 1;
+	}
+}
+
+message SessionID {
+	SlotID slot = 1;
+	string uuid = 2;
+}
+
+message SessionLoginRequest {
+	SlotID id = 1;
+	string pin = 2;
+	bool login_as_security_officer = 3;
+}
+
+message SessionLoginResponse {
+
+}
+
+message SessionLogoutResponse {
+
+}
+
+message SessionListObjectsRequest {
+	repeated Attribute template = 1;
+}
+
+message ObjectID {
+	SessionID session = 1;
+	string uuid = 2;
+}
+
+message ObjectListAttributeValuesRequest {
+	ObjectID id = 1;
+	// True indicates it should be gathered before returning any other values
+	repeated AttributeType requested_attributes = 2;
 }

@@ -23,10 +23,24 @@ type PadlockClient interface {
 	GetApplicationListModules(ctx context.Context, in *ApplicationListModulesRequest, opts ...grpc.CallOption) (*ApplicationListModulesResponse, error)
 	// PostApplicationConnect connects a new module to the application
 	PostApplicationConnect(ctx context.Context, in *ApplicationConnectRequest, opts ...grpc.CallOption) (Padlock_PostApplicationConnectClient, error)
-	// PostModuleListSlots
-	PostModuleListSlots(ctx context.Context, in *ModuleListSlotsRequest, opts ...grpc.CallOption) (*ModuleListSlotsResponse, error)
+	// GetModuleListSlots lists the slots on a module
+	GetModuleListSlots(ctx context.Context, in *ModuleListSlotsRequest, opts ...grpc.CallOption) (*ModuleListSlotsResponse, error)
 	// GetModuleInfo gets info for a specific module
 	GetModuleInfo(ctx context.Context, in *ModuleInfoRequest, opts ...grpc.CallOption) (*ModuleInfoResponse, error)
+	// GetSlotListMechanisms lists the mechanisms available on a slot
+	GetSlotListMechanisms(ctx context.Context, in *SlotListMechanismsRequest, opts ...grpc.CallOption) (*SlotListMechanismsResponse, error)
+	// PostSlotInitToken creates the token in the slot
+	PostSlotInitToken(ctx context.Context, in *SlotInitTokenRequest, opts ...grpc.CallOption) (*SlotInitTokenResponse, error)
+	// PostSlotOpenSession creates a session on the slot
+	PostSlotOpenSession(ctx context.Context, in *SlotOpenSessionRequest, opts ...grpc.CallOption) (Padlock_PostSlotOpenSessionClient, error)
+	// PutSessionLogin logs into the session at the application level
+	PutSessionLogin(ctx context.Context, in *SessionLoginRequest, opts ...grpc.CallOption) (*SessionLoginResponse, error)
+	// PutSessionLogout logs out of the session at the application level
+	PutSessionLogout(ctx context.Context, in *SessionID, opts ...grpc.CallOption) (*SessionLogoutResponse, error)
+	// GetSessionListObjects lists the objects available in the session
+	GetSessionListObjects(ctx context.Context, in *SessionListObjectsRequest, opts ...grpc.CallOption) (Padlock_GetSessionListObjectsClient, error)
+	// GetObjectListAttributeValues lists values for the requested attributes
+	GetObjectListAttributeValues(ctx context.Context, in *ObjectListAttributeValuesRequest, opts ...grpc.CallOption) (Padlock_GetObjectListAttributeValuesClient, error)
 }
 
 type padlockClient struct {
@@ -87,9 +101,9 @@ func (x *padlockPostApplicationConnectClient) Recv() (*ApplicationConnectUpdate,
 	return m, nil
 }
 
-func (c *padlockClient) PostModuleListSlots(ctx context.Context, in *ModuleListSlotsRequest, opts ...grpc.CallOption) (*ModuleListSlotsResponse, error) {
+func (c *padlockClient) GetModuleListSlots(ctx context.Context, in *ModuleListSlotsRequest, opts ...grpc.CallOption) (*ModuleListSlotsResponse, error) {
 	out := new(ModuleListSlotsResponse)
-	err := c.cc.Invoke(ctx, "/padlock.Padlock/PostModuleListSlots", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/GetModuleListSlots", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -105,6 +119,138 @@ func (c *padlockClient) GetModuleInfo(ctx context.Context, in *ModuleInfoRequest
 	return out, nil
 }
 
+func (c *padlockClient) GetSlotListMechanisms(ctx context.Context, in *SlotListMechanismsRequest, opts ...grpc.CallOption) (*SlotListMechanismsResponse, error) {
+	out := new(SlotListMechanismsResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/GetSlotListMechanisms", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *padlockClient) PostSlotInitToken(ctx context.Context, in *SlotInitTokenRequest, opts ...grpc.CallOption) (*SlotInitTokenResponse, error) {
+	out := new(SlotInitTokenResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/PostSlotInitToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *padlockClient) PostSlotOpenSession(ctx context.Context, in *SlotOpenSessionRequest, opts ...grpc.CallOption) (Padlock_PostSlotOpenSessionClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Padlock_serviceDesc.Streams[1], "/padlock.Padlock/PostSlotOpenSession", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &padlockPostSlotOpenSessionClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Padlock_PostSlotOpenSessionClient interface {
+	Recv() (*SlotOpenSessionUpdate, error)
+	grpc.ClientStream
+}
+
+type padlockPostSlotOpenSessionClient struct {
+	grpc.ClientStream
+}
+
+func (x *padlockPostSlotOpenSessionClient) Recv() (*SlotOpenSessionUpdate, error) {
+	m := new(SlotOpenSessionUpdate)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *padlockClient) PutSessionLogin(ctx context.Context, in *SessionLoginRequest, opts ...grpc.CallOption) (*SessionLoginResponse, error) {
+	out := new(SessionLoginResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/PutSessionLogin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *padlockClient) PutSessionLogout(ctx context.Context, in *SessionID, opts ...grpc.CallOption) (*SessionLogoutResponse, error) {
+	out := new(SessionLogoutResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/PutSessionLogout", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *padlockClient) GetSessionListObjects(ctx context.Context, in *SessionListObjectsRequest, opts ...grpc.CallOption) (Padlock_GetSessionListObjectsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Padlock_serviceDesc.Streams[2], "/padlock.Padlock/GetSessionListObjects", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &padlockGetSessionListObjectsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Padlock_GetSessionListObjectsClient interface {
+	Recv() (*Object, error)
+	grpc.ClientStream
+}
+
+type padlockGetSessionListObjectsClient struct {
+	grpc.ClientStream
+}
+
+func (x *padlockGetSessionListObjectsClient) Recv() (*Object, error) {
+	m := new(Object)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *padlockClient) GetObjectListAttributeValues(ctx context.Context, in *ObjectListAttributeValuesRequest, opts ...grpc.CallOption) (Padlock_GetObjectListAttributeValuesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Padlock_serviceDesc.Streams[3], "/padlock.Padlock/GetObjectListAttributeValues", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &padlockGetObjectListAttributeValuesClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Padlock_GetObjectListAttributeValuesClient interface {
+	Recv() (*Attribute, error)
+	grpc.ClientStream
+}
+
+type padlockGetObjectListAttributeValuesClient struct {
+	grpc.ClientStream
+}
+
+func (x *padlockGetObjectListAttributeValuesClient) Recv() (*Attribute, error) {
+	m := new(Attribute)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // PadlockServer is the server API for Padlock service.
 // All implementations must embed UnimplementedPadlockServer
 // for forward compatibility
@@ -115,10 +261,24 @@ type PadlockServer interface {
 	GetApplicationListModules(context.Context, *ApplicationListModulesRequest) (*ApplicationListModulesResponse, error)
 	// PostApplicationConnect connects a new module to the application
 	PostApplicationConnect(*ApplicationConnectRequest, Padlock_PostApplicationConnectServer) error
-	// PostModuleListSlots
-	PostModuleListSlots(context.Context, *ModuleListSlotsRequest) (*ModuleListSlotsResponse, error)
+	// GetModuleListSlots lists the slots on a module
+	GetModuleListSlots(context.Context, *ModuleListSlotsRequest) (*ModuleListSlotsResponse, error)
 	// GetModuleInfo gets info for a specific module
 	GetModuleInfo(context.Context, *ModuleInfoRequest) (*ModuleInfoResponse, error)
+	// GetSlotListMechanisms lists the mechanisms available on a slot
+	GetSlotListMechanisms(context.Context, *SlotListMechanismsRequest) (*SlotListMechanismsResponse, error)
+	// PostSlotInitToken creates the token in the slot
+	PostSlotInitToken(context.Context, *SlotInitTokenRequest) (*SlotInitTokenResponse, error)
+	// PostSlotOpenSession creates a session on the slot
+	PostSlotOpenSession(*SlotOpenSessionRequest, Padlock_PostSlotOpenSessionServer) error
+	// PutSessionLogin logs into the session at the application level
+	PutSessionLogin(context.Context, *SessionLoginRequest) (*SessionLoginResponse, error)
+	// PutSessionLogout logs out of the session at the application level
+	PutSessionLogout(context.Context, *SessionID) (*SessionLogoutResponse, error)
+	// GetSessionListObjects lists the objects available in the session
+	GetSessionListObjects(*SessionListObjectsRequest, Padlock_GetSessionListObjectsServer) error
+	// GetObjectListAttributeValues lists values for the requested attributes
+	GetObjectListAttributeValues(*ObjectListAttributeValuesRequest, Padlock_GetObjectListAttributeValuesServer) error
 	mustEmbedUnimplementedPadlockServer()
 }
 
@@ -135,11 +295,32 @@ func (UnimplementedPadlockServer) GetApplicationListModules(context.Context, *Ap
 func (UnimplementedPadlockServer) PostApplicationConnect(*ApplicationConnectRequest, Padlock_PostApplicationConnectServer) error {
 	return status.Errorf(codes.Unimplemented, "method PostApplicationConnect not implemented")
 }
-func (UnimplementedPadlockServer) PostModuleListSlots(context.Context, *ModuleListSlotsRequest) (*ModuleListSlotsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PostModuleListSlots not implemented")
+func (UnimplementedPadlockServer) GetModuleListSlots(context.Context, *ModuleListSlotsRequest) (*ModuleListSlotsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetModuleListSlots not implemented")
 }
 func (UnimplementedPadlockServer) GetModuleInfo(context.Context, *ModuleInfoRequest) (*ModuleInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetModuleInfo not implemented")
+}
+func (UnimplementedPadlockServer) GetSlotListMechanisms(context.Context, *SlotListMechanismsRequest) (*SlotListMechanismsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSlotListMechanisms not implemented")
+}
+func (UnimplementedPadlockServer) PostSlotInitToken(context.Context, *SlotInitTokenRequest) (*SlotInitTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostSlotInitToken not implemented")
+}
+func (UnimplementedPadlockServer) PostSlotOpenSession(*SlotOpenSessionRequest, Padlock_PostSlotOpenSessionServer) error {
+	return status.Errorf(codes.Unimplemented, "method PostSlotOpenSession not implemented")
+}
+func (UnimplementedPadlockServer) PutSessionLogin(context.Context, *SessionLoginRequest) (*SessionLoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutSessionLogin not implemented")
+}
+func (UnimplementedPadlockServer) PutSessionLogout(context.Context, *SessionID) (*SessionLogoutResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutSessionLogout not implemented")
+}
+func (UnimplementedPadlockServer) GetSessionListObjects(*SessionListObjectsRequest, Padlock_GetSessionListObjectsServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetSessionListObjects not implemented")
+}
+func (UnimplementedPadlockServer) GetObjectListAttributeValues(*ObjectListAttributeValuesRequest, Padlock_GetObjectListAttributeValuesServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetObjectListAttributeValues not implemented")
 }
 func (UnimplementedPadlockServer) mustEmbedUnimplementedPadlockServer() {}
 
@@ -211,20 +392,20 @@ func (x *padlockPostApplicationConnectServer) Send(m *ApplicationConnectUpdate) 
 	return x.ServerStream.SendMsg(m)
 }
 
-func _Padlock_PostModuleListSlots_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Padlock_GetModuleListSlots_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ModuleListSlotsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PadlockServer).PostModuleListSlots(ctx, in)
+		return srv.(PadlockServer).GetModuleListSlots(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/padlock.Padlock/PostModuleListSlots",
+		FullMethod: "/padlock.Padlock/GetModuleListSlots",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PadlockServer).PostModuleListSlots(ctx, req.(*ModuleListSlotsRequest))
+		return srv.(PadlockServer).GetModuleListSlots(ctx, req.(*ModuleListSlotsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -247,6 +428,141 @@ func _Padlock_GetModuleInfo_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Padlock_GetSlotListMechanisms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SlotListMechanismsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).GetSlotListMechanisms(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/GetSlotListMechanisms",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).GetSlotListMechanisms(ctx, req.(*SlotListMechanismsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Padlock_PostSlotInitToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SlotInitTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).PostSlotInitToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/PostSlotInitToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).PostSlotInitToken(ctx, req.(*SlotInitTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Padlock_PostSlotOpenSession_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(SlotOpenSessionRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(PadlockServer).PostSlotOpenSession(m, &padlockPostSlotOpenSessionServer{stream})
+}
+
+type Padlock_PostSlotOpenSessionServer interface {
+	Send(*SlotOpenSessionUpdate) error
+	grpc.ServerStream
+}
+
+type padlockPostSlotOpenSessionServer struct {
+	grpc.ServerStream
+}
+
+func (x *padlockPostSlotOpenSessionServer) Send(m *SlotOpenSessionUpdate) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Padlock_PutSessionLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).PutSessionLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/PutSessionLogin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).PutSessionLogin(ctx, req.(*SessionLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Padlock_PutSessionLogout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).PutSessionLogout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/PutSessionLogout",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).PutSessionLogout(ctx, req.(*SessionID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Padlock_GetSessionListObjects_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(SessionListObjectsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(PadlockServer).GetSessionListObjects(m, &padlockGetSessionListObjectsServer{stream})
+}
+
+type Padlock_GetSessionListObjectsServer interface {
+	Send(*Object) error
+	grpc.ServerStream
+}
+
+type padlockGetSessionListObjectsServer struct {
+	grpc.ServerStream
+}
+
+func (x *padlockGetSessionListObjectsServer) Send(m *Object) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Padlock_GetObjectListAttributeValues_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ObjectListAttributeValuesRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(PadlockServer).GetObjectListAttributeValues(m, &padlockGetObjectListAttributeValuesServer{stream})
+}
+
+type Padlock_GetObjectListAttributeValuesServer interface {
+	Send(*Attribute) error
+	grpc.ServerStream
+}
+
+type padlockGetObjectListAttributeValuesServer struct {
+	grpc.ServerStream
+}
+
+func (x *padlockGetObjectListAttributeValuesServer) Send(m *Attribute) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 var _Padlock_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "padlock.Padlock",
 	HandlerType: (*PadlockServer)(nil),
@@ -260,18 +576,49 @@ var _Padlock_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Padlock_GetApplicationListModules_Handler,
 		},
 		{
-			MethodName: "PostModuleListSlots",
-			Handler:    _Padlock_PostModuleListSlots_Handler,
+			MethodName: "GetModuleListSlots",
+			Handler:    _Padlock_GetModuleListSlots_Handler,
 		},
 		{
 			MethodName: "GetModuleInfo",
 			Handler:    _Padlock_GetModuleInfo_Handler,
+		},
+		{
+			MethodName: "GetSlotListMechanisms",
+			Handler:    _Padlock_GetSlotListMechanisms_Handler,
+		},
+		{
+			MethodName: "PostSlotInitToken",
+			Handler:    _Padlock_PostSlotInitToken_Handler,
+		},
+		{
+			MethodName: "PutSessionLogin",
+			Handler:    _Padlock_PutSessionLogin_Handler,
+		},
+		{
+			MethodName: "PutSessionLogout",
+			Handler:    _Padlock_PutSessionLogout_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "PostApplicationConnect",
 			Handler:       _Padlock_PostApplicationConnect_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "PostSlotOpenSession",
+			Handler:       _Padlock_PostSlotOpenSession_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetSessionListObjects",
+			Handler:       _Padlock_GetSessionListObjects_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetObjectListAttributeValues",
+			Handler:       _Padlock_GetObjectListAttributeValues_Handler,
 			ServerStreams: true,
 		},
 	},

@@ -9,6 +9,7 @@ option (tsjson.import_path) = "pkcs11";
 option go_package = "github.com/LLKennedy/padlock/padlockpb";
 
 import "mechanisms.proto";
+import "attributes.proto";
 
 message ModuleInfo {
 	Version cryptoki_version = 1;
@@ -56,4 +57,17 @@ message Version {
 
 message Mechanism {
 	MechanismType type = 1;
+	uint64 min_key_size = 2;
+	uint64 max_key_size = 3;
+	bytes flags = 4;
+}
+
+message Attribute {
+	AttributeType type = 1;
+	bytes value = 2;
+}
+
+message Object {
+	string label = 1;
+	string uuid = 2;
 }
