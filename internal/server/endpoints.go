@@ -164,15 +164,20 @@ func (h *handle) SessionLogout(ctx context.Context, req *padlockpb.SessionID) (*
 
 // SessionListObjects lists the objects available in the session
 func (h *handle) SessionListObjects(req *padlockpb.SessionListObjectsRequest, stream padlockpb.Padlock_SessionListObjectsServer) error {
-	// id, err := h.authenticate(req.Get)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// log.Printf("Logging into session for %s\n", id)
+	id, err := h.authenticate(req.GetId().GetSlot().GetAuth())
+	if err != nil {
+		return err
+	}
+	log.Printf("Listing objects for %s\n", id)
 	return h.UnimplementedExposedPadlockServer.GetSessionListObjects(req, stream)
 }
 
 // ObjectListAttributeValues lists values for the requested attributes
 func (h *handle) ObjectListAttributeValues(req *padlockpb.ObjectListAttributeValuesRequest, stream padlockpb.Padlock_ObjectListAttributeValuesServer) error {
+	id, err := h.authenticate(req.GetId().GetSession().GetSlot().GetAuth())
+	if err != nil {
+		return err
+	}
+	log.Printf("Listing attribute values for %s\n", id)
 	return h.UnimplementedExposedPadlockServer.GetObjectListAttributeValues(req, stream)
 }
