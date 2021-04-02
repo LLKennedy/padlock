@@ -1,6 +1,6 @@
 {
   "name": "@llkennedy/padlock-api",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "HSM PKCS#11 GUI",
   "main": "lib/index.js",
   "scripts": {

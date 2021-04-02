@@ -3,10 +3,8 @@ package server
 import (
 	"context"
 	"crypto/rand"
-	"log"
 
 	"github.com/LLKennedy/padlock/api/padlockpb"
-	"github.com/LLKennedy/padlock/padlocklib"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -54,12 +52,38 @@ func (h *handle) ApplicationListModules(ctx context.Context, req *padlockpb.Appl
 
 // ApplicationConnect connects a new module to the application
 func (h *handle) ApplicationConnect(req *padlockpb.ApplicationConnectRequest, stream padlockpb.Padlock_ApplicationConnectServer) error {
-	srv := &padlocklib.Application{}
-	err := srv.Connect(`D:\Downloads\SecurityServerEvaluation-V4.40.0.2\Software\Windows\x86-64\Crypto_APIs\PKCS11_R3\lib\cs_pkcs11_R3.dll`)
+	module, err := h.app.Connect(req.GetModule())
 	if err != nil {
-		log.Fatalln(err)
+		return status.Errorf(codes.NotFound, "connecting to module: %v", err)
 	}
-	return h.UnimplementedExposedPadlockServer.PostApplicationConnect(req, stream)
+	info, err := module.Info()
+	if err != nil {
+		return status.Errorf(codes.NotFound, "listing slots on module: %v", err)
+	}
+	err = stream.Send(&padlockpb.ApplicationConnectUpdate{
+		Update: &padlockpb.ApplicationConnectUpdate_Info{
+			Info: &padlockpb.ModuleInfo{
+				CryptokiVersion: &padlockpb.Version{
+					Major: uint32(info.CryptokiVersion.Major),
+					Minor: uint32(info.CryptokiVersion.Minor),
+				},
+				ManufacturerId:     info.ManufacturerID,
+				Flags:              uint64(info.Flags), // TOOD: probably parse flags individually once we know what they are
+				LibraryDescription: info.LibraryDescription,
+				LibraryVersion: &padlockpb.Version{
+					Major: uint32(info.LibraryVersion.Major),
+					Minor: uint32(info.LibraryVersion.Minor),
+				},
+			},
+		},
+	})
+	if err != nil {
+		return status.Errorf(codes.Aborted, "sending data back to client: %v", err)
+	}
+	// TODO: hold stream open and give updates on module state changes
+	// For now, wait forever
+	<-make(chan struct{})
+	return nil
 }
 
 // ModuleListSlots lists the slots on a module

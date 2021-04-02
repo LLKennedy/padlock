@@ -21,8 +21,8 @@ type ExposedPadlockClient interface {
 	PostHello(ctx context.Context, in *AuthHello, opts ...grpc.CallOption) (*AuthToken, error)
 	// GetApplicationListModules lists modules already connected to the application
 	GetApplicationListModules(ctx context.Context, in *ApplicationListModulesRequest, opts ...grpc.CallOption) (*ApplicationListModulesResponse, error)
-	// PostApplicationConnect connects a new module to the application
-	PostApplicationConnect(ctx context.Context, in *ApplicationConnectRequest, opts ...grpc.CallOption) (ExposedPadlock_PostApplicationConnectClient, error)
+	// GetApplicationConnect connects a new module to the application
+	GetApplicationConnect(ctx context.Context, in *ApplicationConnectRequest, opts ...grpc.CallOption) (ExposedPadlock_GetApplicationConnectClient, error)
 	// GetModuleListSlots lists the slots on a module
 	GetModuleListSlots(ctx context.Context, in *ModuleListSlotsRequest, opts ...grpc.CallOption) (*ModuleListSlotsResponse, error)
 	// GetModuleInfo gets info for a specific module
@@ -31,8 +31,8 @@ type ExposedPadlockClient interface {
 	GetSlotListMechanisms(ctx context.Context, in *SlotListMechanismsRequest, opts ...grpc.CallOption) (*SlotListMechanismsResponse, error)
 	// PostSlotInitToken creates the token in the slot
 	PostSlotInitToken(ctx context.Context, in *SlotInitTokenRequest, opts ...grpc.CallOption) (*SlotInitTokenResponse, error)
-	// PostSlotOpenSession creates a session on the slot
-	PostSlotOpenSession(ctx context.Context, in *SlotOpenSessionRequest, opts ...grpc.CallOption) (ExposedPadlock_PostSlotOpenSessionClient, error)
+	// GetSlotOpenSession creates a session on the slot
+	GetSlotOpenSession(ctx context.Context, in *SlotOpenSessionRequest, opts ...grpc.CallOption) (ExposedPadlock_GetSlotOpenSessionClient, error)
 	// PutSessionLogin logs into the session at the application level
 	PutSessionLogin(ctx context.Context, in *SessionLoginRequest, opts ...grpc.CallOption) (*SessionLoginResponse, error)
 	// PutSessionLogout logs out of the session at the application level
@@ -69,12 +69,12 @@ func (c *exposedPadlockClient) GetApplicationListModules(ctx context.Context, in
 	return out, nil
 }
 
-func (c *exposedPadlockClient) PostApplicationConnect(ctx context.Context, in *ApplicationConnectRequest, opts ...grpc.CallOption) (ExposedPadlock_PostApplicationConnectClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[0], "/padlock.ExposedPadlock/PostApplicationConnect", opts...)
+func (c *exposedPadlockClient) GetApplicationConnect(ctx context.Context, in *ApplicationConnectRequest, opts ...grpc.CallOption) (ExposedPadlock_GetApplicationConnectClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[0], "/padlock.ExposedPadlock/GetApplicationConnect", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &exposedPadlockPostApplicationConnectClient{stream}
+	x := &exposedPadlockGetApplicationConnectClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -84,16 +84,16 @@ func (c *exposedPadlockClient) PostApplicationConnect(ctx context.Context, in *A
 	return x, nil
 }
 
-type ExposedPadlock_PostApplicationConnectClient interface {
+type ExposedPadlock_GetApplicationConnectClient interface {
 	Recv() (*ApplicationConnectUpdate, error)
 	grpc.ClientStream
 }
 
-type exposedPadlockPostApplicationConnectClient struct {
+type exposedPadlockGetApplicationConnectClient struct {
 	grpc.ClientStream
 }
 
-func (x *exposedPadlockPostApplicationConnectClient) Recv() (*ApplicationConnectUpdate, error) {
+func (x *exposedPadlockGetApplicationConnectClient) Recv() (*ApplicationConnectUpdate, error) {
 	m := new(ApplicationConnectUpdate)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -137,12 +137,12 @@ func (c *exposedPadlockClient) PostSlotInitToken(ctx context.Context, in *SlotIn
 	return out, nil
 }
 
-func (c *exposedPadlockClient) PostSlotOpenSession(ctx context.Context, in *SlotOpenSessionRequest, opts ...grpc.CallOption) (ExposedPadlock_PostSlotOpenSessionClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[1], "/padlock.ExposedPadlock/PostSlotOpenSession", opts...)
+func (c *exposedPadlockClient) GetSlotOpenSession(ctx context.Context, in *SlotOpenSessionRequest, opts ...grpc.CallOption) (ExposedPadlock_GetSlotOpenSessionClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[1], "/padlock.ExposedPadlock/GetSlotOpenSession", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &exposedPadlockPostSlotOpenSessionClient{stream}
+	x := &exposedPadlockGetSlotOpenSessionClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -152,16 +152,16 @@ func (c *exposedPadlockClient) PostSlotOpenSession(ctx context.Context, in *Slot
 	return x, nil
 }
 
-type ExposedPadlock_PostSlotOpenSessionClient interface {
+type ExposedPadlock_GetSlotOpenSessionClient interface {
 	Recv() (*SlotOpenSessionUpdate, error)
 	grpc.ClientStream
 }
 
-type exposedPadlockPostSlotOpenSessionClient struct {
+type exposedPadlockGetSlotOpenSessionClient struct {
 	grpc.ClientStream
 }
 
-func (x *exposedPadlockPostSlotOpenSessionClient) Recv() (*SlotOpenSessionUpdate, error) {
+func (x *exposedPadlockGetSlotOpenSessionClient) Recv() (*SlotOpenSessionUpdate, error) {
 	m := new(SlotOpenSessionUpdate)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -259,8 +259,8 @@ type ExposedPadlockServer interface {
 	PostHello(context.Context, *AuthHello) (*AuthToken, error)
 	// GetApplicationListModules lists modules already connected to the application
 	GetApplicationListModules(context.Context, *ApplicationListModulesRequest) (*ApplicationListModulesResponse, error)
-	// PostApplicationConnect connects a new module to the application
-	PostApplicationConnect(*ApplicationConnectRequest, ExposedPadlock_PostApplicationConnectServer) error
+	// GetApplicationConnect connects a new module to the application
+	GetApplicationConnect(*ApplicationConnectRequest, ExposedPadlock_GetApplicationConnectServer) error
 	// GetModuleListSlots lists the slots on a module
 	GetModuleListSlots(context.Context, *ModuleListSlotsRequest) (*ModuleListSlotsResponse, error)
 	// GetModuleInfo gets info for a specific module
@@ -269,8 +269,8 @@ type ExposedPadlockServer interface {
 	GetSlotListMechanisms(context.Context, *SlotListMechanismsRequest) (*SlotListMechanismsResponse, error)
 	// PostSlotInitToken creates the token in the slot
 	PostSlotInitToken(context.Context, *SlotInitTokenRequest) (*SlotInitTokenResponse, error)
-	// PostSlotOpenSession creates a session on the slot
-	PostSlotOpenSession(*SlotOpenSessionRequest, ExposedPadlock_PostSlotOpenSessionServer) error
+	// GetSlotOpenSession creates a session on the slot
+	GetSlotOpenSession(*SlotOpenSessionRequest, ExposedPadlock_GetSlotOpenSessionServer) error
 	// PutSessionLogin logs into the session at the application level
 	PutSessionLogin(context.Context, *SessionLoginRequest) (*SessionLoginResponse, error)
 	// PutSessionLogout logs out of the session at the application level
@@ -292,8 +292,8 @@ func (UnimplementedExposedPadlockServer) PostHello(context.Context, *AuthHello) 
 func (UnimplementedExposedPadlockServer) GetApplicationListModules(context.Context, *ApplicationListModulesRequest) (*ApplicationListModulesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationListModules not implemented")
 }
-func (UnimplementedExposedPadlockServer) PostApplicationConnect(*ApplicationConnectRequest, ExposedPadlock_PostApplicationConnectServer) error {
-	return status.Errorf(codes.Unimplemented, "method PostApplicationConnect not implemented")
+func (UnimplementedExposedPadlockServer) GetApplicationConnect(*ApplicationConnectRequest, ExposedPadlock_GetApplicationConnectServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetApplicationConnect not implemented")
 }
 func (UnimplementedExposedPadlockServer) GetModuleListSlots(context.Context, *ModuleListSlotsRequest) (*ModuleListSlotsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetModuleListSlots not implemented")
@@ -307,8 +307,8 @@ func (UnimplementedExposedPadlockServer) GetSlotListMechanisms(context.Context, 
 func (UnimplementedExposedPadlockServer) PostSlotInitToken(context.Context, *SlotInitTokenRequest) (*SlotInitTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostSlotInitToken not implemented")
 }
-func (UnimplementedExposedPadlockServer) PostSlotOpenSession(*SlotOpenSessionRequest, ExposedPadlock_PostSlotOpenSessionServer) error {
-	return status.Errorf(codes.Unimplemented, "method PostSlotOpenSession not implemented")
+func (UnimplementedExposedPadlockServer) GetSlotOpenSession(*SlotOpenSessionRequest, ExposedPadlock_GetSlotOpenSessionServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetSlotOpenSession not implemented")
 }
 func (UnimplementedExposedPadlockServer) PutSessionLogin(context.Context, *SessionLoginRequest) (*SessionLoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PutSessionLogin not implemented")
@@ -371,24 +371,24 @@ func _ExposedPadlock_GetApplicationListModules_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ExposedPadlock_PostApplicationConnect_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _ExposedPadlock_GetApplicationConnect_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ApplicationConnectRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(ExposedPadlockServer).PostApplicationConnect(m, &exposedPadlockPostApplicationConnectServer{stream})
+	return srv.(ExposedPadlockServer).GetApplicationConnect(m, &exposedPadlockGetApplicationConnectServer{stream})
 }
 
-type ExposedPadlock_PostApplicationConnectServer interface {
+type ExposedPadlock_GetApplicationConnectServer interface {
 	Send(*ApplicationConnectUpdate) error
 	grpc.ServerStream
 }
 
-type exposedPadlockPostApplicationConnectServer struct {
+type exposedPadlockGetApplicationConnectServer struct {
 	grpc.ServerStream
 }
 
-func (x *exposedPadlockPostApplicationConnectServer) Send(m *ApplicationConnectUpdate) error {
+func (x *exposedPadlockGetApplicationConnectServer) Send(m *ApplicationConnectUpdate) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -464,24 +464,24 @@ func _ExposedPadlock_PostSlotInitToken_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ExposedPadlock_PostSlotOpenSession_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _ExposedPadlock_GetSlotOpenSession_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(SlotOpenSessionRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(ExposedPadlockServer).PostSlotOpenSession(m, &exposedPadlockPostSlotOpenSessionServer{stream})
+	return srv.(ExposedPadlockServer).GetSlotOpenSession(m, &exposedPadlockGetSlotOpenSessionServer{stream})
 }
 
-type ExposedPadlock_PostSlotOpenSessionServer interface {
+type ExposedPadlock_GetSlotOpenSessionServer interface {
 	Send(*SlotOpenSessionUpdate) error
 	grpc.ServerStream
 }
 
-type exposedPadlockPostSlotOpenSessionServer struct {
+type exposedPadlockGetSlotOpenSessionServer struct {
 	grpc.ServerStream
 }
 
-func (x *exposedPadlockPostSlotOpenSessionServer) Send(m *SlotOpenSessionUpdate) error {
+func (x *exposedPadlockGetSlotOpenSessionServer) Send(m *SlotOpenSessionUpdate) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -602,13 +602,13 @@ var _ExposedPadlock_serviceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "PostApplicationConnect",
-			Handler:       _ExposedPadlock_PostApplicationConnect_Handler,
+			StreamName:    "GetApplicationConnect",
+			Handler:       _ExposedPadlock_GetApplicationConnect_Handler,
 			ServerStreams: true,
 		},
 		{
-			StreamName:    "PostSlotOpenSession",
-			Handler:       _ExposedPadlock_PostSlotOpenSession_Handler,
+			StreamName:    "GetSlotOpenSession",
+			Handler:       _ExposedPadlock_GetSlotOpenSession_Handler,
 			ServerStreams: true,
 		},
 		{

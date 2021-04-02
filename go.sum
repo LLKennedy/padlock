@@ -1,7 +1,5 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/LLKennedy/mercury v0.9.0 h1:Dom4K1xdqkQItbWYd138daWDHBLa+n1Z3AjnTnXXzHk=
-github.com/LLKennedy/mercury v0.9.0/go.mod h1:qCIhhXZWasNFiOvVWriIA1zdUXRbhm0Hi0Oj9ccNmPE=
 github.com/LLKennedy/mercury v0.9.1 h1:ZLn6Zi5z587OJAdYTBlGhW2GDx/dTFpMNIUNfv6SOoQ=
 github.com/LLKennedy/mercury v0.9.1/go.mod h1:qCIhhXZWasNFiOvVWriIA1zdUXRbhm0Hi0Oj9ccNmPE=
 github.com/LLKennedy/protoc-gen-tsjson v0.5.0 h1:TaoO5secaxzX+rcynYb9cq8bm1Wzse6A2YVtcCl3pgY=
