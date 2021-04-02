@@ -2,7 +2,15 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-import { } from "@llkennedy/padlock-api";
+import { AuthHello, ExposedPadlockClient } from "@llkennedy/padlock-api";
+import axios from 'axios';
+
+let client = new ExposedPadlockClient("localhost:6298", true, axios);
+client.Hello(new AuthHello()).then(token => {
+  console.log("token: " + token.data?.toString())
+}).catch(err => {
+  console.error(err)
+})
 
 function App() {
   return (

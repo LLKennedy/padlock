@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/LLKennedy/mercury"
@@ -86,7 +87,9 @@ func Serve(cfg Config) error {
 		Certificates: []tls.Certificate{
 			cert,
 		},
-		RootCAs: certPool,
+		RootCAs:    certPool,
+		ClientCAs:  certPool,
+		MinVersion: tls.VersionTLS13,
 	}
 	mainCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -103,7 +106,7 @@ func Serve(cfg Config) error {
 	}()
 	var client *grpc.ClientConn
 	aborted := false
-	client, err = grpc.Dial(addr.String(), grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	client, err = grpc.Dial(fmt.Sprintf("localhost:%s", strings.Split(addr.String(), ":")[1]), grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 	if err != nil {
 		log.Printf("First client connection attempt failed (%v), waiting for server startup...\n", err)
 		ticker := time.NewTicker(100 * time.Millisecond)
@@ -128,6 +131,12 @@ func Serve(cfg Config) error {
 		d.srv = real
 		httpSrv = &http.Server{
 			Handler: http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+				rw.Header().Add("Access-Control-Allow-Origin", "https://localhost:3000")
+				rw.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+				if r.Method == http.MethodOptions {
+					rw.WriteHeader(200)
+					return
+				}
 				ctx, cancel := context.WithCancel(r.Context())
 				defer cancel()
 				go func() {
@@ -143,7 +152,7 @@ func Serve(cfg Config) error {
 		}
 	}
 	go func() {
-		errChan <- httpSrv.Serve(httpListener)
+		errChan <- httpSrv.ServeTLS(httpListener, "", "")
 		cancel()
 	}()
 	err = <-errChan
