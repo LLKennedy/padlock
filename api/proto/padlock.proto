@@ -181,14 +181,15 @@ message SlotOpenSessionRequest {
 message SlotOpenSessionUpdate {
 	oneof update {
 		// First response must be this UUID
-		SessionID id = 1;
+		string uuid = 1;
 		// Further responses must not be UUID
 		bool logged_in = 2;
 	}
 }
 
 message SessionID {
-	string uuid = 1;
+	AuthToken auth = 1;
+	string uuid = 2;
 }
 
 message SessionCloseRequest {
@@ -214,7 +215,7 @@ message SessionLogoutResponse {
 }
 
 message SessionListObjectsRequest {
-	string id = 1;
+	SessionID id = 1;
 	repeated Attribute template = 2;
 }
 

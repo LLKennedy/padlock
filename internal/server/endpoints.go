@@ -316,6 +316,16 @@ func (h *handle) SlotOpenSession(req *padlockpb.SlotOpenSessionRequest, stream p
 	return nil
 }
 
+// SessionClose closes the session
+func (h *handle) SessionClose(ctx context.Context, req *padlockpb.SessionCloseRequest) (*padlockpb.SessionCloseResponse, error) {
+	id, err := h.authenticate(req.GetId().GetAuth())
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Closing session for %s\n", id)
+	return h.UnimplementedExposedPadlockServer.DeleteSessionClose(ctx, req)
+}
+
 // SessionLogin logs into the session at the application level
 func (h *handle) SessionLogin(ctx context.Context, req *padlockpb.SessionLoginRequest) (*padlockpb.SessionLoginResponse, error) {
 	id, err := h.authenticate(req.GetId().GetAuth())
@@ -328,7 +338,7 @@ func (h *handle) SessionLogin(ctx context.Context, req *padlockpb.SessionLoginRe
 
 // SessionLogout logs out of the session at the application level
 func (h *handle) SessionLogout(ctx context.Context, req *padlockpb.SessionID) (*padlockpb.SessionLogoutResponse, error) {
-	id, err := h.authenticate(req.GetSlot().GetAuth())
+	id, err := h.authenticate(req.GetAuth())
 	if err != nil {
 		return nil, err
 	}
@@ -338,7 +348,7 @@ func (h *handle) SessionLogout(ctx context.Context, req *padlockpb.SessionID) (*
 
 // SessionListObjects lists the objects available in the session
 func (h *handle) SessionListObjects(req *padlockpb.SessionListObjectsRequest, stream padlockpb.Padlock_SessionListObjectsServer) error {
-	id, err := h.authenticate(req.GetId().GetSlot().GetAuth())
+	id, err := h.authenticate(req.GetId().GetAuth())
 	if err != nil {
 		return err
 	}
@@ -348,12 +358,10 @@ func (h *handle) SessionListObjects(req *padlockpb.SessionListObjectsRequest, st
 
 // ObjectListAttributeValues lists values for the requested attributes
 func (h *handle) ObjectListAttributeValues(req *padlockpb.ObjectListAttributeValuesRequest, stream padlockpb.Padlock_ObjectListAttributeValuesServer) error {
-	id, err := h.authenticate(req.GetId().GetSession().GetSlot().GetAuth())
+	id, err := h.authenticate(req.GetSessionId().GetAuth())
 	if err != nil {
 		return err
 	}
 	log.Printf("Listing attribute values for %s\n", id)
 	return h.UnimplementedExposedPadlockServer.GetObjectListAttributeValues(req, stream)
 }
-
-// FIXME: close session endpoint
