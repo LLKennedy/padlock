@@ -54,7 +54,7 @@ service ExposedPadlock {
 	// Object RPCs
 
 	// GetObjectListAttributeValues lists values for the requested attributes
-	rpc GetObjectListAttributeValues(ObjectListAttributeValuesRequest) returns (stream Attribute);
+	rpc GetObjectListAttributeValues(ObjectListAttributeValuesRequest) returns (stream ObjectListAttributeValuesUpdate);
 }
 
 service Padlock {
@@ -100,7 +100,7 @@ service Padlock {
 	// Object RPCs
 
 	// ObjectListAttributeValues lists values for the requested attributes
-	rpc ObjectListAttributeValues(ObjectListAttributeValuesRequest) returns (stream Attribute);
+	rpc ObjectListAttributeValues(ObjectListAttributeValuesRequest) returns (stream ObjectListAttributeValuesUpdate);
 }
 
 message AuthHello {
@@ -201,7 +201,7 @@ message SessionCloseResponse {
 }
 
 message SessionLoginRequest {
-	SlotID id = 1;
+	SessionID id = 1;
 	string pin = 2;
 	bool login_as_security_officer = 3;
 }
@@ -223,4 +223,11 @@ message ObjectListAttributeValuesRequest {
 	SessionID session_id = 1;
 	string object_id = 2;
 	repeated AttributeType requested_attributes = 3;
+}
+
+message ObjectListAttributeValuesUpdate {
+	oneof update {
+		Attribute attribute = 1;
+		AttributeType not_found = 2;
+	}
 }

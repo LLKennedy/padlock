@@ -31,6 +31,12 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+type serverSession struct {
+	sess p11.Session
+	mx   *sync.Mutex
+	objs map[string]p11.Object
+}
+
 // handle is a handle to the Server object
 type handle struct {
 	padlockpb.UnimplementedExposedPadlockServer
@@ -42,7 +48,8 @@ type handle struct {
 	// Map session IDs to auth token IDs
 	sessionAuth map[string]string
 	// Map session IDs to session handles
-	sessions map[string]p11.Session
+	sessions map[string]serverSession
+	// Map session IDs to ojbe
 }
 
 // Config is the config for the server
@@ -73,7 +80,7 @@ func Serve(cfg Config) error {
 		authData:    authData,
 		sessionMx:   &sync.RWMutex{},
 		sessionAuth: make(map[string]string, 1),
-		sessions:    make(map[string]p11.Session, 1),
+		sessions:    make(map[string]serverSession, 1),
 	}
 	if cfg.FS == nil {
 		cfg.FS = os.DirFS("")

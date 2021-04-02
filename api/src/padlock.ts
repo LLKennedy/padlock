@@ -7,7 +7,7 @@
  */
 
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
-import { Mechanism as padlock__Mechanism, ModuleInfo as padlock__ModuleInfo, SlotInfo as padlock__SlotInfo, Attribute as padlock__Attribute } from "./pkcs11";
+import { SlotInfo as padlock__SlotInfo, Mechanism as padlock__Mechanism, Attribute as padlock__Attribute, ModuleInfo as padlock__ModuleInfo } from "./pkcs11";
 import { AttributeType as padlock__AttributeType } from "./attributes";
 
 /** A message */
@@ -385,7 +385,7 @@ export class SessionCloseResponse extends Object implements tsjson.ProtoJSONComp
 /** A message */
 export class SessionLoginRequest extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
-	public id?: SlotID;
+	public id?: SessionID;
 	/** A field */
 	public pin?: string;
 	/** A field */
@@ -400,7 +400,7 @@ export class SessionLoginRequest extends Object implements tsjson.ProtoJSONCompa
 	public static async Parse(data: any): Promise<SessionLoginRequest> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new SessionLoginRequest();
-		res.id = await tsjson.Parse.Message(objData, "id", "id", SlotID.Parse);
+		res.id = await tsjson.Parse.Message(objData, "id", "id", SessionID.Parse);
 		res.pin = await tsjson.Parse.String(objData, "pin", "pin");
 		res.loginAsSecurityOfficer = await tsjson.Parse.Bool(objData, "loginAsSecurityOfficer", "login_as_security_officer");
 		return res;
@@ -475,6 +475,27 @@ export class ObjectListAttributeValuesRequest extends Object implements tsjson.P
 		res.sessionId = await tsjson.Parse.Message(objData, "sessionId", "session_id", SessionID.Parse);
 		res.objectId = await tsjson.Parse.String(objData, "objectId", "object_id");
 		res.requestedAttributes = await tsjson.Parse.Repeated(objData, "requestedAttributes", "requested_attributes", tsjson.PrimitiveParse.Enum(padlock__AttributeType));
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectListAttributeValuesUpdate extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public attribute?: padlock__Attribute;
+	/** A field */
+	public notFound?: padlock__AttributeType;
+	public ToProtoJSON(): Object {
+		return {
+			attribute: this.attribute?.ToProtoJSON(),
+			notFound: tsjson.ToProtoJSON.Enum(padlock__AttributeType, this.notFound),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectListAttributeValuesUpdate> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectListAttributeValuesUpdate();
+		res.attribute = await tsjson.Parse.Message(objData, "attribute", "attribute", padlock__Attribute.Parse);
+		res.notFound = await tsjson.Parse.Enum(objData, "notFound", "not_found", padlock__AttributeType);
 		return res;
 	}
 }

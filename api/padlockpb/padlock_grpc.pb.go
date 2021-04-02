@@ -246,7 +246,7 @@ func (c *exposedPadlockClient) GetObjectListAttributeValues(ctx context.Context,
 }
 
 type ExposedPadlock_GetObjectListAttributeValuesClient interface {
-	Recv() (*Attribute, error)
+	Recv() (*ObjectListAttributeValuesUpdate, error)
 	grpc.ClientStream
 }
 
@@ -254,8 +254,8 @@ type exposedPadlockGetObjectListAttributeValuesClient struct {
 	grpc.ClientStream
 }
 
-func (x *exposedPadlockGetObjectListAttributeValuesClient) Recv() (*Attribute, error) {
-	m := new(Attribute)
+func (x *exposedPadlockGetObjectListAttributeValuesClient) Recv() (*ObjectListAttributeValuesUpdate, error) {
+	m := new(ObjectListAttributeValuesUpdate)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -585,7 +585,7 @@ func _ExposedPadlock_GetObjectListAttributeValues_Handler(srv interface{}, strea
 }
 
 type ExposedPadlock_GetObjectListAttributeValuesServer interface {
-	Send(*Attribute) error
+	Send(*ObjectListAttributeValuesUpdate) error
 	grpc.ServerStream
 }
 
@@ -593,7 +593,7 @@ type exposedPadlockGetObjectListAttributeValuesServer struct {
 	grpc.ServerStream
 }
 
-func (x *exposedPadlockGetObjectListAttributeValuesServer) Send(m *Attribute) error {
+func (x *exposedPadlockGetObjectListAttributeValuesServer) Send(m *ObjectListAttributeValuesUpdate) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -896,7 +896,7 @@ func (c *padlockClient) ObjectListAttributeValues(ctx context.Context, in *Objec
 }
 
 type Padlock_ObjectListAttributeValuesClient interface {
-	Recv() (*Attribute, error)
+	Recv() (*ObjectListAttributeValuesUpdate, error)
 	grpc.ClientStream
 }
 
@@ -904,8 +904,8 @@ type padlockObjectListAttributeValuesClient struct {
 	grpc.ClientStream
 }
 
-func (x *padlockObjectListAttributeValuesClient) Recv() (*Attribute, error) {
-	m := new(Attribute)
+func (x *padlockObjectListAttributeValuesClient) Recv() (*ObjectListAttributeValuesUpdate, error) {
+	m := new(ObjectListAttributeValuesUpdate)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -1235,7 +1235,7 @@ func _Padlock_ObjectListAttributeValues_Handler(srv interface{}, stream grpc.Ser
 }
 
 type Padlock_ObjectListAttributeValuesServer interface {
-	Send(*Attribute) error
+	Send(*ObjectListAttributeValuesUpdate) error
 	grpc.ServerStream
 }
 
@@ -1243,7 +1243,7 @@ type padlockObjectListAttributeValuesServer struct {
 	grpc.ServerStream
 }
 
-func (x *padlockObjectListAttributeValuesServer) Send(m *Attribute) error {
+func (x *padlockObjectListAttributeValuesServer) Send(m *ObjectListAttributeValuesUpdate) error {
 	return x.ServerStream.SendMsg(m)
 }
 

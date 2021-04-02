@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"log"
 	"reflect"
+	"sync"
 
 	"github.com/LLKennedy/padlock/api/padlockpb"
 	"github.com/google/uuid"
@@ -299,7 +300,11 @@ func (h *handle) SlotOpenSession(req *padlockpb.SlotOpenSessionRequest, stream p
 	}
 	sessID := uuid.New().String()
 	h.sessionMx.Lock()
-	h.sessions[sessID] = session
+	h.sessions[sessID] = serverSession{
+		sess: session,
+		mx:   &sync.Mutex{},
+		objs: make(map[string]p11.Object),
+	}
 	h.sessionAuth[sessID] = id.String()
 	h.sessionMx.Unlock()
 	err = stream.Send(&padlockpb.SlotOpenSessionUpdate{
@@ -316,6 +321,18 @@ func (h *handle) SlotOpenSession(req *padlockpb.SlotOpenSessionRequest, stream p
 	return nil
 }
 
+func (h *handle) getSession(sessID, auth string) (sess serverSession, err error) {
+	h.sessionMx.RLock()
+	authID := h.sessionAuth[sessID]
+	sess = h.sessions[sessID]
+	h.sessionMx.RUnlock()
+	if auth != authID {
+		return serverSession{}, status.Error(codes.PermissionDenied, "not allowed to access this session or session does not exist")
+	}
+	sess.mx.Lock()
+	return sess, nil
+}
+
 // SessionClose closes the session
 func (h *handle) SessionClose(ctx context.Context, req *padlockpb.SessionCloseRequest) (*padlockpb.SessionCloseResponse, error) {
 	id, err := h.authenticate(req.GetId().GetAuth())
@@ -323,7 +340,21 @@ func (h *handle) SessionClose(ctx context.Context, req *padlockpb.SessionCloseRe
 		return nil, err
 	}
 	log.Printf("Closing session for %s\n", id)
-	return h.UnimplementedExposedPadlockServer.DeleteSessionClose(ctx, req)
+	sessID := req.GetId().GetUuid()
+	sess, err := h.getSession(sessID, id.String())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
+	err = sess.sess.Close()
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "closing session: %v", err)
+	}
+	h.sessionMx.Lock()
+	delete(h.sessionAuth, sessID)
+	delete(h.sessions, sessID)
+	h.sessionMx.Unlock()
+	return &padlockpb.SessionCloseResponse{}, nil
 }
 
 // SessionLogin logs into the session at the application level
@@ -333,7 +364,21 @@ func (h *handle) SessionLogin(ctx context.Context, req *padlockpb.SessionLoginRe
 		return nil, err
 	}
 	log.Printf("Logging into session for %s\n", id)
-	return h.UnimplementedExposedPadlockServer.PutSessionLogin(ctx, req)
+	sess, err := h.getSession(req.GetId().GetUuid(), id.String())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
+	if req.GetLoginAsSecurityOfficer() {
+		err = sess.sess.LoginSecurityOfficer(req.GetPin())
+	} else {
+		err = sess.sess.Login(req.GetPin())
+	}
+	if err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, "login failed: %v", err)
+	}
+	// TODO: propagate login/logout state update to all sessions on this slot
+	return &padlockpb.SessionLoginResponse{}, nil
 }
 
 // SessionLogout logs out of the session at the application level
@@ -343,7 +388,17 @@ func (h *handle) SessionLogout(ctx context.Context, req *padlockpb.SessionID) (*
 		return nil, err
 	}
 	log.Printf("Logging out of session for %s\n", id)
-	return h.UnimplementedExposedPadlockServer.PutSessionLogout(ctx, req)
+	sess, err := h.getSession(req.GetUuid(), id.String())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
+	err = sess.sess.Logout()
+	if err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, "logout failed: %v", err)
+	}
+	// TODO: propagate login/logout state update to all sessions on this slot
+	return &padlockpb.SessionLogoutResponse{}, nil
 }
 
 // SessionListObjects lists the objects available in the session
@@ -353,7 +408,31 @@ func (h *handle) SessionListObjects(req *padlockpb.SessionListObjectsRequest, st
 		return err
 	}
 	log.Printf("Listing objects for %s\n", id)
-	return h.UnimplementedExposedPadlockServer.GetSessionListObjects(req, stream)
+	sess, err := h.getSession(req.GetId().GetUuid(), id.String())
+	if err != nil {
+		return err
+	}
+	defer sess.mx.Unlock()
+	objs, err := sess.sess.FindObjects(nil)
+	if err != nil {
+		return status.Errorf(codes.Aborted, "listing objects: %v", err)
+	}
+	for _, obj := range objs {
+		objID := uuid.New().String()
+		sess.objs[objID] = obj
+		label, err := obj.Label()
+		if err != nil {
+			return status.Errorf(codes.Aborted, "getting object label: %v", err)
+		}
+		err = stream.Send(&padlockpb.P11Object{
+			Label: label,
+			Uuid:  objID,
+		})
+		if err != nil {
+			return status.Errorf(codes.Aborted, "sending object to client: %v", err)
+		}
+	}
+	return nil
 }
 
 // ObjectListAttributeValues lists values for the requested attributes
@@ -363,5 +442,38 @@ func (h *handle) ObjectListAttributeValues(req *padlockpb.ObjectListAttributeVal
 		return err
 	}
 	log.Printf("Listing attribute values for %s\n", id)
-	return h.UnimplementedExposedPadlockServer.GetObjectListAttributeValues(req, stream)
+	sess, err := h.getSession(req.GetSessionId().GetUuid(), id.String())
+	if err != nil {
+		return err
+	}
+	defer sess.mx.Unlock()
+	obj, exists := sess.objs[req.GetObjectId()]
+	if !exists {
+		return status.Error(codes.NotFound, "object deleted or does not exist")
+	}
+	for _, attr := range req.GetRequestedAttributes() {
+		val, err := obj.Attribute(AttributePBtoP11(attr))
+		if err != nil {
+			log.Printf("attribute %s not found: %v\n", attr, err)
+			err = stream.Send(&padlockpb.ObjectListAttributeValuesUpdate{
+				Update: &padlockpb.ObjectListAttributeValuesUpdate_NotFound{
+					NotFound: attr,
+				},
+			})
+		} else {
+			err = stream.Send(&padlockpb.ObjectListAttributeValuesUpdate{
+				Update: &padlockpb.ObjectListAttributeValuesUpdate_Attribute{
+					Attribute: &padlockpb.Attribute{
+						Type:  attr,
+						Value: val,
+					},
+				},
+			})
+		}
+		// error from sending back to client
+		if err != nil {
+			return status.Errorf(codes.Aborted, "sending response to client: %v", err)
+		}
+	}
+	return nil
 }

@@ -7,7 +7,7 @@ import (
 
 // MechanismPBtoP11 converts mechanism enums
 func MechanismPBtoP11(mech padlockpb.MechanismType) uint {
-	converted := 0xFEFEFEFE // invalid for everything
+	converted := uint(0xFEFEFEFE) // invalid for everything
 	switch mech {
 	case padlockpb.MechanismType_CKM_RSA_PKCS_KEY_PAIR_GEN:
 		converted = pkcs11.CKM_RSA_PKCS_KEY_PAIR_GEN
@@ -746,7 +746,7 @@ func MechanismPBtoP11(mech padlockpb.MechanismType) uint {
 	case padlockpb.MechanismType_CKM_VENDOR_DEFINED:
 		converted = pkcs11.CKM_VENDOR_DEFINED
 	}
-	return uint(converted)
+	return converted
 }
 
 // MechanismP11toPB converts mechanism enums
