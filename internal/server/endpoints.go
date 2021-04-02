@@ -99,7 +99,72 @@ func (h *handle) ModuleListSlots(ctx context.Context, req *padlockpb.ModuleListS
 		return nil, err
 	}
 	log.Printf("Listing slots for %s\n", id)
-	return h.UnimplementedExposedPadlockServer.GetModuleListSlots(ctx, req)
+	module, exists := h.app.Modules[req.GetModule()]
+	if !exists {
+		return nil, status.Errorf(codes.NotFound, "no module for path %s", req.GetModule())
+	}
+	slots, err := module.Slots()
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "listing slots: %v", err)
+	}
+	res := &padlockpb.ModuleListSlotsResponse{}
+	for _, slot := range slots {
+		slotID := slot.ID()
+		info, err := slot.Info()
+		if err != nil {
+			return nil, status.Errorf(codes.Aborted, "getting slot info for slot %d: %v", slotID, err)
+		}
+		newSlot := &padlockpb.SlotInfo{
+			Id:              uint64(slotID),
+			SlotDescription: info.SlotDescription,
+			ManufacturerId:  info.ManufacturerID,
+			Flags:           uint64(info.Flags), // TOOD: probably parse flags individually once we know what they are
+			HardwareVersion: &padlockpb.Version{
+				Major: uint32(info.HardwareVersion.Major),
+				Minor: uint32(info.HardwareVersion.Minor),
+			},
+			FirmwareVersion: &padlockpb.Version{
+				Major: uint32(info.FirmwareVersion.Major),
+				Minor: uint32(info.FirmwareVersion.Minor),
+			},
+		}
+		res.Slots = append(res.Slots, newSlot)
+		tokenInfo, err := slot.TokenInfo()
+		if err != nil {
+			log.Printf("no token for slot %d with description %s", slotID, info.SlotDescription)
+		}
+		// TODO: better way to test for token presence
+		if tokenInfo.Label == "" {
+			continue
+		}
+		newSlot.TokenInfo = &padlockpb.TokenInfo{
+			Label:              tokenInfo.Label,
+			ManufacturerId:     tokenInfo.ManufacturerID,
+			Model:              tokenInfo.Model,
+			SerialNumber:       tokenInfo.SerialNumber,
+			Flags:              uint64(tokenInfo.Flags), // TOOD: probably parse flags individually once we know what they are
+			MaxSessionCount:    uint64(tokenInfo.MaxSessionCount),
+			SessionCount:       uint64(tokenInfo.SessionCount),
+			MaxRwSessionCount:  uint64(tokenInfo.MaxRwSessionCount),
+			RwSessionCount:     uint64(tokenInfo.RwSessionCount),
+			MaxPinLen:          uint64(tokenInfo.MaxPinLen),
+			MinPinLen:          uint64(tokenInfo.MinPinLen),
+			TotalPublicMemory:  uint64(tokenInfo.TotalPublicMemory),
+			FreePublicMemory:   uint64(tokenInfo.FreePublicMemory),
+			TotalPrivateMemory: uint64(tokenInfo.TotalPrivateMemory),
+			FreePrivateMemory:  uint64(tokenInfo.FreePrivateMemory),
+			HardwareVersion: &padlockpb.Version{
+				Major: uint32(tokenInfo.HardwareVersion.Major),
+				Minor: uint32(tokenInfo.HardwareVersion.Minor),
+			},
+			FirmwareVersion: &padlockpb.Version{
+				Major: uint32(tokenInfo.FirmwareVersion.Major),
+				Minor: uint32(tokenInfo.FirmwareVersion.Minor),
+			},
+			Utctime: tokenInfo.UTCTime,
+		}
+	}
+	return res, nil
 }
 
 // ModuleInfo gets info for a specific module
@@ -109,7 +174,30 @@ func (h *handle) ModuleInfo(ctx context.Context, req *padlockpb.ModuleInfoReques
 		return nil, err
 	}
 	log.Printf("Getting module info for %s\n", id)
-	return h.UnimplementedExposedPadlockServer.GetModuleInfo(ctx, req)
+	module, exists := h.app.Modules[req.GetModule()]
+	if !exists {
+		return nil, status.Errorf(codes.NotFound, "no module for path %s", req.GetModule())
+	}
+	info, err := module.Info()
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "listing slots on module: %v", err)
+	}
+	parsedInfo := &padlockpb.ModuleInfo{
+		CryptokiVersion: &padlockpb.Version{
+			Major: uint32(info.CryptokiVersion.Major),
+			Minor: uint32(info.CryptokiVersion.Minor),
+		},
+		ManufacturerId:     info.ManufacturerID,
+		Flags:              uint64(info.Flags), // TOOD: probably parse flags individually once we know what they are
+		LibraryDescription: info.LibraryDescription,
+		LibraryVersion: &padlockpb.Version{
+			Major: uint32(info.LibraryVersion.Major),
+			Minor: uint32(info.LibraryVersion.Minor),
+		},
+	}
+	return &padlockpb.ModuleInfoResponse{
+		Info: parsedInfo,
+	}, nil
 }
 
 // SlotListMechanisms lists the mechanisms available on a slot
