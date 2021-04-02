@@ -11,7 +11,7 @@ option (tsjson.import_path) = "padlock";
 import "pkcs11.proto";
 import "attributes.proto";
 
-service Padlock {
+service ExposedPadlock {
 	// Auth RPCs
 
 	// PostHello initiates a session with the application, generating an authentication token
@@ -53,6 +53,50 @@ service Padlock {
 
 	// GetObjectListAttributeValues lists values for the requested attributes
 	rpc GetObjectListAttributeValues(ObjectListAttributeValuesRequest) returns (stream Attribute);
+}
+
+service Padlock {
+	// Auth RPCs
+
+	// Hello initiates a session with the application, generating an authentication token
+	rpc Hello(AuthHello) returns (AuthToken);
+
+	// Application RPCs
+
+	// ApplicationListModules lists modules already connected to the application
+	rpc ApplicationListModules(ApplicationListModulesRequest) returns (ApplicationListModulesResponse);
+	// ApplicationConnect connects a new module to the application
+	rpc ApplicationConnect(ApplicationConnectRequest) returns (stream ApplicationConnectUpdate);
+
+	// Module RPCs
+
+	// ModuleListSlots lists the slots on a module
+	rpc ModuleListSlots(ModuleListSlotsRequest) returns (ModuleListSlotsResponse);
+	// ModuleInfo gets info for a specific module
+	rpc ModuleInfo(ModuleInfoRequest) returns (ModuleInfoResponse);
+
+	// Slot RPCs
+
+	// SlotListMechanisms lists the mechanisms available on a slot
+	rpc SlotListMechanisms(SlotListMechanismsRequest) returns (SlotListMechanismsResponse);
+	// SlotInitToken creates the token in the slot
+	rpc SlotInitToken(SlotInitTokenRequest) returns (SlotInitTokenResponse);
+	// SlotOpenSession creates a session on the slot
+	rpc SlotOpenSession(SlotOpenSessionRequest) returns (stream SlotOpenSessionUpdate);
+
+	// Session RPCs
+
+	// SessionLogin logs into the session at the application level
+	rpc SessionLogin(SessionLoginRequest) returns (SessionLoginResponse);
+	// SessionLogout logs out of the session at the application level
+	rpc SessionLogout(SessionID) returns (SessionLogoutResponse);
+	// SessionListObjects lists the objects available in the session
+	rpc SessionListObjects(SessionListObjectsRequest) returns (stream P11Object);
+
+	// Object RPCs
+
+	// ObjectListAttributeValues lists values for the requested attributes
+	rpc ObjectListAttributeValues(ObjectListAttributeValuesRequest) returns (stream Attribute);
 }
 
 message AuthHello {
