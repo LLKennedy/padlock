@@ -7,7 +7,7 @@
  */
 
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
-import { ModuleInfo as padlock__ModuleInfo, Attribute as padlock__Attribute, SlotInfo as padlock__SlotInfo, Mechanism as padlock__Mechanism } from "./pkcs11";
+import { SlotInfo as padlock__SlotInfo, Mechanism as padlock__Mechanism, Attribute as padlock__Attribute, ModuleInfo as padlock__ModuleInfo } from "./pkcs11";
 import { AttributeType as padlock__AttributeType } from "./attributes";
 
 /** A message */
