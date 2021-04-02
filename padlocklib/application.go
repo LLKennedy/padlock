@@ -13,6 +13,14 @@ type Application struct {
 	modules   map[string]p11.Module
 }
 
+// NewApplication creates a new Application
+func NewApplication() *Application {
+	return &Application{
+		modulesMx: new(sync.RWMutex),
+		modules:   make(map[string]p11.Module, 1),
+	}
+}
+
 // Connect connects to an HSM
 func (p *Application) Connect(path string) error {
 	if p == nil || p.modulesMx == nil {
