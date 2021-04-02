@@ -2,6 +2,8 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+import { } from "@llkennedy/padlock-api";
+
 function App() {
   return (
     <div className="App">
