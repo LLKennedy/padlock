@@ -54,7 +54,39 @@ func (h *handle) authenticate(auth *padlockpb.AuthToken) (id uuid.UUID, err erro
 
 // ApplicationListModules lists modules already connected to the application
 func (h *handle) ApplicationListModules(ctx context.Context, req *padlockpb.ApplicationListModulesRequest) (*padlockpb.ApplicationListModulesResponse, error) {
-	return h.UnimplementedExposedPadlockServer.GetApplicationListModules(ctx, req)
+	_, err := h.authenticate(req.GetAuth())
+	if err != nil {
+		return nil, err
+	}
+	res := &padlockpb.ApplicationListModulesResponse{
+		Modules: map[string]*padlockpb.ModuleInfo{},
+	}
+	modulesCopy := map[string]p11.Module{}
+	h.app.ModulesMx.RLock()
+	for key, m := range h.app.Modules {
+		modulesCopy[key] = m
+	}
+	h.app.ModulesMx.RUnlock()
+	for key, m := range modulesCopy {
+		info, err := m.Info()
+		if err != nil {
+			return nil, status.Errorf(codes.Aborted, "getting module info: %v", err)
+		}
+		res.Modules[key] = &padlockpb.ModuleInfo{
+			CryptokiVersion: &padlockpb.Version{
+				Major: uint32(info.CryptokiVersion.Major),
+				Minor: uint32(info.CryptokiVersion.Minor),
+			},
+			ManufacturerId:     info.ManufacturerID,
+			Flags:              uint64(info.Flags), // TOOD: probably parse flags individually once we know what they are
+			LibraryDescription: info.LibraryDescription,
+			LibraryVersion: &padlockpb.Version{
+				Major: uint32(info.LibraryVersion.Major),
+				Minor: uint32(info.LibraryVersion.Minor),
+			},
+		}
+	}
+	return res, nil
 }
 
 // ApplicationConnect connects a new module to the application
