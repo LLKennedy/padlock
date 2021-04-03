@@ -2,6 +2,10 @@ cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/LLKennedy/mercury v0.9.1 h1:ZLn6Zi5z587OJAdYTBlGhW2GDx/dTFpMNIUNfv6SOoQ=
 github.com/LLKennedy/mercury v0.9.1/go.mod h1:qCIhhXZWasNFiOvVWriIA1zdUXRbhm0Hi0Oj9ccNmPE=
+github.com/LLKennedy/mercury v0.9.2 h1:Lf2RMzdXkPZ8w0yRg04DbAk2b0zuNNP++bQGsHllt6o=
+github.com/LLKennedy/mercury v0.9.2/go.mod h1:qCIhhXZWasNFiOvVWriIA1zdUXRbhm0Hi0Oj9ccNmPE=
+github.com/LLKennedy/mercury v0.9.3 h1:1eIRzsimxwYFzAA5Jsl1yJa90V0lBQjwKwemnoJkUxA=
+github.com/LLKennedy/mercury v0.9.3/go.mod h1:qCIhhXZWasNFiOvVWriIA1zdUXRbhm0Hi0Oj9ccNmPE=
 github.com/LLKennedy/protoc-gen-tsjson v0.5.0 h1:TaoO5secaxzX+rcynYb9cq8bm1Wzse6A2YVtcCl3pgY=
 github.com/LLKennedy/protoc-gen-tsjson v0.5.0/go.mod h1:dCS6J0Oz4Cg7wNa0gnHlhcVHbBMWionhXleXfCR2Rjw=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
@@ -95,6 +99,7 @@ google.golang.org/protobuf v1.23.0/go.mod h1:EGpADcykh3NcUnDUJcl1+ZksZNG86OlYog2
 google.golang.org/protobuf v1.23.1-0.20200526195155-81db48ad09cc/go.mod h1:EGpADcykh3NcUnDUJcl1+ZksZNG86OlYog2l/sGQquU=
 google.golang.org/protobuf v1.25.0 h1:Ejskq+SyPohKW+1uil0JJMtmHCgJPJ/qWTxr8qp+R4c=
 google.golang.org/protobuf v1.25.0/go.mod h1:9JNX74DMeImyA3h4bdi1ymwjUzf21/xIlbajtzgsN7c=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.2.2 h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=

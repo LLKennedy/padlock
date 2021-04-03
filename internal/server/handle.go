@@ -170,6 +170,12 @@ func Serve(cfg Config) error {
 			Handler: http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 				rw.Header().Add("Access-Control-Allow-Origin", "https://localhost:3000")
 				rw.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+				rw.Header().Add("Access-Control-Allow-Methods", "PUT")
+				rw.Header().Add("Access-Control-Allow-Methods", "GET")
+				rw.Header().Add("Access-Control-Allow-Methods", "POST")
+				rw.Header().Add("Access-Control-Allow-Methods", "DELETE")
+				rw.Header().Add("Access-Control-Allow-Methods", "PATCH")
+				rw.Header().Add("Access-Control-Allow-Methods", "OPTIONS")
 				if r.Method == http.MethodOptions {
 					rw.WriteHeader(200)
 					return
@@ -216,7 +222,7 @@ func (h *handle) UnaryInterceptor(ctx context.Context, req interface{}, info *gr
 	if ok {
 		return
 	}
-	err = status.Errorf(codes.Internal, "endpoint %s returned with non-RPC error: %v", err)
+	err = status.Errorf(codes.Internal, "endpoint %s returned with non-RPC error: %v", methodName, err)
 	return
 }
 
@@ -236,7 +242,7 @@ func (h *handle) StreamInterceptor(srv interface{}, ss grpc.ServerStream, info *
 	if ok {
 		return
 	}
-	err = status.Errorf(codes.Internal, "endpoint %s returned with non-RPC error: %v", err)
+	err = status.Errorf(codes.Internal, "endpoint %s returned with non-RPC error: %v", methodName, err)
 	return
 }
 

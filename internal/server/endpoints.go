@@ -7,6 +7,7 @@ import (
 	"log"
 	"reflect"
 	"sync"
+	"unsafe"
 
 	"github.com/LLKennedy/padlock/api/padlockpb"
 	"github.com/google/uuid"
@@ -208,7 +209,7 @@ func (h *handle) ModuleInfo(ctx context.Context, req *padlockpb.ModuleInfoReques
 func (h *handle) getSlotByID(module string, id uint64) (slot p11.Slot, err error) {
 	m, exists := h.app.Modules[module]
 	if !exists {
-		err = status.Errorf(codes.NotFound, "no module for path %s")
+		err = status.Error(codes.NotFound, "no module for path %s")
 		return
 	}
 	slots, err := m.Slots()
@@ -247,7 +248,8 @@ func (h *handle) SlotListMechanisms(ctx context.Context, req *padlockpb.SlotList
 	}
 	res := &padlockpb.SlotListMechanismsResponse{}
 	for _, mechanism := range mechanisms {
-		innerMech, _ := reflect.ValueOf(mechanism).FieldByName("mechanism").Interface().(*pkcs11.Mechanism)
+		// This is really bad, but it's the only way without rewriting p11
+		innerMech := *(*uint)(unsafe.Pointer(reflect.ValueOf(mechanism).FieldByName("mechanism").Elem().FieldByName("Mechanism").UnsafeAddr()))
 		info, err := mechanism.Info()
 		if err != nil {
 			return nil, status.Errorf(codes.Aborted, "getting mechanism info: %v", err)
@@ -255,14 +257,14 @@ func (h *handle) SlotListMechanisms(ctx context.Context, req *padlockpb.SlotList
 		flagData := make([]byte, 8)
 		binary.BigEndian.PutUint64(flagData, uint64(info.Flags))
 		newMech := &padlockpb.Mechanism{
-			Type:       MechanismP11toPB(innerMech.Mechanism),
+			Type:       MechanismP11toPB(innerMech),
 			MinKeySize: uint64(info.MinKeySize),
 			MaxKeySize: uint64(info.MaxKeySize),
 			Flags:      flagData, // TODO: trim this data down to size
 		}
 		res.Mechanisms = append(res.Mechanisms, newMech)
 	}
-	return h.UnimplementedExposedPadlockServer.GetSlotListMechanisms(ctx, req)
+	return res, nil
 }
 
 // SlotInitToken creates the token in the slot
@@ -413,7 +415,11 @@ func (h *handle) SessionListObjects(req *padlockpb.SessionListObjectsRequest, st
 		return err
 	}
 	defer sess.mx.Unlock()
-	objs, err := sess.sess.FindObjects(nil)
+	var template []*pkcs11.Attribute
+	for _, attr := range req.GetTemplate() {
+		template = append(template, pkcs11.NewAttribute(AttributePBtoP11(attr.GetType()), attr.GetValue()))
+	}
+	objs, err := sess.sess.FindObjects(template)
 	if err != nil {
 		return status.Errorf(codes.Aborted, "listing objects: %v", err)
 	}
