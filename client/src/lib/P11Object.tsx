@@ -7,8 +7,10 @@ export interface Props {
 
 export class State { }
 
-export class Module extends React.Component<Props, State> {
+export class P11Object extends React.Component<Props, State> {
 	render() {
 		return <div>TODO</div>
 	}
 }
+
+export default P11Object;
