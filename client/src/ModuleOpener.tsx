@@ -10,6 +10,11 @@ import "./ModuleOpener.css";
 const serverConfig = LoadServerConfig();
 
 const openerID = "padlock-module-opener"
+const containerID = "padlock-module-opener-container"
+const labelID = "padlock-module-opener-label"
+const inputID = "padlock-module-opener-input"
+const buttonID = "padlock-module-opener-button"
+const titleID = "padlock-module-opener-title"
 
 export interface Props {
 
@@ -20,6 +25,7 @@ export class State {
 	selectedModule: string = serverConfig.defaultModule;
 	auth?: AuthToken;
 	info?: ModuleInfo;
+	connecting: boolean = false;
 }
 
 export class ModuleOpener extends React.Component<Props, State> {
@@ -38,27 +44,39 @@ export class ModuleOpener extends React.Component<Props, State> {
 	}
 	render() {
 		if (this.state.info === undefined) return <div id={openerID}>
-			<label key={0}>Module Path</label>
-			<input key={1} value={this.state.selectedModule} onChange={e => this.setState({ selectedModule: e.target.value })}></input>
-			<button key={2} onClick={async () => {
-				let req = new ApplicationConnectRequest();
-				req.auth = this.state.auth;
-				req.module = this.state.selectedModule;
-				try {
-					let stream = await this.state.client.ApplicationConnect(req);
-					let update = await stream.Recv();
-					this.setState({
-						info: update.info,
-					});
-				} catch (err) {
-					console.error(`Failed to connect to module: ${err}`);
-				}
+			<h1 id={titleID}>Padlock PKCS#11</h1>
+			<div id={containerID}>
+				{this.state.connecting ? "Connecting..." :
+					[<label key={0} id={labelID}>Module Path</label>,
+					<input key={1} id={inputID} value={this.state.selectedModule} onChange={e => this.setState({ selectedModule: e.target.value })}></input>,
+					<button key={2} id={buttonID} onClick={async () => {
+						this.setState({
+							connecting: true
+						})
+						try {
+							let req = new ApplicationConnectRequest();
+							req.auth = this.state.auth;
+							req.module = this.state.selectedModule;
+							let stream = await this.state.client.ApplicationConnect(req);
+							let update = await stream.Recv();
+							this.setState({
+								info: update.info,
+							});
+						} catch (err) {
+							console.error(`Failed to connect to module: ${err}`);
+							window.alert(`Failed to connect to module: ${err}`)
+						} finally {
+							this.setState({
+								connecting: false
+							})
+						}
 
-			}}>Connect</button>
-		</div>
-		return <div id={openerID}>
+					}}>Connect</button>]
+				}
+			</div></div>
+		return <div id={openerID}><div id={containerID}>
 			<Module client={this.state.client} info={this.state.info} />
-		</div>
+		</div></div>
 	}
 }
 
