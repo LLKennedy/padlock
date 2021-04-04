@@ -1,8 +1,10 @@
 import Client from "./Client";
 import React from "react";
+import { ModuleInfo } from "@llkennedy/padlock-api";
 
 export interface Props {
-	client: Client
+	client: Client;
+	info: ModuleInfo;
 }
 
 export class State { }
