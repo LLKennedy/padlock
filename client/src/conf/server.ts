@@ -4,7 +4,7 @@ export interface ServerConfig {
 }
 
 export class DefaultServerConfig implements ServerConfig {
-	addressAndPort: string = "localhost:6298";
+	addressAndPort: string = "localhost:6298/api";
 	defaultModule: string = `D:\\\\Downloads\\\\SecurityServerEvaluation-V4.40.0.2\\\\Software\\\\Windows\\\\x86-64\\\\Crypto_APIs\\\\PKCS11_R3\\\\lib\\\\cs_pkcs11_R3.dll`;
 }
 

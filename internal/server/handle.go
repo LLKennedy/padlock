@@ -189,7 +189,11 @@ func Serve(cfg Config) error {
 				if client == nil {
 					http.Error(rw, "Server not read", http.StatusPreconditionFailed)
 				}
-				mercury.ProxyRequest(ctx, rw, r, r.URL.Path[1:], client, uuid.New().String(), logs.StdOutLogger{})
+				apiPrefix := "/api/"
+				if strings.Contains(r.URL.Path, apiPrefix) {
+					proc := r.URL.Path[len(apiPrefix):]
+					mercury.ProxyRequest(ctx, rw, r, proc, client, uuid.New().String(), logs.StdOutLogger{})
+				}
 			}),
 			TLSConfig: tlsConfig,
 		}
