@@ -1,9 +1,7 @@
 import Client from "./Client";
 import React from "react";
 import { AuthToken, ModuleInfo, ModuleListSlotsRequest, SessionCloseRequest, SessionID, SessionLoginRequest, SlotID, SlotInfo, SlotOpenSessionRequest } from "@llkennedy/padlock-api";
-import Slot from "./Slot"
-import ReactModal from "react-modal";
-import P11Object from "./P11Object"
+import Slot from "./Slot";
 
 export interface Props {
 	client: Client;

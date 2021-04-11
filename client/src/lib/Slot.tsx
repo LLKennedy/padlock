@@ -3,6 +3,45 @@ import React from "react";
 import { P11Object, SessionID, SessionListObjectsRequest } from "@llkennedy/padlock-api";
 import { EOFError, ServerStream } from "@llkennedy/mercury";
 import { sleep } from "@llkennedy/sleep.js";
+import { P11Object as ReactP11Object } from "./P11Object";
+
+type styleNames = "container" | "inner-container" | "column" | "table" | "heading";
+
+const styles: ReadonlyMap<styleNames, React.CSSProperties> = new Map<styleNames, React.CSSProperties>([
+	["container", {
+		display: "inline-flex",
+		flexDirection: "column",
+		background: "none",
+		flexGrow: 1,
+		flexShrink: 1,
+	}],
+	["inner-container", {
+		display: "inline-flex",
+		flexDirection: "row",
+		background: "none",
+		justifyItems: "stretch",
+		flexBasis: "200px",
+		flexGrow: 1,
+		flexShrink: 1,
+	}],
+	["column", {
+		display: "inline-flex",
+		flexDirection: "column",
+		flexGrow: 1,
+		flexShrink: 1,
+		flexBasis: "200px",
+		padding: "3pt 3pt",
+		border: "2pt solid blue",
+		margin: "3pt 3pt",
+	}],
+	["heading", {
+		margin: "0 0"
+	}],
+	["table", {
+		margin: "3pt 0",
+		textAlign: "left"
+	}]
+]);
 
 export interface Props {
 	client: Client
@@ -13,6 +52,8 @@ export interface Props {
 
 export class State {
 	objects: P11Object[] = [];
+	selectedObject?: P11Object;
+	loadingObject: boolean = false;
 }
 
 export class Slot extends React.Component<Props, State> {
@@ -56,27 +97,45 @@ export class Slot extends React.Component<Props, State> {
 		}
 	}
 	render() {
-		return <div style={{
-			display: "inline-flex",
-			flexDirection: "column"
-		}}>
-			<h2>{this.props.label} - {this.props.description}</h2>
-			{this.state.objects.length <= 0 ? null : <table>
-				<tbody>
-					<tr>
-						<th>Label</th>
-						<th></th>
-					</tr>
-					{this.state.objects.map((val, i) => {
-						return <tr>
-							<td>{val.label}</td>
-							<td><button onClick={async () => {
+		return <div style={styles.get("container")}>
+			<div style={styles.get("inner-container")}>
+				<div key={this.props.description + "2"} style={styles.get("column")}>
+					<h2 style={styles.get("heading")}>{this.props.label} - {this.props.description}</h2>
+					{this.state.objects.length <= 0 ? null : <table style={styles.get("table")}>
+						<tbody >
+							<tr >
+								<th>Label</th>
+								<th>Controls</th>
+							</tr>
+							{this.state.objects.map((val, i) => {
+								return <tr>
+									<td>{val.label}</td>
+									<td>
+										<button onClick={async () => {
+											this.setState({
+												loadingObject: true
+											})
+										}}>
+											View
+										</button>
+										<button onClick={async () => {
 
-							}}>View</button></td>
-						</tr>
-					})}
-				</tbody>
-			</table>}
+										}}>
+											Delete
+										</button>
+									</td>
+								</tr>
+							})}
+						</tbody>
+					</table>}
+				</div>
+				<div key={this.props.description + "3"} style={styles.get("column")}>
+					{this.state.loadingObject ? "Loading..." : this.state.selectedObject === undefined ? "View an object for more information" : <ReactP11Object client={this.props.client} />}
+				</div>
+			</div>
+			<div style={styles.get("column")}>
+				<h2 style={styles.get("heading")}>Actions</h2>
+			</div>
 		</div>
 
 	}
