@@ -16,9 +16,8 @@ export class State {
 	slots?: SlotInfo[];
 	session?: SessionID;
 	slotID?: SlotID;
-	openModal: boolean = false;
 	selectedSlot?: number;
-	pin: string = "";
+	pins?: ReadonlyMap<number, string> = new Map<number, string>();
 }
 
 export class Module extends React.Component<Props, State> {
@@ -53,6 +52,7 @@ export class Module extends React.Component<Props, State> {
 						<th>Description</th>
 						<th>Label</th>
 						<th></th>
+						<th>PIN</th>
 					</tr>
 					{this.state.slots?.map((val, i) => {
 						return <tr key={i}>
@@ -60,50 +60,49 @@ export class Module extends React.Component<Props, State> {
 							<td>{val.slotDescription}</td>
 							<td>{val.tokenInfo?.label}</td>
 							<td><button onClick={async e => {
-								this.setState({ openModal: true, selectedSlot: val.id })
+								try {
+									let req = new SlotOpenSessionRequest();
+									let slotID = new SlotID();
+									slotID.auth = this.props.auth;
+									slotID.module = this.props.module;
+									slotID.slot = val.id;
+									req.id = slotID;
+									req.writeSession = true; // TODO: allow choice here
+									let sessionStream = await this.props.client.SlotOpenSession(req);
+									let session = await sessionStream.Recv();
+									let sessionID = new SessionID();
+									sessionID.uuid = session.uuid;
+									sessionID.auth = this.props.auth;
+									let loginReq = new SessionLoginRequest();
+									loginReq.id = sessionID;
+									loginReq.loginAsSecurityOfficer = false; // TODO: allow choice here
+									loginReq.pin = this.state.pins?.get(val.id ?? 0) ?? ""; // TODO: input modal
+									await this.props.client.SessionLogin(loginReq);
+									this.setState({
+										session: sessionID,
+										slotID: slotID,
+										selectedSlot: val.id
+									});
+								} catch (err) {
+									const errString = `Failed to log into slot: ${err}`;
+									console.error(errString);
+									alert(errString);
+								}
 							}}>Login</button></td>
+							<td><input type="password" onChange={e => {
+								let mapCopy = new Map<number, string>();
+								for (let [id, pin] of this.state.pins ?? new Map<number, string>()) {
+									mapCopy.set(id, pin);
+								}
+								mapCopy.set(val.id ?? 0, e.target.value);
+								this.setState({
+									pins: mapCopy
+								})
+							}} /></td>
 						</tr>
 					})}
 				</tbody>
 			</table>
-			<ReactModal isOpen={this.state.openModal} onAfterClose={async () => {
-				this.setState({
-					openModal: false
-				})
-				try {
-					let req = new SlotOpenSessionRequest();
-					let slotID = new SlotID();
-					slotID.auth = this.props.auth;
-					slotID.module = this.props.module;
-					slotID.slot = this.state.selectedSlot;
-					req.id = slotID;
-					req.writeSession = true; // TODO: allow choice here
-					let sessionStream = await this.props.client.SlotOpenSession(req);
-					let session = await sessionStream.Recv();
-					let sessionID = new SessionID();
-					sessionID.uuid = session.uuid;
-					sessionID.auth = this.props.auth;
-					let loginReq = new SessionLoginRequest();
-					loginReq.id = sessionID;
-					loginReq.loginAsSecurityOfficer = false; // TODO: allow choice here
-					loginReq.pin = this.state.pin; // TODO: input modal
-					await this.props.client.SessionLogin(loginReq);
-					this.setState({
-						session: sessionID,
-						slotID: slotID,
-					});
-				} catch (err) {
-					const errString = `Failed to log into slot: ${err}`;
-					console.error(errString);
-					alert(errString);
-				}
-			}}>
-				<label>PIN:</label>
-				<input onChange={e => this.setState({
-					pin: e.target.value
-				})} />
-				<button type="submit">Login</button>
-			</ReactModal>
 		</div>
 	}
 }
