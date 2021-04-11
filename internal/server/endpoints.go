@@ -16,6 +16,7 @@ import (
 	"github.com/miekg/pkcs11/p11"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Hello initiates a session with the application, generating an authentication token
@@ -385,6 +386,22 @@ func (h *handle) getSession(sessID, auth string) (sess *serverSession, err error
 	sess.mx.Lock()
 	sess.lastUsed = time.Now()
 	return sess, nil
+}
+
+// SessionKeepalive keeps the session alive
+func (h *handle) SessionKeepalive(ctx context.Context, req *padlockpb.SessionID) (*emptypb.Empty, error) {
+	id, err := h.authenticate(req.GetAuth())
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Closing session for %s\n", id)
+	sessID := req.GetUuid()
+	sess, err := h.getSession(sessID, id.String())
+	if err != nil {
+		return nil, err
+	}
+	sess.mx.Unlock()
+	return &emptypb.Empty{}, nil
 }
 
 // SessionClose closes the session
