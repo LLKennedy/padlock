@@ -1,11 +1,11 @@
 import Client from "./Client";
 import React from "react";
-import { P11Object, SessionID, SessionListObjectsRequest } from "@llkennedy/padlock-api";
+import { AttributeType, ObjectListAttributeValuesRequest, ObjectListAttributeValuesUpdate, P11Object, SessionID, SessionListObjectsRequest } from "@llkennedy/padlock-api";
 import { EOFError, ServerStream } from "@llkennedy/mercury";
 import { sleep } from "@llkennedy/sleep.js";
 import { P11Object as ReactP11Object } from "./P11Object";
 
-type styleNames = "container" | "inner-container" | "column" | "table" | "heading";
+type styleNames = "container" | "inner-container" | "column" | "table" | "heading" | "actions" | "object-row";
 
 const styles: ReadonlyMap<styleNames, React.CSSProperties> = new Map<styleNames, React.CSSProperties>([
 	["container", {
@@ -14,6 +14,8 @@ const styles: ReadonlyMap<styleNames, React.CSSProperties> = new Map<styleNames,
 		background: "none",
 		flexGrow: 1,
 		flexShrink: 1,
+		width: "100%",
+		height: "100%",
 	}],
 	["inner-container", {
 		display: "inline-flex",
@@ -27,6 +29,19 @@ const styles: ReadonlyMap<styleNames, React.CSSProperties> = new Map<styleNames,
 	["column", {
 		display: "inline-flex",
 		flexDirection: "column",
+		alignItems: "center",
+		flexGrow: 1,
+		flexShrink: 1,
+		flexBasis: "200px",
+		padding: "3pt 3pt",
+		border: "2pt solid blue",
+		margin: "3pt 3pt",
+	}],
+	["actions", {
+		display: "block",
+		flexDirection: "column",
+		alignItems: "left",
+		justifyItems: "left",
 		flexGrow: 1,
 		flexShrink: 1,
 		flexBasis: "200px",
@@ -39,7 +54,12 @@ const styles: ReadonlyMap<styleNames, React.CSSProperties> = new Map<styleNames,
 	}],
 	["table", {
 		margin: "3pt 0",
-		textAlign: "left"
+		textAlign: "left",
+		width: "100%",
+		borderCollapse: "collapse"
+	}],
+	["object-row", {
+		border: "0.5pt solid rebeccapurple"
 	}]
 ]);
 
@@ -48,12 +68,14 @@ export interface Props {
 	session: SessionID;
 	label: string;
 	description: string;
+	logout(): void;
 }
 
 export class State {
 	objects: P11Object[] = [];
 	selectedObject?: P11Object;
 	loadingObject: boolean = false;
+	selectedObjectKeyType?: Uint8Array;
 }
 
 export class Slot extends React.Component<Props, State> {
@@ -103,23 +125,64 @@ export class Slot extends React.Component<Props, State> {
 					<h2 style={styles.get("heading")}>{this.props.label} - {this.props.description}</h2>
 					{this.state.objects.length <= 0 ? null : <table style={styles.get("table")}>
 						<tbody >
-							<tr >
+							<tr style={styles.get("object-row")}>
 								<th>Label</th>
 								<th>Controls</th>
 							</tr>
 							{this.state.objects.map((val, i) => {
-								return <tr>
+								return <tr style={styles.get("object-row")}>
 									<td>{val.label}</td>
 									<td>
 										<button onClick={async () => {
 											this.setState({
 												loadingObject: true
 											})
+											let req = new ObjectListAttributeValuesRequest();
+											req.objectId = val.uuid;
+											req.sessionId = this.props.session;
+											req.requestedAttributes = [
+												AttributeType.CKA_KEY_TYPE,
+											];
+											let stream: ServerStream<ObjectListAttributeValuesRequest, ObjectListAttributeValuesUpdate>;
+											try {
+												stream = await this.props.client.ObjectListAttributeValues(req);
+											} catch (err) {
+												this.setState({
+													loadingObject: false
+												})
+												const errString = `Failed to retrieve object attributes: ${err}`;
+												console.error(errString);
+												alert(errString);
+												return;
+											}
+											let keyType = new Uint8Array();
+											try {
+												let attr = await stream.Recv();
+												if (attr.attribute === undefined) {
+													throw new Error("not found");
+												}
+												keyType = attr.attribute.value ?? new Uint8Array();
+												// await stream.Recv();
+											} catch (err) {
+												if (!(err instanceof EOFError)) {
+													this.setState({
+														loadingObject: false
+													})
+													const errString = `Failed to retrieve object from slot: ${err}`;
+													console.error(errString);
+													alert(errString);
+													return;
+												}
+											}
+											this.setState({
+												selectedObject: val,
+												selectedObjectKeyType: keyType,
+												loadingObject: false
+											})
 										}}>
 											View
 										</button>
 										<button onClick={async () => {
-
 										}}>
 											Delete
 										</button>
@@ -130,11 +193,25 @@ export class Slot extends React.Component<Props, State> {
 					</table>}
 				</div>
 				<div key={this.props.description + "3"} style={styles.get("column")}>
-					{this.state.loadingObject ? "Loading..." : this.state.selectedObject === undefined ? "View an object for more information" : <ReactP11Object client={this.props.client} />}
+					{this.state.loadingObject ? "Loading..." : this.state.selectedObject === undefined ? "View an object for more information" : <ReactP11Object client={this.props.client} obj={this.state.selectedObject} session={this.props.session} type={this.state.selectedObjectKeyType ?? new Uint8Array()} />}
 				</div>
 			</div>
-			<div style={styles.get("column")}>
+			<div style={styles.get("actions")}>
 				<h2 style={styles.get("heading")}>Actions</h2>
+				<button onClick={async () => {
+					try {
+						await this.props.client.SessionLogout(this.props.session);
+					} catch (err) {
+						const errString = `Failed to log out of session: ${err}`;
+						console.error(errString);
+						alert(errString);
+					}
+					this.props.logout();
+				}}>Logout</button>
+				<button>Generate</button>
+				<button>Inject</button>
+				<button>Extract</button>
+				<button>Derive</button>
 			</div>
 		</div>
 

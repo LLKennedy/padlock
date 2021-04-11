@@ -9,7 +9,7 @@
 	height: 100%;
 	display: inline-flex;
 	flex-direction: column;
-	align-items: stretch;
+	align-items: center stretch; 
 	justify-content: center;
 	min-height: 100vh;
 }
@@ -24,7 +24,7 @@
 	margin-right: 30pt; 
 	display: inline-flex;
 	flex-direction: column;
-	align-items: stretch;
+	align-items: center;
 	flex-grow: 1;
 	justify-items: center;
 	justify-content: flex-start;
@@ -36,7 +36,7 @@
 }
 
 #padlock-module-opener-input {
-	width: 80%;
+	width: 90%;
 }
 
 #padlock-module-opener-button {
@@ -47,4 +47,8 @@
 	text-align: center;
 	width: max-content;
 	background-color: rgba(0,0,0,0);
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	justify-content: center;
 }

@@ -76,7 +76,15 @@ export class Module extends React.Component<Props, State> {
 	}
 	render() {
 		if (this.state.session !== undefined && this.state.slotID !== undefined) {
-			return <Slot client={this.props.client} session={this.state.session} label={this.state.selectedLabel} description={this.state.selectedDescription} />
+			return <Slot client={this.props.client} session={this.state.session} label={this.state.selectedLabel} description={this.state.selectedDescription} logout={() => {
+				this.setState({
+					session: undefined,
+					slotID: undefined,
+					selectedSlot: undefined,
+					selectedLabel: "",
+					selectedDescription: "",
+				});
+			}} />
 		}
 		return <div>
 			{(this.state.slots?.length ?? 0) === 0 ? "Listing slots..." :

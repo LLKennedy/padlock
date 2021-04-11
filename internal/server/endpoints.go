@@ -394,7 +394,6 @@ func (h *handle) SessionKeepAlive(ctx context.Context, req *padlockpb.SessionID)
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Closing session for %s\n", id)
 	sessID := req.GetUuid()
 	sess, err := h.getSession(sessID, id.String())
 	if err != nil {
