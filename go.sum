@@ -2,6 +2,8 @@ cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/LLKennedy/mercury v0.9.5 h1:a6Z9a8/UTy+YXTMTFRgET3uYIn/y826uxAZxnYwlSpE=
 github.com/LLKennedy/mercury v0.9.5/go.mod h1:qCIhhXZWasNFiOvVWriIA1zdUXRbhm0Hi0Oj9ccNmPE=
+github.com/LLKennedy/mercury v0.9.6 h1:QzXgDBEM7a76ewCODDZrR4tC8mh2QeHlw22dbaeTT5Q=
+github.com/LLKennedy/mercury v0.9.6/go.mod h1:qCIhhXZWasNFiOvVWriIA1zdUXRbhm0Hi0Oj9ccNmPE=
 github.com/LLKennedy/protoc-gen-tsjson v0.5.0 h1:TaoO5secaxzX+rcynYb9cq8bm1Wzse6A2YVtcCl3pgY=
 github.com/LLKennedy/protoc-gen-tsjson v0.5.0/go.mod h1:dCS6J0Oz4Cg7wNa0gnHlhcVHbBMWionhXleXfCR2Rjw=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
