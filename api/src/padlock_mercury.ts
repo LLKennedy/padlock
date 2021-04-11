@@ -7,6 +7,7 @@
  */
 
 import * as mercury from "@llkennedy/mercury";
+import { google } from "@llkennedy/protoc-gen-tsjson";
 import { AuthHello as padlock__AuthHello, SessionLogoutResponse as padlock__SessionLogoutResponse, SlotInitTokenResponse as padlock__SlotInitTokenResponse, ApplicationListModulesRequest as padlock__ApplicationListModulesRequest, AuthToken as padlock__AuthToken, SlotOpenSessionUpdate as padlock__SlotOpenSessionUpdate, SessionCloseResponse as padlock__SessionCloseResponse, SessionCloseRequest as padlock__SessionCloseRequest, SessionLoginRequest as padlock__SessionLoginRequest, ObjectListAttributeValuesRequest as padlock__ObjectListAttributeValuesRequest, ApplicationConnectUpdate as padlock__ApplicationConnectUpdate, ModuleListSlotsResponse as padlock__ModuleListSlotsResponse, ModuleListSlotsRequest as padlock__ModuleListSlotsRequest, ModuleInfoResponse as padlock__ModuleInfoResponse, ApplicationListModulesResponse as padlock__ApplicationListModulesResponse, SlotInitTokenRequest as padlock__SlotInitTokenRequest, SessionListObjectsRequest as padlock__SessionListObjectsRequest, SlotListMechanismsRequest as padlock__SlotListMechanismsRequest, SlotListMechanismsResponse as padlock__SlotListMechanismsResponse, SessionID as padlock__SessionID, SlotOpenSessionRequest as padlock__SlotOpenSessionRequest, SessionLoginResponse as padlock__SessionLoginResponse, ApplicationConnectRequest as padlock__ApplicationConnectRequest, ObjectListAttributeValuesUpdate as padlock__ObjectListAttributeValuesUpdate, ModuleInfoRequest as padlock__ModuleInfoRequest } from "./padlock";
 import { P11Object as padlock__P11Object } from "./pkcs11";
 
@@ -37,6 +38,9 @@ export class ExposedPadlockClient extends mercury.Client {
 	}
 	public async SlotOpenSession(req: padlock__SlotOpenSessionRequest): Promise<mercury.ServerStream<padlock__SlotOpenSessionRequest, padlock__SlotOpenSessionUpdate>> {
 		return this.StartServerStream<padlock__SlotOpenSessionRequest, padlock__SlotOpenSessionUpdate>("SlotOpenSession", req, padlock__SlotOpenSessionUpdate.Parse);
+	}
+	public async SessionKeepAlive(req: padlock__SessionID): Promise<google.protobuf.Empty> {
+		return this.SendUnary("SessionKeepAlive", mercury.HTTPMethod.POST, req, google.protobuf.Empty.Parse);
 	}
 	public async SessionClose(req: padlock__SessionCloseRequest): Promise<padlock__SessionCloseResponse> {
 		return this.SendUnary("SessionClose", mercury.HTTPMethod.DELETE, req, padlock__SessionCloseResponse.Parse);

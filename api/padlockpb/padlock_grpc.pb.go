@@ -4,6 +4,7 @@ package padlockpb
 
 import (
 	context "context"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -33,6 +34,8 @@ type ExposedPadlockClient interface {
 	PostSlotInitToken(ctx context.Context, in *SlotInitTokenRequest, opts ...grpc.CallOption) (*SlotInitTokenResponse, error)
 	// GetSlotOpenSession creates a session on the slot
 	GetSlotOpenSession(ctx context.Context, in *SlotOpenSessionRequest, opts ...grpc.CallOption) (ExposedPadlock_GetSlotOpenSessionClient, error)
+	// PostSessionKeepalive keeps a session alive without taking any action agains the HSM itself
+	PostSessionKeepAlive(ctx context.Context, in *SessionID, opts ...grpc.CallOption) (*empty.Empty, error)
 	// DeleteSessionClose closes the session
 	DeleteSessionClose(ctx context.Context, in *SessionCloseRequest, opts ...grpc.CallOption) (*SessionCloseResponse, error)
 	// PutSessionLogin logs into the session at the application level
@@ -171,6 +174,15 @@ func (x *exposedPadlockGetSlotOpenSessionClient) Recv() (*SlotOpenSessionUpdate,
 	return m, nil
 }
 
+func (c *exposedPadlockClient) PostSessionKeepAlive(ctx context.Context, in *SessionID, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/PostSessionKeepAlive", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *exposedPadlockClient) DeleteSessionClose(ctx context.Context, in *SessionCloseRequest, opts ...grpc.CallOption) (*SessionCloseResponse, error) {
 	out := new(SessionCloseResponse)
 	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/DeleteSessionClose", in, out, opts...)
@@ -282,6 +294,8 @@ type ExposedPadlockServer interface {
 	PostSlotInitToken(context.Context, *SlotInitTokenRequest) (*SlotInitTokenResponse, error)
 	// GetSlotOpenSession creates a session on the slot
 	GetSlotOpenSession(*SlotOpenSessionRequest, ExposedPadlock_GetSlotOpenSessionServer) error
+	// PostSessionKeepalive keeps a session alive without taking any action agains the HSM itself
+	PostSessionKeepAlive(context.Context, *SessionID) (*empty.Empty, error)
 	// DeleteSessionClose closes the session
 	DeleteSessionClose(context.Context, *SessionCloseRequest) (*SessionCloseResponse, error)
 	// PutSessionLogin logs into the session at the application level
@@ -322,6 +336,9 @@ func (UnimplementedExposedPadlockServer) PostSlotInitToken(context.Context, *Slo
 }
 func (UnimplementedExposedPadlockServer) GetSlotOpenSession(*SlotOpenSessionRequest, ExposedPadlock_GetSlotOpenSessionServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetSlotOpenSession not implemented")
+}
+func (UnimplementedExposedPadlockServer) PostSessionKeepAlive(context.Context, *SessionID) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostSessionKeepAlive not implemented")
 }
 func (UnimplementedExposedPadlockServer) DeleteSessionClose(context.Context, *SessionCloseRequest) (*SessionCloseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSessionClose not implemented")
@@ -501,6 +518,24 @@ func (x *exposedPadlockGetSlotOpenSessionServer) Send(m *SlotOpenSessionUpdate) 
 	return x.ServerStream.SendMsg(m)
 }
 
+func _ExposedPadlock_PostSessionKeepAlive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExposedPadlockServer).PostSessionKeepAlive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.ExposedPadlock/PostSessionKeepAlive",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExposedPadlockServer).PostSessionKeepAlive(ctx, req.(*SessionID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ExposedPadlock_DeleteSessionClose_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SessionCloseRequest)
 	if err := dec(in); err != nil {
@@ -626,6 +661,10 @@ var _ExposedPadlock_serviceDesc = grpc.ServiceDesc{
 			Handler:    _ExposedPadlock_PostSlotInitToken_Handler,
 		},
 		{
+			MethodName: "PostSessionKeepAlive",
+			Handler:    _ExposedPadlock_PostSessionKeepAlive_Handler,
+		},
+		{
 			MethodName: "DeleteSessionClose",
 			Handler:    _ExposedPadlock_DeleteSessionClose_Handler,
 		},
@@ -683,6 +722,8 @@ type PadlockClient interface {
 	SlotInitToken(ctx context.Context, in *SlotInitTokenRequest, opts ...grpc.CallOption) (*SlotInitTokenResponse, error)
 	// SlotOpenSession creates a session on the slot
 	SlotOpenSession(ctx context.Context, in *SlotOpenSessionRequest, opts ...grpc.CallOption) (Padlock_SlotOpenSessionClient, error)
+	// SessionKeepalive keeps a session alive without taking any action agains the HSM itself
+	SessionKeepAlive(ctx context.Context, in *SessionID, opts ...grpc.CallOption) (*empty.Empty, error)
 	// SessionClose closes the session
 	SessionClose(ctx context.Context, in *SessionCloseRequest, opts ...grpc.CallOption) (*SessionCloseResponse, error)
 	// SessionLogin logs into the session at the application level
@@ -821,6 +862,15 @@ func (x *padlockSlotOpenSessionClient) Recv() (*SlotOpenSessionUpdate, error) {
 	return m, nil
 }
 
+func (c *padlockClient) SessionKeepAlive(ctx context.Context, in *SessionID, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/SessionKeepAlive", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *padlockClient) SessionClose(ctx context.Context, in *SessionCloseRequest, opts ...grpc.CallOption) (*SessionCloseResponse, error) {
 	out := new(SessionCloseResponse)
 	err := c.cc.Invoke(ctx, "/padlock.Padlock/SessionClose", in, out, opts...)
@@ -932,6 +982,8 @@ type PadlockServer interface {
 	SlotInitToken(context.Context, *SlotInitTokenRequest) (*SlotInitTokenResponse, error)
 	// SlotOpenSession creates a session on the slot
 	SlotOpenSession(*SlotOpenSessionRequest, Padlock_SlotOpenSessionServer) error
+	// SessionKeepalive keeps a session alive without taking any action agains the HSM itself
+	SessionKeepAlive(context.Context, *SessionID) (*empty.Empty, error)
 	// SessionClose closes the session
 	SessionClose(context.Context, *SessionCloseRequest) (*SessionCloseResponse, error)
 	// SessionLogin logs into the session at the application level
@@ -972,6 +1024,9 @@ func (UnimplementedPadlockServer) SlotInitToken(context.Context, *SlotInitTokenR
 }
 func (UnimplementedPadlockServer) SlotOpenSession(*SlotOpenSessionRequest, Padlock_SlotOpenSessionServer) error {
 	return status.Errorf(codes.Unimplemented, "method SlotOpenSession not implemented")
+}
+func (UnimplementedPadlockServer) SessionKeepAlive(context.Context, *SessionID) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SessionKeepAlive not implemented")
 }
 func (UnimplementedPadlockServer) SessionClose(context.Context, *SessionCloseRequest) (*SessionCloseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SessionClose not implemented")
@@ -1151,6 +1206,24 @@ func (x *padlockSlotOpenSessionServer) Send(m *SlotOpenSessionUpdate) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Padlock_SessionKeepAlive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).SessionKeepAlive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/SessionKeepAlive",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).SessionKeepAlive(ctx, req.(*SessionID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Padlock_SessionClose_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SessionCloseRequest)
 	if err := dec(in); err != nil {
@@ -1274,6 +1347,10 @@ var _Padlock_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SlotInitToken",
 			Handler:    _Padlock_SlotInitToken_Handler,
+		},
+		{
+			MethodName: "SessionKeepAlive",
+			Handler:    _Padlock_SessionKeepAlive_Handler,
 		},
 		{
 			MethodName: "SessionClose",

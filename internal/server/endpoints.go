@@ -7,6 +7,7 @@ import (
 	"log"
 	"reflect"
 	"sync"
+	"time"
 	"unsafe"
 
 	"github.com/LLKennedy/padlock/api/padlockpb"
@@ -334,11 +335,29 @@ func (h *handle) SlotOpenSession(req *padlockpb.SlotOpenSessionRequest, stream p
 	}
 	sessID := uuid.New().String()
 	h.sessionMx.Lock()
-	h.sessions[sessID] = serverSession{
-		sess: session,
-		mx:   &sync.Mutex{},
-		objs: make(map[string]p11.Object),
+	ss := &serverSession{
+		sess:     session,
+		mx:       &sync.Mutex{},
+		objs:     make(map[string]p11.Object),
+		lastUsed: time.Now(),
 	}
+	h.sessions[sessID] = ss
+	go func() {
+		ticker := time.NewTicker(10 * time.Second)
+		for {
+			<-ticker.C
+			ss.mx.Lock()
+			latest := ss.lastUsed
+			ss.mx.Unlock()
+			if time.Now().Sub(latest) > time.Minute {
+				ticker.Stop()
+				h.sessionMx.Lock()
+				delete(h.sessions, sessID)
+				h.sessionMx.Unlock()
+				return
+			}
+		}
+	}()
 	h.sessionAuth[sessID] = id.String()
 	h.sessionMx.Unlock()
 	err = stream.Send(&padlockpb.SlotOpenSessionUpdate{
@@ -355,15 +374,16 @@ func (h *handle) SlotOpenSession(req *padlockpb.SlotOpenSessionRequest, stream p
 	return nil
 }
 
-func (h *handle) getSession(sessID, auth string) (sess serverSession, err error) {
+func (h *handle) getSession(sessID, auth string) (sess *serverSession, err error) {
 	h.sessionMx.RLock()
 	authID := h.sessionAuth[sessID]
 	sess = h.sessions[sessID]
 	h.sessionMx.RUnlock()
 	if auth != authID {
-		return serverSession{}, status.Error(codes.PermissionDenied, "not allowed to access this session or session does not exist")
+		return nil, status.Error(codes.PermissionDenied, "not allowed to access this session or session does not exist")
 	}
 	sess.mx.Lock()
+	sess.lastUsed = time.Now()
 	return sess, nil
 }
 

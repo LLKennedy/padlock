@@ -1,6 +1,6 @@
 import Client from "./Client";
 import React from "react";
-import { AuthToken, ModuleInfo, ModuleListSlotsRequest, SessionID, SessionLoginRequest, SlotID, SlotInfo, SlotOpenSessionRequest } from "@llkennedy/padlock-api";
+import { AuthToken, ModuleInfo, ModuleListSlotsRequest, SessionCloseRequest, SessionID, SessionLoginRequest, SlotID, SlotInfo, SlotOpenSessionRequest } from "@llkennedy/padlock-api";
 import Slot from "./Slot"
 import ReactModal from "react-modal";
 import P11Object from "./P11Object"
@@ -39,6 +39,26 @@ export class Module extends React.Component<Props, State> {
 			console.error(errString);
 			alert(errString);
 		}
+	}
+	async componentWillUnmount() {
+		if (this.state.session !== undefined) {
+			let req = new SessionCloseRequest();
+			req.id = this.state.session;
+			try {
+				await this.props.client.SessionClose(req);
+			} catch (err) {
+				const errString = `Failed to close session: ${err}`;
+				console.error(errString);
+				alert(errString);
+			}
+		}
+		this.setState({
+			slots: undefined,
+			session: undefined,
+			pins: undefined,
+			selectedSlot: undefined,
+			slotID: undefined,
+		})
 	}
 	render() {
 		if (this.state.session !== undefined && this.state.slotID !== undefined) {

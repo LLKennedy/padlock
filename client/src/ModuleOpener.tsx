@@ -40,6 +40,14 @@ export class ModuleOpener extends React.Component<Props, State> {
 				console.error(`Failed to initiate server: ${err}`);
 			})
 	}
+	componentWillUnmount() {
+		this.setState({
+			selectedModule: serverConfig.defaultModule,
+			auth: undefined,
+			info: undefined,
+			connecting: false,
+		});
+	}
 	render() {
 		return <div id={openerID}>
 			<h1 id={titleID}>Padlock PKCS#11</h1>

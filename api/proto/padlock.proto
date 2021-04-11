@@ -10,6 +10,7 @@ option (tsjson.import_path) = "padlock";
 
 import "pkcs11.proto";
 import "attributes.proto";
+import "google/protobuf/empty.proto";
 
 service ExposedPadlock {
 	// Auth RPCs
@@ -42,6 +43,8 @@ service ExposedPadlock {
 
 	// Session RPCs
 
+	// PostSessionKeepalive keeps a session alive without taking any action agains the HSM itself
+	rpc PostSessionKeepAlive(SessionID) returns (google.protobuf.Empty);
 	// DeleteSessionClose closes the session
 	rpc DeleteSessionClose(SessionCloseRequest) returns (SessionCloseResponse);
 	// PutSessionLogin logs into the session at the application level
@@ -88,6 +91,8 @@ service Padlock {
 
 	// Session RPCs
 
+	// SessionKeepalive keeps a session alive without taking any action agains the HSM itself
+	rpc SessionKeepAlive(SessionID) returns (google.protobuf.Empty);
 	// SessionClose closes the session
 	rpc SessionClose(SessionCloseRequest) returns (SessionCloseResponse);
 	// SessionLogin logs into the session at the application level
