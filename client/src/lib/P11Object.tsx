@@ -1,7 +1,9 @@
 import Client from "./Client";
 import React from "react";
-import { P11Object as protoP11, SessionID } from "@llkennedy/padlock-api";
-
+import { AttributeType, ObjectListAttributeValuesRequest, ObjectListAttributeValuesUpdate, P11Object as protoP11, SessionID } from "@llkennedy/padlock-api";
+import { AttrToKeyType, KeyTypes } from "./const/KeyType";
+import { EOFError, ServerStream } from "@llkennedy/mercury";
+import { Decode } from "./const/Decode";
 
 export interface Props {
 	client: Client,
@@ -10,66 +12,84 @@ export interface Props {
 	type: Uint8Array,
 }
 
-export class State { }
+export class State {
+	keyType: KeyTypes = KeyTypes.INVALID;
+	attrs?: ReadonlyMap<AttributeType, Uint8Array>;
+}
+
+const requestAttrs: ReadonlyMap<KeyTypes, readonly AttributeType[]> = new Map<KeyTypes, readonly AttributeType[]>([
+	[KeyTypes.CKK_AES, [
+		AttributeType.CKA_CHECK_VALUE,
+		AttributeType.CKA_CLASS,
+		AttributeType.CKA_PRIVATE,
+		AttributeType.CKA_SENSITIVE,
+	]],
+	[KeyTypes.CKK_RSA, []],
+	[KeyTypes.CKK_ECDSA, []],
+	[KeyTypes.CKK_DES, []],
+	[KeyTypes.CKK_DES2, []],
+	[KeyTypes.CKK_DES3, []],
+	[KeyTypes.CKK_GENERIC_SECRET, []],
+]);
 
 export class P11Object extends React.Component<Props, State> {
+	constructor(props: Props) {
+		super(props);
+		let state = new State();
+		state.keyType = AttrToKeyType(props.type);
+		this.state = state;
+	}
+	async componentDidMount() {
+		let req = new ObjectListAttributeValuesRequest();
+		req.objectId = this.props.obj.uuid;
+		req.sessionId = this.props.session;
+		let reqAttrs = requestAttrs.get(this.state.keyType);
+		if (reqAttrs === undefined) {
+			console.warn(`Key type ${KeyTypes[this.state.keyType]}=${this.state.keyType} not supported`);
+			return;
+		}
+		req.requestedAttributes = [...reqAttrs];
+		let stream: ServerStream<ObjectListAttributeValuesRequest, ObjectListAttributeValuesUpdate>;
+		try {
+			stream = await this.props.client.ObjectListAttributeValues(req);
+		} catch (err) {
+			const errString = `Failed to list key-specific attributes: ${err}`;
+			console.error(errString);
+			alert(errString);
+			return;
+		}
+		let attrs = new Map<AttributeType, Uint8Array>();
+		while (true) {
+			try {
+				let attr = await stream.Recv();
+				if (attr.attribute?.value !== undefined && attr.attribute?.type !== undefined) {
+					attrs.set(attr.attribute.type, attr.attribute.value);
+				}
+			} catch (err) {
+				if (err instanceof EOFError) {
+					break;
+				}
+				const errString = `Failed to get key-specific attribute: ${err}`;
+				console.error(errString);
+				alert(errString);
+				return;
+			}
+		}
+		this.setState({
+			attrs: attrs,
+		})
+	}
 	render() {
 		return <div>
 			<h2>{this.props.obj.label}</h2>
-			<div>{KeyTypes[this.props.type[0]]}={this.props.type[0]}</div>
+			<div>{KeyTypes[this.state.keyType]}={this.state.keyType}</div>
+			<div>
+				{this.state.attrs === undefined ? null : Array.from(this.state.attrs).map(([type, val]) => {
+					return <div>{AttributeType[type]}={Decode(type, val)}</div>
+				})}
+			</div>
 		</div>
 	}
 }
 
 export default P11Object;
-
-export enum KeyTypes {
-	CKK_RSA = 0x00000000,
-	CKK_DSA = 0x00000001,
-	CKK_DH = 0x00000002,
-	CKK_ECDSA = 0x00000003,
-	CKK_EC = 0x00000003,
-	CKK_X9_42_DH = 0x00000004,
-	CKK_KEA = 0x00000005,
-	CKK_GENERIC_SECRET = 0x00000010,
-	CKK_RC2 = 0x00000011,
-	CKK_RC4 = 0x00000012,
-	CKK_DES = 0x00000013,
-	CKK_DES2 = 0x00000014,
-	CKK_DES3 = 0x00000015,
-	CKK_CAST = 0x00000016,
-	CKK_CAST3 = 0x00000017,
-	CKK_CAST5 = 0x00000018,
-	CKK_CAST128 = 0x00000018,
-	CKK_RC5 = 0x00000019,
-	CKK_IDEA = 0x0000001A,
-	CKK_SKIPJACK = 0x0000001B,
-	CKK_BATON = 0x0000001C,
-	CKK_JUNIPER = 0x0000001D,
-	CKK_CDMF = 0x0000001E,
-	CKK_AES = 0x0000001F,
-	CKK_BLOWFISH = 0x00000020,
-	CKK_TWOFISH = 0x00000021,
-	CKK_SECURID = 0x00000022,
-	CKK_HOTP = 0x00000023,
-	CKK_ACTI = 0x00000024,
-	CKK_CAMELLIA = 0x00000025,
-	CKK_ARIA = 0x00000026,
-	CKK_SHA512_224_HMAC = 0x00000027,
-	CKK_SHA512_256_HMAC = 0x00000028,
-	CKK_SHA512_T_HMAC = 0x00000029,
-	CKK_SHA_1_HMAC = 0x00000028,
-	CKK_SHA224_HMAC = 0x0000002E,
-	CKK_SHA256_HMAC = 0x0000002B,
-	CKK_SHA384_HMAC = 0x0000002C,
-	CKK_SHA512_HMAC = 0x0000002D,
-	CKK_SEED = 0x0000002F,
-	CKK_GOSTR3410 = 0x00000030,
-	CKK_GOSTR3411 = 0x00000031,
-	CKK_GOST28147 = 0x00000032,
-	CKK_SHA3_224_HMAC = 0x00000033,
-	CKK_SHA3_256_HMAC = 0x00000034,
-	CKK_SHA3_384_HMAC = 0x00000035,
-	CKK_SHA3_512_HMAC = 0x00000036,
-	CKK_VENDOR_DEFINED = 0x80000000,
-}
