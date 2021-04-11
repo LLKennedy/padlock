@@ -389,7 +389,7 @@ func (h *handle) getSession(sessID, auth string) (sess *serverSession, err error
 }
 
 // SessionKeepalive keeps the session alive
-func (h *handle) SessionKeepalive(ctx context.Context, req *padlockpb.SessionID) (*emptypb.Empty, error) {
+func (h *handle) SessionKeepAlive(ctx context.Context, req *padlockpb.SessionID) (*emptypb.Empty, error) {
 	id, err := h.authenticate(req.GetAuth())
 	if err != nil {
 		return nil, err
@@ -474,6 +474,7 @@ func (h *handle) SessionLogout(ctx context.Context, req *padlockpb.SessionID) (*
 
 // SessionListObjects lists the objects available in the session
 func (h *handle) SessionListObjects(req *padlockpb.SessionListObjectsRequest, stream padlockpb.Padlock_SessionListObjectsServer) error {
+	log.Printf("%#v\n", req)
 	id, err := h.authenticate(req.GetId().GetAuth())
 	if err != nil {
 		return err
