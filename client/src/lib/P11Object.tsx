@@ -180,6 +180,9 @@ export class P11Object extends React.Component<Props, State> {
 				if (attr.attribute?.value !== undefined && attr.attribute?.type !== undefined) {
 					attrs.set(attr.attribute.type, attr.attribute.value);
 				}
+				this.setState({
+					attrs: attrs,
+				})
 			} catch (err) {
 				if (err instanceof EOFError) {
 					break;
