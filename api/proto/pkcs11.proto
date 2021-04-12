@@ -51,15 +51,51 @@ message TokenInfo {
 }
 
 message Version {
-	uint32 Major = 1;
-	uint32 Minor = 2;
+	uint32 major = 1;
+	uint32 minor = 2;
 }
 
-message Mechanism {
+message SupportedMechanism {
 	MechanismType type = 1;
 	uint64 min_key_size = 2;
 	uint64 max_key_size = 3;
 	bytes flags = 4;
+}
+
+message Mechanism {
+	MechanismType type = 1;
+	oneof data {
+		bytes raw = 101;
+		MechanismECDH1DeriveParams ecdh1 = 102;
+		MechanismGCMParams gcm = 103;
+		MechanismOAEPParams oaep = 104;
+		MechanismPSSParams pss = 105;
+	}
+}
+
+message MechanismECDH1DeriveParams {
+	uint32 kdf = 1;
+	bytes shared_data = 2;
+	bytes public_key_data = 3;
+}
+
+message MechanismGCMParams {
+	bytes iv = 1;
+	bytes aad = 2;
+	uint32 tag_size = 3;
+}
+
+message MechanismOAEPParams {
+	uint32 hash_alg = 1;
+	uint32 mgf = 2;
+	uint32 source_type = 3;
+	bytes source_data = 4;
+}
+
+message MechanismPSSParams {
+	uint32 hash_alg = 1;
+	uint32 mgf = 2;
+	uint32 salt_length = 3;
 }
 
 message Attribute {

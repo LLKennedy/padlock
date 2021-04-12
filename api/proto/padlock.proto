@@ -288,17 +288,29 @@ message SessionListObjectsRequest {
 	repeated Attribute template = 2;
 }
 
-message SessionCreateObjectRequest {}
+message SessionCreateObjectRequest {
+	SessionID id = 1;
+	repeated Attribute attributes = 2;
+}
 
-message SessionGenerateRandomRequest {}
+message SessionGenerateRandomRequest {
+	SessionID id = 1;
+	uint32 length = 2;
+}
 
-message SessionGenerateRandomResponse {}
+message SessionGenerateRandomResponse {
+	bytes data = 1;
+}
 
-message SessionGenerateKeyPairRequest {}
+message SessionGenerateKeyPairRequest {
+	SessionID id = 1;
+}
 
 message SessionGenerateKeyPairResponse {}
 
-message SessionGenerateKeyRequest {}
+message SessionGenerateKeyRequest {
+	SessionID id = 1;
+}
 
 message SessionGenerateKeyResponse {}
 
@@ -318,6 +330,14 @@ message ObjectListAttributeValuesUpdate {
 message ObjectEncryptRequest {}
 
 message ObjectEncryptResponse {}
+
+message ObjectEncryptSegmentedRequest {}
+
+message ObjectEncryptSegmentedResponse {}
+
+message ObjectDecryptRequest {}
+
+message ObjectDecryptResponse {}
 
 message ObjectDecryptSegmentedRequest {}
 
@@ -348,3 +368,7 @@ message ObjectUnwrapKeyRequest {}
 message ObjectDestroyObjectRequest {}
 
 message ObjectDestroyObjectResponse {}
+
+message ObjectCopyObjectRequest {}
+
+message ObjectCopyObjectResponse {}
