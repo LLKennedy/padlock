@@ -184,6 +184,10 @@ export class Slot extends React.Component<Props, State> {
 										</button>
 										<button onClick={async () => {
 										}}>
+											Copy
+										</button>
+										<button onClick={async () => {
+										}}>
 											Delete
 										</button>
 									</td>
@@ -198,7 +202,7 @@ export class Slot extends React.Component<Props, State> {
 			</div>
 			<div style={styles.get("actions")}>
 				<h2 style={styles.get("heading")}>Actions</h2>
-				<button onClick={async () => {
+				<div><button onClick={async () => {
 					try {
 						await this.props.client.SessionLogout(this.props.session);
 					} catch (err) {
@@ -207,11 +211,13 @@ export class Slot extends React.Component<Props, State> {
 						alert(errString);
 					}
 					this.props.logout();
-				}}>Logout</button>
+				}}>Logout</button></div>
 				<button>Generate</button>
 				<button>Inject</button>
 				<button>Extract</button>
 				<button>Derive</button>
+				<button>Encrypt</button>
+				<button>Decrypt</button>
 			</div>
 		</div>
 

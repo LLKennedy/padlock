@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/LLKennedy/padlock/api/padlockpb"
-	"github.com/miekg/pkcs11"
+	"github.com/llkennedy/pkcs11"
 )
 
 // AttributePBtoP11 converts attribute enums

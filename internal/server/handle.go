@@ -24,7 +24,7 @@ import (
 	"github.com/LLKennedy/padlock/api/padlockpb"
 	"github.com/LLKennedy/padlock/padlocklib"
 	"github.com/google/uuid"
-	"github.com/miekg/pkcs11/p11"
+	"github.com/llkennedy/pkcs11/p11"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"

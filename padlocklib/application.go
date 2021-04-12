@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/miekg/pkcs11/p11"
+	"github.com/llkennedy/pkcs11/p11"
 )
 
 // Application is a Padlock application, maintaining module and session state for an entire multi-threaded application.

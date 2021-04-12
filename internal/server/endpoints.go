@@ -12,8 +12,8 @@ import (
 
 	"github.com/LLKennedy/padlock/api/padlockpb"
 	"github.com/google/uuid"
-	"github.com/miekg/pkcs11"
-	"github.com/miekg/pkcs11/p11"
+	"github.com/llkennedy/pkcs11"
+	"github.com/llkennedy/pkcs11/p11"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
