@@ -140,7 +140,7 @@ service Padlock {
 	// SessionGenerateKeyPair generates a keypair
 	rpc SessionGenerateKeyPair(SessionGenerateKeyPairRequest) returns (SessionGenerateKeyPairResponse);
 	// SessionGenerateKey generates a key
-	rpc SessionGenerateKey(SessionGenerateKeyRequest) returns (SessionGenerateKeyResponse);
+	rpc SessionGenerateKey(SessionGenerateKeyRequest) returns (P11Object);
 
 	// Object RPCs
 
@@ -149,19 +149,19 @@ service Padlock {
 	// Encrypt encrypts data
 	rpc Encrypt(ObjectEncryptRequest) returns (ObjectEncryptResponse);
 	// EncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
-	rpc EncryptSegmented(ObjectEncryptSegmentedRequest) returns (ObjectEncryptSegmentedResponse);
+	rpc EncryptSegmented(stream ObjectEncryptSegmentedRequest) returns (stream ObjectEncryptSegmentedResponse);
 	// Decrypt decrypts data
 	rpc Decrypt(ObjectDecryptRequest) returns (ObjectDecryptResponse);
 	// DecryptSegmented decrypts multiple data segments individually then one final one, for those few mechanisms where it matters
-	rpc DecryptSegmented(ObjectDecryptSegmentedRequest) returns (ObjectDecryptSegmentedResponse);
+	rpc DecryptSegmented(stream ObjectDecryptSegmentedRequest) returns (stream ObjectDecryptSegmentedResponse);
 	// Sign signs a message
 	rpc Sign(ObjectSignRequest) returns (ObjectSignResponse);
 	// SignSegmented signs multiple data segments individually then one final part, for those few mechanisms where it matters
-	rpc SignSegmented(ObjectSignSegmentedRequest) returns (ObjectSignSegmentedResponse);
+	rpc SignSegmented(stream ObjectSignSegmentedRequest) returns (ObjectSignSegmentedResponse);
 	// Verify verifies a message and signature
 	rpc Verify(ObjectVerifyRequest) returns (ObjectVerifyResponse);
 	// VerifySegmented verifies multiple data segments individually then the final signature, for those  few mechanisms where it matters.
-	rpc VerifySegmented(ObjectVerifySegmentedRequest) returns (ObjectVerifySegmentedResponse);
+	rpc VerifySegmented(stream ObjectVerifySegmentedRequest) returns (ObjectVerifySegmentedResponse);
 	// WrapKey wraps a key
 	rpc WrapKey(ObjectWrapKeyRequest) returns (ObjectWrapKeyResponse);
 	// UnwrapKey unwraps a key
@@ -304,19 +304,29 @@ message SessionGenerateRandomResponse {
 
 message SessionGenerateKeyPairRequest {
 	SessionID id = 1;
+	Mechanism mech = 2;
+	repeated Attribute private_attributes = 3;
+	repeated Attribute public_attributes = 4;
 }
 
-message SessionGenerateKeyPairResponse {}
+message SessionGenerateKeyPairResponse {
+	P11Object private = 1;
+	P11Object public = 2;
+}
 
 message SessionGenerateKeyRequest {
 	SessionID id = 1;
+	Mechanism mech = 2;
+	repeated Attribute attributes = 3;
 }
 
-message SessionGenerateKeyResponse {}
-
-message ObjectListAttributeValuesRequest {
+message ObjectID {
 	SessionID session_id = 1;
 	string object_id = 2;
+}
+
+message ObjectListAttributeValuesRequest {
+	ObjectID object_id = 1;
 	repeated AttributeType requested_attributes = 3;
 }
 
@@ -327,48 +337,98 @@ message ObjectListAttributeValuesUpdate {
 	}
 }
 
-message ObjectEncryptRequest {}
+message ObjectEncryptRequest {
+	ObjectID object_id = 1; 
+	repeated Mechanism mechs = 2;
+	bytes plain_text = 3;
+}
 
-message ObjectEncryptResponse {}
+message ObjectEncryptResponse {
+	bytes encrypted = 1;
+}
 
-message ObjectEncryptSegmentedRequest {}
+message ObjectEncryptSegmentedRequest {
+	ObjectID object_id = 1;
+	repeated Mechanism mechs = 2;
+	repeated bytes message_parts = 3;
+}
 
-message ObjectEncryptSegmentedResponse {}
+message ObjectEncryptSegmentedResponse {
 
-message ObjectDecryptRequest {}
+}
 
-message ObjectDecryptResponse {}
+message ObjectDecryptRequest {
+	ObjectID object_id = 1;
+}
 
-message ObjectDecryptSegmentedRequest {}
+message ObjectDecryptResponse {
 
-message ObjectDecryptSegmentedResponse {}
+}
 
-message ObjectSignRequest {}
+message ObjectDecryptSegmentedRequest {
+	ObjectID object_id = 1;
+}
 
-message ObjectSignResponse {}
+message ObjectDecryptSegmentedResponse {
 
-message ObjectSignSegmentedRequest {}
+}
 
-message ObjectSignSegmentedResponse {}
+message ObjectSignRequest {
+	ObjectID object_id = 1;
+}
 
-message ObjectVerifyRequest {}
+message ObjectSignResponse {
 
-message ObjectVerifyResponse {}
+}
 
-message ObjectVerifySegmentedRequest {}
+message ObjectSignSegmentedRequest {
+	ObjectID object_id = 1;
+}
 
-message ObjectVerifySegmentedResponse {}
+message ObjectSignSegmentedResponse {
 
-message ObjectWrapKeyRequest {}
+}
 
-message ObjectWrapKeyResponse {}
+message ObjectVerifyRequest {
+	ObjectID object_id = 1;
+}
 
-message ObjectUnwrapKeyRequest {}
+message ObjectVerifyResponse {
 
-message ObjectDestroyObjectRequest {}
+}
 
-message ObjectDestroyObjectResponse {}
+message ObjectVerifySegmentedRequest {
+	ObjectID object_id = 1;
+}
 
-message ObjectCopyObjectRequest {}
+message ObjectVerifySegmentedResponse {
 
-message ObjectCopyObjectResponse {}
+}
+
+message ObjectWrapKeyRequest {
+	ObjectID object_id = 1;
+}
+
+message ObjectWrapKeyResponse {
+
+}
+
+message ObjectUnwrapKeyRequest {
+	ObjectID object_id = 1;
+}
+
+message ObjectDestroyObjectRequest {
+	ObjectID object_id = 1;
+}
+
+message ObjectDestroyObjectResponse {
+
+}
+
+message ObjectCopyObjectRequest {
+	ObjectID object_id = 1;
+}
+
+message ObjectCopyObjectResponse {
+
+}
