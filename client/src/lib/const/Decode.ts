@@ -18,7 +18,6 @@ export function Decode(type: AttributeType, value: Uint8Array) {
 }
 
 function toHex(n: number): string {
-	console.log("to hex")
 	let hex = n.toString(16);
 	if (hex.length % 2 !== 0) {
 		hex = "0" + hex;
