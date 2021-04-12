@@ -53,11 +53,43 @@ service ExposedPadlock {
 	rpc PutSessionLogout(SessionID) returns (SessionLogoutResponse);
 	// GetSessionListObjects lists the objects available in the session
 	rpc GetSessionListObjects(SessionListObjectsRequest) returns (stream P11Object);
+	// PostSessionCreateObject creates an object
+	rpc PostSessionCreateObject(SessionCreateObjectRequest) returns (P11Object);
+	// PostSessionGenerateRandom generates random data, exercising the CSPRNG
+	rpc PostSessionGenerateRandom(SessionGenerateRandomRequest) returns (SessionGenerateRandomResponse);
+	// PostSessionGenerateKeyPair generates a keypair
+	rpc PostSessionGenerateKeyPair(SessionGenerateKeyPairRequest) returns (SessionGenerateKeyPairResponse);
+	// PostSessionGenerateKey generates a key
+	rpc PostSessionGenerateKey(SessionGenerateKeyRequest) returns (SessionGenerateKeyResponse);
 
 	// Object RPCs
 
 	// GetObjectListAttributeValues lists values for the requested attributes
 	rpc GetObjectListAttributeValues(ObjectListAttributeValuesRequest) returns (stream ObjectListAttributeValuesUpdate);
+	// PostEncrypt encrypts data
+	rpc PostEncrypt(ObjectEncryptRequest) returns (ObjectEncryptResponse);
+	// PostEncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	rpc PostEncryptSegmented(ObjectEncryptSegmentedRequest) returns (ObjectEncryptSegmentedResponse);
+	// PostDecrypt decrypts data
+	rpc PostDecrypt(ObjectDecryptRequest) returns (ObjectDecryptResponse);
+	// PostDecryptSegmented decrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	rpc PostDecryptSegmented(ObjectDecryptSegmentedRequest) returns (ObjectDecryptSegmentedResponse);
+	// PostSign signs a message
+	rpc PostSign(ObjectSignRequest) returns (ObjectSignResponse);
+	// PostSignSegmented signs multiple data segments individually then one final part, for those few mechanisms where it matters
+	rpc PostSignSegmented(ObjectSignSegmentedRequest) returns (ObjectSignSegmentedResponse);
+	// PostVerify verifies a message and signature
+	rpc PostVerify(ObjectVerifyRequest) returns (ObjectVerifyResponse);
+	// PostVerifySegmented verifies multiple data segments individually then the final signature, for those  few mechanisms where it matters.
+	rpc PostVerifySegmented(ObjectVerifySegmentedRequest) returns (ObjectVerifySegmentedResponse);
+	// PutWrapKey wraps a key
+	rpc PutWrapKey(ObjectWrapKeyRequest) returns (ObjectWrapKeyResponse);
+	// PutUnwrapKey unwraps a key
+	rpc PutUnwrapKey(ObjectUnwrapKeyRequest) returns (P11Object);
+	// DeleteDestroyObject destroys an object
+	rpc DeleteDestroyObject(ObjectDestroyObjectRequest) returns (ObjectDestroyObjectResponse);
+	// PutCopyObject copies an object with new attributes if possible
+	rpc PutCopyObject(ObjectCopyObjectRequest) returns (P11Object);
 }
 
 service Padlock {
@@ -101,11 +133,43 @@ service Padlock {
 	rpc SessionLogout(SessionID) returns (SessionLogoutResponse);
 	// SessionListObjects lists the objects available in the session
 	rpc SessionListObjects(SessionListObjectsRequest) returns (stream P11Object);
+	// SessionCreateObject creates an object
+	rpc SessionCreateObject(SessionCreateObjectRequest) returns (P11Object);
+	// SessionGenerateRandom generates random data, exercising the CSPRNG
+	rpc SessionGenerateRandom(SessionGenerateRandomRequest) returns (SessionGenerateRandomResponse);
+	// SessionGenerateKeyPair generates a keypair
+	rpc SessionGenerateKeyPair(SessionGenerateKeyPairRequest) returns (SessionGenerateKeyPairResponse);
+	// SessionGenerateKey generates a key
+	rpc SessionGenerateKey(SessionGenerateKeyRequest) returns (SessionGenerateKeyResponse);
 
 	// Object RPCs
 
 	// ObjectListAttributeValues lists values for the requested attributes
 	rpc ObjectListAttributeValues(ObjectListAttributeValuesRequest) returns (stream ObjectListAttributeValuesUpdate);
+	// Encrypt encrypts data
+	rpc Encrypt(ObjectEncryptRequest) returns (ObjectEncryptResponse);
+	// EncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	rpc EncryptSegmented(ObjectEncryptSegmentedRequest) returns (ObjectEncryptSegmentedResponse);
+	// Decrypt decrypts data
+	rpc Decrypt(ObjectDecryptRequest) returns (ObjectDecryptResponse);
+	// DecryptSegmented decrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	rpc DecryptSegmented(ObjectDecryptSegmentedRequest) returns (ObjectDecryptSegmentedResponse);
+	// Sign signs a message
+	rpc Sign(ObjectSignRequest) returns (ObjectSignResponse);
+	// SignSegmented signs multiple data segments individually then one final part, for those few mechanisms where it matters
+	rpc SignSegmented(ObjectSignSegmentedRequest) returns (ObjectSignSegmentedResponse);
+	// Verify verifies a message and signature
+	rpc Verify(ObjectVerifyRequest) returns (ObjectVerifyResponse);
+	// VerifySegmented verifies multiple data segments individually then the final signature, for those  few mechanisms where it matters.
+	rpc VerifySegmented(ObjectVerifySegmentedRequest) returns (ObjectVerifySegmentedResponse);
+	// WrapKey wraps a key
+	rpc WrapKey(ObjectWrapKeyRequest) returns (ObjectWrapKeyResponse);
+	// UnwrapKey unwraps a key
+	rpc UnwrapKey(ObjectUnwrapKeyRequest) returns (P11Object);
+	// DestroyObject destroys an object
+	rpc DestroyObject(ObjectDestroyObjectRequest) returns (ObjectDestroyObjectResponse);
+	// CopyObject copies an object with new attributes if possible
+	rpc CopyObject(ObjectCopyObjectRequest) returns (P11Object);
 }
 
 message AuthHello {
@@ -224,6 +288,20 @@ message SessionListObjectsRequest {
 	repeated Attribute template = 2;
 }
 
+message SessionCreateObjectRequest {}
+
+message SessionGenerateRandomRequest {}
+
+message SessionGenerateRandomResponse {}
+
+message SessionGenerateKeyPairRequest {}
+
+message SessionGenerateKeyPairResponse {}
+
+message SessionGenerateKeyRequest {}
+
+message SessionGenerateKeyResponse {}
+
 message ObjectListAttributeValuesRequest {
 	SessionID session_id = 1;
 	string object_id = 2;
@@ -236,3 +314,37 @@ message ObjectListAttributeValuesUpdate {
 		AttributeType not_found = 2;
 	}
 }
+
+message ObjectEncryptRequest {}
+
+message ObjectEncryptResponse {}
+
+message ObjectDecryptSegmentedRequest {}
+
+message ObjectDecryptSegmentedResponse {}
+
+message ObjectSignRequest {}
+
+message ObjectSignResponse {}
+
+message ObjectSignSegmentedRequest {}
+
+message ObjectSignSegmentedResponse {}
+
+message ObjectVerifyRequest {}
+
+message ObjectVerifyResponse {}
+
+message ObjectVerifySegmentedRequest {}
+
+message ObjectVerifySegmentedResponse {}
+
+message ObjectWrapKeyRequest {}
+
+message ObjectWrapKeyResponse {}
+
+message ObjectUnwrapKeyRequest {}
+
+message ObjectDestroyObjectRequest {}
+
+message ObjectDestroyObjectResponse {}
