@@ -960,23 +960,34 @@ func (h *handle) VerifySegmented(srv padlockpb.Padlock_VerifySegmentedServer) er
 }
 
 func (h *handle) WrapKey(ctx context.Context, req *padlockpb.ObjectWrapKeyRequest) (*padlockpb.ObjectWrapKeyResponse, error) {
-	id, sess, obj, err := h.getObject(req.GetWrappingKey())
+	id, sess, wrappingKey, err := h.getObject(req.GetWrappingKey())
 	if err != nil {
 		return nil, err
 	}
 	defer sess.mx.Unlock()
+	keyToWrap := sess.objs[req.GetKeyToWrap().GetObjectId()]
 	log.Printf("wrapping key on %s\n", id)
-	return nil, status.Errorf(codes.Unimplemented, "method WrapKey not implemented")
+	wrapped, err := sess.sess.WrapKey(wrappingKey, MechanismsPBtoP11(req.GetMechs()), keyToWrap)
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "wrapping key: %v", err)
+	}
+	return &padlockpb.ObjectWrapKeyResponse{
+		Wrapped: wrapped,
+	}, nil
 }
 
 func (h *handle) UnwrapKey(ctx context.Context, req *padlockpb.ObjectUnwrapKeyRequest) (*padlockpb.P11Object, error) {
-	id, sess, obj, err := h.getObject(req.GetObjectId())
+	id, sess, wrappingKey, err := h.getObject(req.GetObjectId())
 	if err != nil {
 		return nil, err
 	}
 	defer sess.mx.Unlock()
 	log.Printf("unwrapping key on %s\n", id)
-	return nil, status.Errorf(codes.Unimplemented, "method UnwrapKey not implemented")
+	obj, err := sess.sess.UnwrapKey(wrappingKey, MechanismsPBtoP11(req.GetMechs()), req.GetWrapped(), AttributesPBtoP11(req.GetAttributes()))
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "unwrapping key: %v", err)
+	}
+	return h.addObject(sess, *obj), nil
 }
 
 func (h *handle) DestroyObject(ctx context.Context, req *padlockpb.ObjectDestroyObjectRequest) (*padlockpb.ObjectDestroyObjectResponse, error) {
@@ -986,7 +997,11 @@ func (h *handle) DestroyObject(ctx context.Context, req *padlockpb.ObjectDestroy
 	}
 	defer sess.mx.Unlock()
 	log.Printf("destroying object on %s\n", id)
-	return nil, status.Errorf(codes.Unimplemented, "method DestroyObject not implemented")
+	err = sess.sess.DestroyObject(obj)
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "destroying object: %v", err)
+	}
+	return &padlockpb.ObjectDestroyObjectResponse{}, nil
 }
 
 func (h *handle) CopyObject(ctx context.Context, req *padlockpb.ObjectCopyObjectRequest) (*padlockpb.P11Object, error) {
@@ -996,5 +1011,9 @@ func (h *handle) CopyObject(ctx context.Context, req *padlockpb.ObjectCopyObject
 	}
 	defer sess.mx.Unlock()
 	log.Printf("copying object on %s\n", id)
-	return nil, status.Errorf(codes.Unimplemented, "method CopyObject not implemented")
+	newObj, err := sess.sess.CopyObject(obj, AttributesPBtoP11(req.GetAttributes()))
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "copying object: %v", err)
+	}
+	return h.addObject(sess, *newObj), err
 }
