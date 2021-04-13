@@ -1,6 +1,6 @@
 import Client from "./Client";
 import React from "react";
-import { AttributeType, ObjectListAttributeValuesRequest, ObjectListAttributeValuesUpdate, P11Object as protoP11, SessionID } from "@llkennedy/padlock-api";
+import { AttributeType, ObjectID, ObjectListAttributeValuesRequest, ObjectListAttributeValuesUpdate, P11Object as protoP11, SessionID } from "@llkennedy/padlock-api";
 import { AttrToKeyType, KeyTypes } from "./const/KeyType";
 import { EOFError, ServerStream } from "@llkennedy/mercury";
 import { Decode } from "./const/Decode";
@@ -197,8 +197,10 @@ export class P11Object extends React.Component<Props, State> {
 	}
 	async componentDidMount() {
 		let req = new ObjectListAttributeValuesRequest();
-		req.objectId = this.props.obj.uuid;
-		req.sessionId = this.props.session;
+		let objID = new ObjectID();
+		objID.objectId = this.props.obj.uuid;
+		objID.sessionId = this.props.session;
+		req.objectId = objID;
 		let reqAttrs = requestAttrs.get(this.state.keyType);
 		if (reqAttrs === undefined) {
 			console.warn(`Key type ${KeyTypes[this.state.keyType]}=${this.state.keyType} not supported`);

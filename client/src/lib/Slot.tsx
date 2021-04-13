@@ -1,6 +1,6 @@
 import Client from "./Client";
 import React from "react";
-import { AttributeType, ObjectListAttributeValuesRequest, ObjectListAttributeValuesUpdate, P11Object, SessionID, SessionListObjectsRequest } from "@llkennedy/padlock-api";
+import { AttributeType, ObjectID, ObjectListAttributeValuesRequest, ObjectListAttributeValuesUpdate, P11Object, SessionID, SessionListObjectsRequest } from "@llkennedy/padlock-api";
 import { EOFError, ServerStream } from "@llkennedy/mercury";
 import { sleep } from "@llkennedy/sleep.js";
 import { P11Object as ReactP11Object } from "./P11Object";
@@ -138,8 +138,10 @@ export class Slot extends React.Component<Props, State> {
 												loadingObject: true
 											})
 											let req = new ObjectListAttributeValuesRequest();
-											req.objectId = val.uuid;
-											req.sessionId = this.props.session;
+											let objID = new ObjectID();
+											objID.sessionId = this.props.session;
+											objID.objectId = val.uuid;
+											req.objectId = objID;
 											req.requestedAttributes = [
 												AttributeType.CKA_KEY_TYPE,
 											];
