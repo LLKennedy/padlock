@@ -996,11 +996,12 @@ func (h *handle) DestroyObject(ctx context.Context, req *padlockpb.ObjectDestroy
 		return nil, err
 	}
 	defer sess.mx.Unlock()
-	log.Printf("destroying object on %s\n", id)
+	log.Printf("destroying object %s\n", id)
 	err = sess.sess.DestroyObject(obj)
 	if err != nil {
 		return nil, status.Errorf(codes.Aborted, "destroying object: %v", err)
 	}
+	delete(sess.objs, id.String())
 	return &padlockpb.ObjectDestroyObjectResponse{}, nil
 }
 
@@ -1010,7 +1011,7 @@ func (h *handle) CopyObject(ctx context.Context, req *padlockpb.ObjectCopyObject
 		return nil, err
 	}
 	defer sess.mx.Unlock()
-	log.Printf("copying object on %s\n", id)
+	log.Printf("copying object %s\n", id)
 	newObj, err := sess.sess.CopyObject(obj, AttributesPBtoP11(req.GetAttributes()))
 	if err != nil {
 		return nil, status.Errorf(codes.Aborted, "copying object: %v", err)
