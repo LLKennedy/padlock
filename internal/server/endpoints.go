@@ -510,16 +510,19 @@ func (h *handle) SessionListObjects(req *padlockpb.SessionListObjectsRequest, st
 	return nil
 }
 
-func (h *handle) SessionCreateObject(context.Context, *padlockpb.SessionCreateObjectRequest) (*padlockpb.P11Object, error) {
+func (h *handle) SessionCreateObject(ctx context.Context, req *padlockpb.SessionCreateObjectRequest) (*padlockpb.P11Object, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SessionCreateObject not implemented")
 }
-func (h *handle) SessionGenerateRandom(context.Context, *padlockpb.SessionGenerateRandomRequest) (*padlockpb.SessionGenerateRandomResponse, error) {
+
+func (h *handle) SessionGenerateRandom(ctx context.Context, req *padlockpb.SessionGenerateRandomRequest) (*padlockpb.SessionGenerateRandomResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateRandom not implemented")
 }
-func (h *handle) SessionGenerateKeyPair(context.Context, *padlockpb.SessionGenerateKeyPairRequest) (*padlockpb.SessionGenerateKeyPairResponse, error) {
+
+func (h *handle) SessionGenerateKeyPair(ctx context.Context, req *padlockpb.SessionGenerateKeyPairRequest) (*padlockpb.SessionGenerateKeyPairResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateKeyPair not implemented")
 }
-func (h *handle) SessionGenerateKey(context.Context, *padlockpb.SessionGenerateKeyRequest) (*padlockpb.P11Object, error) {
+
+func (h *handle) SessionGenerateKey(ctx context.Context, req *padlockpb.SessionGenerateKeyRequest) (*padlockpb.P11Object, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateKey not implemented")
 }
 
@@ -566,39 +569,50 @@ func (h *handle) ObjectListAttributeValues(req *padlockpb.ObjectListAttributeVal
 	return nil
 }
 
-func (h *handle) Encrypt(context.Context, *padlockpb.ObjectEncryptRequest) (*padlockpb.ObjectEncryptResponse, error) {
+func (h *handle) Encrypt(ctx context.Context, req *padlockpb.ObjectEncryptRequest) (*padlockpb.ObjectEncryptResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Encrypt not implemented")
 }
-func (h *handle) EncryptSegmented(padlockpb.Padlock_EncryptSegmentedServer) error {
+
+func (h *handle) EncryptSegmented(srv padlockpb.Padlock_EncryptSegmentedServer) error {
 	return status.Errorf(codes.Unimplemented, "method EncryptSegmented not implemented")
 }
-func (h *handle) Decrypt(context.Context, *padlockpb.ObjectDecryptRequest) (*padlockpb.ObjectDecryptResponse, error) {
+
+func (h *handle) Decrypt(ctx context.Context, req *padlockpb.ObjectDecryptRequest) (*padlockpb.ObjectDecryptResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Decrypt not implemented")
 }
-func (h *handle) DecryptSegmented(padlockpb.Padlock_DecryptSegmentedServer) error {
+
+func (h *handle) DecryptSegmented(srv padlockpb.Padlock_DecryptSegmentedServer) error {
 	return status.Errorf(codes.Unimplemented, "method DecryptSegmented not implemented")
 }
-func (h *handle) Sign(context.Context, *padlockpb.ObjectSignRequest) (*padlockpb.ObjectSignResponse, error) {
+
+func (h *handle) Sign(ctx context.Context, req *padlockpb.ObjectSignRequest) (*padlockpb.ObjectSignResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sign not implemented")
 }
-func (h *handle) SignSegmented(padlockpb.Padlock_SignSegmentedServer) error {
+
+func (h *handle) SignSegmented(srv padlockpb.Padlock_SignSegmentedServer) error {
 	return status.Errorf(codes.Unimplemented, "method SignSegmented not implemented")
 }
-func (h *handle) Verify(context.Context, *padlockpb.ObjectVerifyRequest) (*padlockpb.ObjectVerifyResponse, error) {
+
+func (h *handle) Verify(ctx context.Context, req *padlockpb.ObjectVerifyRequest) (*padlockpb.ObjectVerifyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Verify not implemented")
 }
-func (h *handle) VerifySegmented(padlockpb.Padlock_VerifySegmentedServer) error {
+
+func (h *handle) VerifySegmented(srv padlockpb.Padlock_VerifySegmentedServer) error {
 	return status.Errorf(codes.Unimplemented, "method VerifySegmented not implemented")
 }
-func (h *handle) WrapKey(context.Context, *padlockpb.ObjectWrapKeyRequest) (*padlockpb.ObjectWrapKeyResponse, error) {
+
+func (h *handle) WrapKey(ctx context.Context, req *padlockpb.ObjectWrapKeyRequest) (*padlockpb.ObjectWrapKeyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method WrapKey not implemented")
 }
-func (h *handle) UnwrapKey(context.Context, *padlockpb.ObjectUnwrapKeyRequest) (*padlockpb.P11Object, error) {
+
+func (h *handle) UnwrapKey(ctx context.Context, req *padlockpb.ObjectUnwrapKeyRequest) (*padlockpb.P11Object, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnwrapKey not implemented")
 }
-func (h *handle) DestroyObject(context.Context, *padlockpb.ObjectDestroyObjectRequest) (*padlockpb.ObjectDestroyObjectResponse, error) {
+
+func (h *handle) DestroyObject(ctx context.Context, req *padlockpb.ObjectDestroyObjectRequest) (*padlockpb.ObjectDestroyObjectResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DestroyObject not implemented")
 }
-func (h *handle) CopyObject(context.Context, *padlockpb.ObjectCopyObjectRequest) (*padlockpb.P11Object, error) {
+
+func (h *handle) CopyObject(ctx context.Context, req *padlockpb.ObjectCopyObjectRequest) (*padlockpb.P11Object, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CopyObject not implemented")
 }
