@@ -5,6 +5,15 @@ import (
 	"github.com/llkennedy/pkcs11"
 )
 
+// AttributesPBtoP11 converts multiple attributes to enums
+func AttributesPBtoP11(attrs []*padlockpb.Attribute) []*pkcs11.Attribute {
+	var template []*pkcs11.Attribute
+	for _, attr := range attrs {
+		template = append(template, pkcs11.NewAttribute(AttributePBtoP11(attr.GetType()), attr.GetValue()))
+	}
+	return template
+}
+
 // AttributePBtoP11 converts attribute enums
 func AttributePBtoP11(attr padlockpb.AttributeType) uint {
 	converted := uint(0xFEFEFEFE) // invalid for everything

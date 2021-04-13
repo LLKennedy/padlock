@@ -471,6 +471,19 @@ func (h *handle) SessionLogout(ctx context.Context, req *padlockpb.SessionID) (*
 	return &padlockpb.SessionLogoutResponse{}, nil
 }
 
+func (h *handle) addObject(sess *serverSession, obj p11.Object) (*padlockpb.P11Object, error) {
+	objID := uuid.New().String()
+	sess.objs[objID] = obj
+	label, err := obj.Label()
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "getting object label: %v", err)
+	}
+	return &padlockpb.P11Object{
+		Label: label,
+		Uuid:  objID,
+	}, nil
+}
+
 // SessionListObjects lists the objects available in the session
 func (h *handle) SessionListObjects(req *padlockpb.SessionListObjectsRequest, stream padlockpb.Padlock_SessionListObjectsServer) error {
 	id, err := h.authenticate(req.GetId().GetAuth())
@@ -483,25 +496,17 @@ func (h *handle) SessionListObjects(req *padlockpb.SessionListObjectsRequest, st
 		return err
 	}
 	defer sess.mx.Unlock()
-	var template []*pkcs11.Attribute
-	for _, attr := range req.GetTemplate() {
-		template = append(template, pkcs11.NewAttribute(AttributePBtoP11(attr.GetType()), attr.GetValue()))
-	}
+	template := AttributesPBtoP11(req.GetTemplate())
 	objs, err := sess.sess.FindObjects(template)
 	if err != nil {
 		return status.Errorf(codes.Aborted, "listing objects: %v", err)
 	}
 	for _, obj := range objs {
-		objID := uuid.New().String()
-		sess.objs[objID] = obj
-		label, err := obj.Label()
+		pbObj, err := h.addObject(sess, obj)
 		if err != nil {
-			return status.Errorf(codes.Aborted, "getting object label: %v", err)
+			return err
 		}
-		err = stream.Send(&padlockpb.P11Object{
-			Label: label,
-			Uuid:  objID,
-		})
+		err = stream.Send(pbObj)
 		if err != nil {
 			return status.Errorf(codes.Aborted, "sending object to client: %v", err)
 		}
@@ -515,7 +520,16 @@ func (h *handle) SessionCreateObject(ctx context.Context, req *padlockpb.Session
 		return nil, err
 	}
 	log.Printf("Creating object on %s\n", id)
-	return nil, status.Errorf(codes.Unimplemented, "method SessionCreateObject not implemented")
+	sess, err := h.getSession(req.GetId().GetUuid(), id.String())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
+	p11Obj, err := sess.sess.CreateObject(AttributesPBtoP11(req.GetAttributes()))
+	if err != nil {
+		return nil, err
+	}
+	return h.addObject(sess, p11Obj)
 }
 
 func (h *handle) SessionGenerateRandom(ctx context.Context, req *padlockpb.SessionGenerateRandomRequest) (*padlockpb.SessionGenerateRandomResponse, error) {
@@ -524,6 +538,11 @@ func (h *handle) SessionGenerateRandom(ctx context.Context, req *padlockpb.Sessi
 		return nil, err
 	}
 	log.Printf("Generating random on %s\n", id)
+	sess, err := h.getSession(req.GetId().GetUuid(), id.String())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
 	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateRandom not implemented")
 }
 
@@ -533,6 +552,11 @@ func (h *handle) SessionGenerateKeyPair(ctx context.Context, req *padlockpb.Sess
 		return nil, err
 	}
 	log.Printf("Generating keypair on %s\n", id)
+	sess, err := h.getSession(req.GetId().GetUuid(), id.String())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
 	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateKeyPair not implemented")
 }
 
@@ -542,6 +566,11 @@ func (h *handle) SessionGenerateKey(ctx context.Context, req *padlockpb.SessionG
 		return nil, err
 	}
 	log.Printf("Generating key on %s\n", id)
+	sess, err := h.getSession(req.GetId().GetUuid(), id.String())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
 	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateKey not implemented")
 }
 
