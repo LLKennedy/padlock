@@ -106,4 +106,5 @@ message Attribute {
 message P11Object {
 	string label = 1;
 	string uuid = 2;
+	// TODO: get class/key type/etc.
 }

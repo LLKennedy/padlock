@@ -471,7 +471,7 @@ func (h *handle) SessionLogout(ctx context.Context, req *padlockpb.SessionID) (*
 	return &padlockpb.SessionLogoutResponse{}, nil
 }
 
-func (h *handle) addObject(sess *serverSession, obj p11.Object) (*padlockpb.P11Object, error) {
+func (h *handle) addObject(sess *serverSession, obj p11.Object) *padlockpb.P11Object {
 	var objID string
 	set := false
 	for key, val := range sess.objs {
@@ -487,12 +487,12 @@ func (h *handle) addObject(sess *serverSession, obj p11.Object) (*padlockpb.P11O
 	}
 	label, err := obj.Label()
 	if err != nil {
-		return nil, status.Errorf(codes.Aborted, "getting object label: %v", err)
+		log.Printf("cannot get label for object %s: %v\n", objID, err)
 	}
 	return &padlockpb.P11Object{
 		Label: label,
 		Uuid:  objID,
-	}, nil
+	}
 }
 
 // SessionListObjects lists the objects available in the session
@@ -513,11 +513,7 @@ func (h *handle) SessionListObjects(req *padlockpb.SessionListObjectsRequest, st
 		return status.Errorf(codes.Aborted, "listing objects: %v", err)
 	}
 	for _, obj := range objs {
-		pbObj, err := h.addObject(sess, obj)
-		if err != nil {
-			return err
-		}
-		err = stream.Send(pbObj)
+		err = stream.Send(h.addObject(sess, obj))
 		if err != nil {
 			return status.Errorf(codes.Aborted, "sending object to client: %v", err)
 		}
@@ -540,7 +536,7 @@ func (h *handle) SessionCreateObject(ctx context.Context, req *padlockpb.Session
 	if err != nil {
 		return nil, status.Errorf(codes.Aborted, "creating object: %v", err)
 	}
-	return h.addObject(sess, p11Obj)
+	return h.addObject(sess, p11Obj), nil
 }
 
 func (h *handle) SessionGenerateRandom(ctx context.Context, req *padlockpb.SessionGenerateRandomRequest) (*padlockpb.SessionGenerateRandomResponse, error) {
@@ -582,17 +578,9 @@ func (h *handle) SessionGenerateKeyPair(ctx context.Context, req *padlockpb.Sess
 	if err != nil {
 		return nil, status.Errorf(codes.Aborted, "generating keypair: %v", err)
 	}
-	privObj, err := h.addObject(sess, p11.Object(keyPair.Private))
-	if err != nil {
-		return nil, err
-	}
-	pubObj, err := h.addObject(sess, p11.Object(keyPair.Public))
-	if err != nil {
-		return nil, err
-	}
 	return &padlockpb.SessionGenerateKeyPairResponse{
-		Private: privObj,
-		Public:  pubObj,
+		Private: h.addObject(sess, p11.Object(keyPair.Private)),
+		Public:  h.addObject(sess, p11.Object(keyPair.Public)),
 	}, nil
 }
 
@@ -614,7 +602,7 @@ func (h *handle) SessionGenerateKey(ctx context.Context, req *padlockpb.SessionG
 	if err != nil {
 		return nil, status.Errorf(codes.Aborted, "generating key: %v", err)
 	}
-	return h.addObject(sess, p11.Object(*key))
+	return h.addObject(sess, p11.Object(*key)), nil
 }
 
 func (h *handle) getObject(id *padlockpb.ObjectID) (objID uuid.UUID, sess *serverSession, obj p11.Object, err error) {
