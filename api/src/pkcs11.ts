@@ -7,8 +7,8 @@
  */
 
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
-import { AttributeType as padlock__AttributeType } from "./attributes";
 import { MechanismType as padlock__MechanismType } from "./mechanisms";
+import { AttributeType as padlock__AttributeType } from "./attributes";
 
 /** A message */
 export class ModuleInfo extends Object implements tsjson.ProtoJSONCompatible {

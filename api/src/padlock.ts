@@ -8,8 +8,8 @@
 
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
 import { google } from "@llkennedy/protoc-gen-tsjson";
-import { SupportedMechanism as padlock__SupportedMechanism, Attribute as padlock__Attribute, P11Object as padlock__P11Object, ModuleInfo as padlock__ModuleInfo, SlotInfo as padlock__SlotInfo, Mechanism as padlock__Mechanism } from "./pkcs11";
-import { AttributeType as padlock__AttributeType } from "attributes";
+import { SupportedMechanism as padlock__SupportedMechanism, P11Object as padlock__P11Object, Attribute as padlock__Attribute, Mechanism as padlock__Mechanism, ModuleInfo as padlock__ModuleInfo, SlotInfo as padlock__SlotInfo } from "./pkcs11";
+import { AttributeType as padlock__AttributeType } from "./attributes";
 
 /** A message */
 export class AuthHello extends Object implements tsjson.ProtoJSONCompatible {
