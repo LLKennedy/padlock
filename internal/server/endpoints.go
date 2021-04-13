@@ -741,7 +741,13 @@ func (h *handle) Decrypt(ctx context.Context, req *padlockpb.ObjectDecryptReques
 	}
 	defer sess.mx.Unlock()
 	log.Printf("decrypting data on %s\n", id)
-	return nil, status.Errorf(codes.Unimplemented, "method Decrypt not implemented")
+	decrypted, err := sess.sess.Decrypt(obj, MechanismsPBtoP11(req.GetMechs()), req.GetEncrypted())
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "decrypting data: %v", err)
+	}
+	return &padlockpb.ObjectDecryptResponse{
+		PlainText: decrypted,
+	}, nil
 }
 
 func (h *handle) DecryptSegmented(srv padlockpb.Padlock_DecryptSegmentedServer) error {
@@ -811,7 +817,13 @@ func (h *handle) Sign(ctx context.Context, req *padlockpb.ObjectSignRequest) (*p
 	}
 	defer sess.mx.Unlock()
 	log.Printf("signing data on %s\n", id)
-	return nil, status.Errorf(codes.Unimplemented, "method Sign not implemented")
+	sig, err := sess.sess.Sign(obj, MechanismsPBtoP11(req.GetMechs()), req.GetMessage())
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "signing data: %v", err)
+	}
+	return &padlockpb.ObjectSignResponse{
+		Signature: sig,
+	}, nil
 }
 
 func (h *handle) SignSegmented(srv padlockpb.Padlock_SignSegmentedServer) error {
@@ -877,7 +889,13 @@ func (h *handle) Verify(ctx context.Context, req *padlockpb.ObjectVerifyRequest)
 	}
 	defer sess.mx.Unlock()
 	log.Printf("verifying data and signature on %s\n", id)
-	return nil, status.Errorf(codes.Unimplemented, "method Verify not implemented")
+	err = sess.sess.Verify(obj, MechanismsPBtoP11(req.GetMechs()), req.GetMessage(), req.GetSignature())
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "signing data: %v", err)
+	}
+	return &padlockpb.ObjectVerifyResponse{
+		Valid: true,
+	}, nil
 }
 
 func (h *handle) VerifySegmented(srv padlockpb.Padlock_VerifySegmentedServer) error {
