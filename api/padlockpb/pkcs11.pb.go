@@ -960,7 +960,7 @@ type P11Object struct {
 	unknownFields protoimpl.UnknownFields
 
 	Label string `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
-	Uuid  string `protobuf:"bytes,2,opt,name=uuid,proto3" json:"uuid,omitempty"`
+	Uuid  string `protobuf:"bytes,2,opt,name=uuid,proto3" json:"uuid,omitempty"` // TODO: get class/key type/etc.
 }
 
 func (x *P11Object) Reset() {
