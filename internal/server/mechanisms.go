@@ -5,8 +5,48 @@ import (
 	"github.com/llkennedy/pkcs11"
 )
 
-// MechanismPBtoP11 converts mechanism enums
-func MechanismPBtoP11(mech padlockpb.MechanismType) uint {
+// MechanismsPBtoP11 converts multiple mechanisms
+func MechanismsPBtoP11(mechs []*padlockpb.Mechanism) []*pkcs11.Mechanism {
+	if mechs == nil {
+		return nil
+	}
+	out := make([]*pkcs11.Mechanism, len(mechs))
+	for i, mech := range mechs {
+		out[i] = MechanismPBtoP11(mech)
+	}
+	return out
+}
+
+// MechanismPBtoP11 converts a mechanism
+func MechanismPBtoP11(mech *padlockpb.Mechanism) *pkcs11.Mechanism {
+	var params interface{}
+	switch t := mech.GetData().(type) {
+	case *padlockpb.Mechanism_Ecdh1:
+		if t != nil && t.Ecdh1 != nil {
+			params = pkcs11.NewECDH1DeriveParams(uint(t.Ecdh1.Kdf), t.Ecdh1.SharedData, t.Ecdh1.PublicKeyData)
+		}
+	case *padlockpb.Mechanism_Gcm:
+		if t != nil && t.Gcm != nil {
+			params = pkcs11.NewGCMParams(t.Gcm.Iv, t.Gcm.Aad, int(t.Gcm.TagSize))
+		}
+	case *padlockpb.Mechanism_Oaep:
+		if t != nil && t.Oaep != nil {
+			params = pkcs11.NewOAEPParams(uint(t.Oaep.HashAlg), uint(t.Oaep.Mgf), uint(t.Oaep.SourceType), t.Oaep.SourceData)
+		}
+	case *padlockpb.Mechanism_Pss:
+		if t != nil && t.Pss != nil {
+			params = pkcs11.NewPSSParams(uint(t.Pss.HashAlg), uint(t.Pss.Mgf), uint(t.Pss.SaltLength))
+		}
+	case *padlockpb.Mechanism_Raw:
+		if t != nil && t.Raw != nil {
+			params = t.Raw
+		}
+	}
+	return pkcs11.NewMechanism(MechanismTypePBtoP11(mech.GetType()), params)
+}
+
+// MechanismTypePBtoP11 converts mechanism enums
+func MechanismTypePBtoP11(mech padlockpb.MechanismType) uint {
 	converted := uint(0xFEFEFEFE) // invalid for everything
 	switch mech {
 	case padlockpb.MechanismType_CKM_RSA_PKCS_KEY_PAIR_GEN:

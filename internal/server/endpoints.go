@@ -472,8 +472,19 @@ func (h *handle) SessionLogout(ctx context.Context, req *padlockpb.SessionID) (*
 }
 
 func (h *handle) addObject(sess *serverSession, obj p11.Object) (*padlockpb.P11Object, error) {
-	objID := uuid.New().String()
-	sess.objs[objID] = obj
+	var objID string
+	set := false
+	for key, val := range sess.objs {
+		if val.ObjectHandle == obj.ObjectHandle {
+			objID = key
+			set = true
+			break
+		}
+	}
+	if !set {
+		objID = uuid.New().String()
+		sess.objs[objID] = obj
+	}
 	label, err := obj.Label()
 	if err != nil {
 		return nil, status.Errorf(codes.Aborted, "getting object label: %v", err)
@@ -527,7 +538,7 @@ func (h *handle) SessionCreateObject(ctx context.Context, req *padlockpb.Session
 	defer sess.mx.Unlock()
 	p11Obj, err := sess.sess.CreateObject(AttributesPBtoP11(req.GetAttributes()))
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Aborted, "creating object: %v", err)
 	}
 	return h.addObject(sess, p11Obj)
 }
@@ -543,7 +554,13 @@ func (h *handle) SessionGenerateRandom(ctx context.Context, req *padlockpb.Sessi
 		return nil, err
 	}
 	defer sess.mx.Unlock()
-	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateRandom not implemented")
+	data, err := sess.sess.GenerateRandom(int(req.GetLength()))
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "generating random data: %v", err)
+	}
+	return &padlockpb.SessionGenerateRandomResponse{
+		Data: data,
+	}, nil
 }
 
 func (h *handle) SessionGenerateKeyPair(ctx context.Context, req *padlockpb.SessionGenerateKeyPairRequest) (*padlockpb.SessionGenerateKeyPairResponse, error) {
@@ -557,7 +574,26 @@ func (h *handle) SessionGenerateKeyPair(ctx context.Context, req *padlockpb.Sess
 		return nil, err
 	}
 	defer sess.mx.Unlock()
-	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateKeyPair not implemented")
+	keyPair, err := sess.sess.GenerateKeyPair(p11.GenerateKeyPairRequest{
+		Mechanism:            *MechanismPBtoP11(req.GetMech()),
+		PublicKeyAttributes:  AttributesPBtoP11(req.GetPublicAttributes()),
+		PrivateKeyAttributes: AttributesPBtoP11(req.GetPrivateAttributes()),
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "generating keypair: %v", err)
+	}
+	privObj, err := h.addObject(sess, p11.Object(keyPair.Private))
+	if err != nil {
+		return nil, err
+	}
+	pubObj, err := h.addObject(sess, p11.Object(keyPair.Public))
+	if err != nil {
+		return nil, err
+	}
+	return &padlockpb.SessionGenerateKeyPairResponse{
+		Private: privObj,
+		Public:  pubObj,
+	}, nil
 }
 
 func (h *handle) SessionGenerateKey(ctx context.Context, req *padlockpb.SessionGenerateKeyRequest) (*padlockpb.P11Object, error) {
