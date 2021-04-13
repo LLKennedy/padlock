@@ -44,8 +44,40 @@ type ExposedPadlockClient interface {
 	PutSessionLogout(ctx context.Context, in *SessionID, opts ...grpc.CallOption) (*SessionLogoutResponse, error)
 	// GetSessionListObjects lists the objects available in the session
 	GetSessionListObjects(ctx context.Context, in *SessionListObjectsRequest, opts ...grpc.CallOption) (ExposedPadlock_GetSessionListObjectsClient, error)
+	// PostSessionCreateObject creates an object
+	PostSessionCreateObject(ctx context.Context, in *SessionCreateObjectRequest, opts ...grpc.CallOption) (*P11Object, error)
+	// PostSessionGenerateRandom generates random data, exercising the CSPRNG
+	PostSessionGenerateRandom(ctx context.Context, in *SessionGenerateRandomRequest, opts ...grpc.CallOption) (*SessionGenerateRandomResponse, error)
+	// PostSessionGenerateKeyPair generates a keypair
+	PostSessionGenerateKeyPair(ctx context.Context, in *SessionGenerateKeyPairRequest, opts ...grpc.CallOption) (*SessionGenerateKeyPairResponse, error)
+	// PostSessionGenerateKey generates a key
+	PostSessionGenerateKey(ctx context.Context, in *SessionGenerateKeyRequest, opts ...grpc.CallOption) (*P11Object, error)
 	// GetObjectListAttributeValues lists values for the requested attributes
 	GetObjectListAttributeValues(ctx context.Context, in *ObjectListAttributeValuesRequest, opts ...grpc.CallOption) (ExposedPadlock_GetObjectListAttributeValuesClient, error)
+	// PostEncrypt encrypts data
+	PostEncrypt(ctx context.Context, in *ObjectEncryptRequest, opts ...grpc.CallOption) (*ObjectEncryptResponse, error)
+	// PostEncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	PostEncryptSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostEncryptSegmentedClient, error)
+	// PostDecrypt decrypts data
+	PostDecrypt(ctx context.Context, in *ObjectDecryptRequest, opts ...grpc.CallOption) (*ObjectDecryptResponse, error)
+	// PostDecryptSegmented decrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	PostDecryptSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostDecryptSegmentedClient, error)
+	// PostSign signs a message
+	PostSign(ctx context.Context, in *ObjectSignRequest, opts ...grpc.CallOption) (*ObjectSignResponse, error)
+	// PostSignSegmented signs multiple data segments individually then one final part, for those few mechanisms where it matters
+	PostSignSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostSignSegmentedClient, error)
+	// PostVerify verifies a message and signature
+	PostVerify(ctx context.Context, in *ObjectVerifyRequest, opts ...grpc.CallOption) (*ObjectVerifyResponse, error)
+	// PostVerifySegmented verifies multiple data segments individually then the final signature, for those  few mechanisms where it matters.
+	PostVerifySegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostVerifySegmentedClient, error)
+	// PutWrapKey wraps a key
+	PutWrapKey(ctx context.Context, in *ObjectWrapKeyRequest, opts ...grpc.CallOption) (*ObjectWrapKeyResponse, error)
+	// PutUnwrapKey unwraps a key
+	PutUnwrapKey(ctx context.Context, in *ObjectUnwrapKeyRequest, opts ...grpc.CallOption) (*P11Object, error)
+	// DeleteDestroyObject destroys an object
+	DeleteDestroyObject(ctx context.Context, in *ObjectDestroyObjectRequest, opts ...grpc.CallOption) (*ObjectDestroyObjectResponse, error)
+	// PutCopyObject copies an object with new attributes if possible
+	PutCopyObject(ctx context.Context, in *ObjectCopyObjectRequest, opts ...grpc.CallOption) (*P11Object, error)
 }
 
 type exposedPadlockClient struct {
@@ -242,6 +274,42 @@ func (x *exposedPadlockGetSessionListObjectsClient) Recv() (*P11Object, error) {
 	return m, nil
 }
 
+func (c *exposedPadlockClient) PostSessionCreateObject(ctx context.Context, in *SessionCreateObjectRequest, opts ...grpc.CallOption) (*P11Object, error) {
+	out := new(P11Object)
+	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/PostSessionCreateObject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exposedPadlockClient) PostSessionGenerateRandom(ctx context.Context, in *SessionGenerateRandomRequest, opts ...grpc.CallOption) (*SessionGenerateRandomResponse, error) {
+	out := new(SessionGenerateRandomResponse)
+	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/PostSessionGenerateRandom", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exposedPadlockClient) PostSessionGenerateKeyPair(ctx context.Context, in *SessionGenerateKeyPairRequest, opts ...grpc.CallOption) (*SessionGenerateKeyPairResponse, error) {
+	out := new(SessionGenerateKeyPairResponse)
+	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/PostSessionGenerateKeyPair", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exposedPadlockClient) PostSessionGenerateKey(ctx context.Context, in *SessionGenerateKeyRequest, opts ...grpc.CallOption) (*P11Object, error) {
+	out := new(P11Object)
+	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/PostSessionGenerateKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *exposedPadlockClient) GetObjectListAttributeValues(ctx context.Context, in *ObjectListAttributeValuesRequest, opts ...grpc.CallOption) (ExposedPadlock_GetObjectListAttributeValuesClient, error) {
 	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[3], "/padlock.ExposedPadlock/GetObjectListAttributeValues", opts...)
 	if err != nil {
@@ -274,6 +342,208 @@ func (x *exposedPadlockGetObjectListAttributeValuesClient) Recv() (*ObjectListAt
 	return m, nil
 }
 
+func (c *exposedPadlockClient) PostEncrypt(ctx context.Context, in *ObjectEncryptRequest, opts ...grpc.CallOption) (*ObjectEncryptResponse, error) {
+	out := new(ObjectEncryptResponse)
+	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/PostEncrypt", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exposedPadlockClient) PostEncryptSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostEncryptSegmentedClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[4], "/padlock.ExposedPadlock/PostEncryptSegmented", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &exposedPadlockPostEncryptSegmentedClient{stream}
+	return x, nil
+}
+
+type ExposedPadlock_PostEncryptSegmentedClient interface {
+	Send(*ObjectEncryptSegmentedRequest) error
+	Recv() (*ObjectEncryptSegmentedResponse, error)
+	grpc.ClientStream
+}
+
+type exposedPadlockPostEncryptSegmentedClient struct {
+	grpc.ClientStream
+}
+
+func (x *exposedPadlockPostEncryptSegmentedClient) Send(m *ObjectEncryptSegmentedRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *exposedPadlockPostEncryptSegmentedClient) Recv() (*ObjectEncryptSegmentedResponse, error) {
+	m := new(ObjectEncryptSegmentedResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *exposedPadlockClient) PostDecrypt(ctx context.Context, in *ObjectDecryptRequest, opts ...grpc.CallOption) (*ObjectDecryptResponse, error) {
+	out := new(ObjectDecryptResponse)
+	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/PostDecrypt", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exposedPadlockClient) PostDecryptSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostDecryptSegmentedClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[5], "/padlock.ExposedPadlock/PostDecryptSegmented", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &exposedPadlockPostDecryptSegmentedClient{stream}
+	return x, nil
+}
+
+type ExposedPadlock_PostDecryptSegmentedClient interface {
+	Send(*ObjectDecryptSegmentedRequest) error
+	Recv() (*ObjectDecryptSegmentedResponse, error)
+	grpc.ClientStream
+}
+
+type exposedPadlockPostDecryptSegmentedClient struct {
+	grpc.ClientStream
+}
+
+func (x *exposedPadlockPostDecryptSegmentedClient) Send(m *ObjectDecryptSegmentedRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *exposedPadlockPostDecryptSegmentedClient) Recv() (*ObjectDecryptSegmentedResponse, error) {
+	m := new(ObjectDecryptSegmentedResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *exposedPadlockClient) PostSign(ctx context.Context, in *ObjectSignRequest, opts ...grpc.CallOption) (*ObjectSignResponse, error) {
+	out := new(ObjectSignResponse)
+	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/PostSign", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exposedPadlockClient) PostSignSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostSignSegmentedClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[6], "/padlock.ExposedPadlock/PostSignSegmented", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &exposedPadlockPostSignSegmentedClient{stream}
+	return x, nil
+}
+
+type ExposedPadlock_PostSignSegmentedClient interface {
+	Send(*ObjectSignSegmentedRequest) error
+	CloseAndRecv() (*ObjectSignSegmentedResponse, error)
+	grpc.ClientStream
+}
+
+type exposedPadlockPostSignSegmentedClient struct {
+	grpc.ClientStream
+}
+
+func (x *exposedPadlockPostSignSegmentedClient) Send(m *ObjectSignSegmentedRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *exposedPadlockPostSignSegmentedClient) CloseAndRecv() (*ObjectSignSegmentedResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(ObjectSignSegmentedResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *exposedPadlockClient) PostVerify(ctx context.Context, in *ObjectVerifyRequest, opts ...grpc.CallOption) (*ObjectVerifyResponse, error) {
+	out := new(ObjectVerifyResponse)
+	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/PostVerify", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exposedPadlockClient) PostVerifySegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostVerifySegmentedClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[7], "/padlock.ExposedPadlock/PostVerifySegmented", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &exposedPadlockPostVerifySegmentedClient{stream}
+	return x, nil
+}
+
+type ExposedPadlock_PostVerifySegmentedClient interface {
+	Send(*ObjectVerifySegmentedRequest) error
+	CloseAndRecv() (*ObjectVerifySegmentedResponse, error)
+	grpc.ClientStream
+}
+
+type exposedPadlockPostVerifySegmentedClient struct {
+	grpc.ClientStream
+}
+
+func (x *exposedPadlockPostVerifySegmentedClient) Send(m *ObjectVerifySegmentedRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *exposedPadlockPostVerifySegmentedClient) CloseAndRecv() (*ObjectVerifySegmentedResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(ObjectVerifySegmentedResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *exposedPadlockClient) PutWrapKey(ctx context.Context, in *ObjectWrapKeyRequest, opts ...grpc.CallOption) (*ObjectWrapKeyResponse, error) {
+	out := new(ObjectWrapKeyResponse)
+	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/PutWrapKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exposedPadlockClient) PutUnwrapKey(ctx context.Context, in *ObjectUnwrapKeyRequest, opts ...grpc.CallOption) (*P11Object, error) {
+	out := new(P11Object)
+	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/PutUnwrapKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exposedPadlockClient) DeleteDestroyObject(ctx context.Context, in *ObjectDestroyObjectRequest, opts ...grpc.CallOption) (*ObjectDestroyObjectResponse, error) {
+	out := new(ObjectDestroyObjectResponse)
+	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/DeleteDestroyObject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exposedPadlockClient) PutCopyObject(ctx context.Context, in *ObjectCopyObjectRequest, opts ...grpc.CallOption) (*P11Object, error) {
+	out := new(P11Object)
+	err := c.cc.Invoke(ctx, "/padlock.ExposedPadlock/PutCopyObject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExposedPadlockServer is the server API for ExposedPadlock service.
 // All implementations must embed UnimplementedExposedPadlockServer
 // for forward compatibility
@@ -304,8 +574,40 @@ type ExposedPadlockServer interface {
 	PutSessionLogout(context.Context, *SessionID) (*SessionLogoutResponse, error)
 	// GetSessionListObjects lists the objects available in the session
 	GetSessionListObjects(*SessionListObjectsRequest, ExposedPadlock_GetSessionListObjectsServer) error
+	// PostSessionCreateObject creates an object
+	PostSessionCreateObject(context.Context, *SessionCreateObjectRequest) (*P11Object, error)
+	// PostSessionGenerateRandom generates random data, exercising the CSPRNG
+	PostSessionGenerateRandom(context.Context, *SessionGenerateRandomRequest) (*SessionGenerateRandomResponse, error)
+	// PostSessionGenerateKeyPair generates a keypair
+	PostSessionGenerateKeyPair(context.Context, *SessionGenerateKeyPairRequest) (*SessionGenerateKeyPairResponse, error)
+	// PostSessionGenerateKey generates a key
+	PostSessionGenerateKey(context.Context, *SessionGenerateKeyRequest) (*P11Object, error)
 	// GetObjectListAttributeValues lists values for the requested attributes
 	GetObjectListAttributeValues(*ObjectListAttributeValuesRequest, ExposedPadlock_GetObjectListAttributeValuesServer) error
+	// PostEncrypt encrypts data
+	PostEncrypt(context.Context, *ObjectEncryptRequest) (*ObjectEncryptResponse, error)
+	// PostEncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	PostEncryptSegmented(ExposedPadlock_PostEncryptSegmentedServer) error
+	// PostDecrypt decrypts data
+	PostDecrypt(context.Context, *ObjectDecryptRequest) (*ObjectDecryptResponse, error)
+	// PostDecryptSegmented decrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	PostDecryptSegmented(ExposedPadlock_PostDecryptSegmentedServer) error
+	// PostSign signs a message
+	PostSign(context.Context, *ObjectSignRequest) (*ObjectSignResponse, error)
+	// PostSignSegmented signs multiple data segments individually then one final part, for those few mechanisms where it matters
+	PostSignSegmented(ExposedPadlock_PostSignSegmentedServer) error
+	// PostVerify verifies a message and signature
+	PostVerify(context.Context, *ObjectVerifyRequest) (*ObjectVerifyResponse, error)
+	// PostVerifySegmented verifies multiple data segments individually then the final signature, for those  few mechanisms where it matters.
+	PostVerifySegmented(ExposedPadlock_PostVerifySegmentedServer) error
+	// PutWrapKey wraps a key
+	PutWrapKey(context.Context, *ObjectWrapKeyRequest) (*ObjectWrapKeyResponse, error)
+	// PutUnwrapKey unwraps a key
+	PutUnwrapKey(context.Context, *ObjectUnwrapKeyRequest) (*P11Object, error)
+	// DeleteDestroyObject destroys an object
+	DeleteDestroyObject(context.Context, *ObjectDestroyObjectRequest) (*ObjectDestroyObjectResponse, error)
+	// PutCopyObject copies an object with new attributes if possible
+	PutCopyObject(context.Context, *ObjectCopyObjectRequest) (*P11Object, error)
 	mustEmbedUnimplementedExposedPadlockServer()
 }
 
@@ -352,8 +654,56 @@ func (UnimplementedExposedPadlockServer) PutSessionLogout(context.Context, *Sess
 func (UnimplementedExposedPadlockServer) GetSessionListObjects(*SessionListObjectsRequest, ExposedPadlock_GetSessionListObjectsServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetSessionListObjects not implemented")
 }
+func (UnimplementedExposedPadlockServer) PostSessionCreateObject(context.Context, *SessionCreateObjectRequest) (*P11Object, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostSessionCreateObject not implemented")
+}
+func (UnimplementedExposedPadlockServer) PostSessionGenerateRandom(context.Context, *SessionGenerateRandomRequest) (*SessionGenerateRandomResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostSessionGenerateRandom not implemented")
+}
+func (UnimplementedExposedPadlockServer) PostSessionGenerateKeyPair(context.Context, *SessionGenerateKeyPairRequest) (*SessionGenerateKeyPairResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostSessionGenerateKeyPair not implemented")
+}
+func (UnimplementedExposedPadlockServer) PostSessionGenerateKey(context.Context, *SessionGenerateKeyRequest) (*P11Object, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostSessionGenerateKey not implemented")
+}
 func (UnimplementedExposedPadlockServer) GetObjectListAttributeValues(*ObjectListAttributeValuesRequest, ExposedPadlock_GetObjectListAttributeValuesServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetObjectListAttributeValues not implemented")
+}
+func (UnimplementedExposedPadlockServer) PostEncrypt(context.Context, *ObjectEncryptRequest) (*ObjectEncryptResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostEncrypt not implemented")
+}
+func (UnimplementedExposedPadlockServer) PostEncryptSegmented(ExposedPadlock_PostEncryptSegmentedServer) error {
+	return status.Errorf(codes.Unimplemented, "method PostEncryptSegmented not implemented")
+}
+func (UnimplementedExposedPadlockServer) PostDecrypt(context.Context, *ObjectDecryptRequest) (*ObjectDecryptResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostDecrypt not implemented")
+}
+func (UnimplementedExposedPadlockServer) PostDecryptSegmented(ExposedPadlock_PostDecryptSegmentedServer) error {
+	return status.Errorf(codes.Unimplemented, "method PostDecryptSegmented not implemented")
+}
+func (UnimplementedExposedPadlockServer) PostSign(context.Context, *ObjectSignRequest) (*ObjectSignResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostSign not implemented")
+}
+func (UnimplementedExposedPadlockServer) PostSignSegmented(ExposedPadlock_PostSignSegmentedServer) error {
+	return status.Errorf(codes.Unimplemented, "method PostSignSegmented not implemented")
+}
+func (UnimplementedExposedPadlockServer) PostVerify(context.Context, *ObjectVerifyRequest) (*ObjectVerifyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostVerify not implemented")
+}
+func (UnimplementedExposedPadlockServer) PostVerifySegmented(ExposedPadlock_PostVerifySegmentedServer) error {
+	return status.Errorf(codes.Unimplemented, "method PostVerifySegmented not implemented")
+}
+func (UnimplementedExposedPadlockServer) PutWrapKey(context.Context, *ObjectWrapKeyRequest) (*ObjectWrapKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutWrapKey not implemented")
+}
+func (UnimplementedExposedPadlockServer) PutUnwrapKey(context.Context, *ObjectUnwrapKeyRequest) (*P11Object, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutUnwrapKey not implemented")
+}
+func (UnimplementedExposedPadlockServer) DeleteDestroyObject(context.Context, *ObjectDestroyObjectRequest) (*ObjectDestroyObjectResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteDestroyObject not implemented")
+}
+func (UnimplementedExposedPadlockServer) PutCopyObject(context.Context, *ObjectCopyObjectRequest) (*P11Object, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PutCopyObject not implemented")
 }
 func (UnimplementedExposedPadlockServer) mustEmbedUnimplementedExposedPadlockServer() {}
 
@@ -611,6 +961,78 @@ func (x *exposedPadlockGetSessionListObjectsServer) Send(m *P11Object) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _ExposedPadlock_PostSessionCreateObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionCreateObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExposedPadlockServer).PostSessionCreateObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.ExposedPadlock/PostSessionCreateObject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExposedPadlockServer).PostSessionCreateObject(ctx, req.(*SessionCreateObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExposedPadlock_PostSessionGenerateRandom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionGenerateRandomRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExposedPadlockServer).PostSessionGenerateRandom(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.ExposedPadlock/PostSessionGenerateRandom",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExposedPadlockServer).PostSessionGenerateRandom(ctx, req.(*SessionGenerateRandomRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExposedPadlock_PostSessionGenerateKeyPair_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionGenerateKeyPairRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExposedPadlockServer).PostSessionGenerateKeyPair(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.ExposedPadlock/PostSessionGenerateKeyPair",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExposedPadlockServer).PostSessionGenerateKeyPair(ctx, req.(*SessionGenerateKeyPairRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExposedPadlock_PostSessionGenerateKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionGenerateKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExposedPadlockServer).PostSessionGenerateKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.ExposedPadlock/PostSessionGenerateKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExposedPadlockServer).PostSessionGenerateKey(ctx, req.(*SessionGenerateKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ExposedPadlock_GetObjectListAttributeValues_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ObjectListAttributeValuesRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -630,6 +1052,254 @@ type exposedPadlockGetObjectListAttributeValuesServer struct {
 
 func (x *exposedPadlockGetObjectListAttributeValuesServer) Send(m *ObjectListAttributeValuesUpdate) error {
 	return x.ServerStream.SendMsg(m)
+}
+
+func _ExposedPadlock_PostEncrypt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectEncryptRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExposedPadlockServer).PostEncrypt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.ExposedPadlock/PostEncrypt",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExposedPadlockServer).PostEncrypt(ctx, req.(*ObjectEncryptRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExposedPadlock_PostEncryptSegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ExposedPadlockServer).PostEncryptSegmented(&exposedPadlockPostEncryptSegmentedServer{stream})
+}
+
+type ExposedPadlock_PostEncryptSegmentedServer interface {
+	Send(*ObjectEncryptSegmentedResponse) error
+	Recv() (*ObjectEncryptSegmentedRequest, error)
+	grpc.ServerStream
+}
+
+type exposedPadlockPostEncryptSegmentedServer struct {
+	grpc.ServerStream
+}
+
+func (x *exposedPadlockPostEncryptSegmentedServer) Send(m *ObjectEncryptSegmentedResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *exposedPadlockPostEncryptSegmentedServer) Recv() (*ObjectEncryptSegmentedRequest, error) {
+	m := new(ObjectEncryptSegmentedRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _ExposedPadlock_PostDecrypt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectDecryptRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExposedPadlockServer).PostDecrypt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.ExposedPadlock/PostDecrypt",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExposedPadlockServer).PostDecrypt(ctx, req.(*ObjectDecryptRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExposedPadlock_PostDecryptSegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ExposedPadlockServer).PostDecryptSegmented(&exposedPadlockPostDecryptSegmentedServer{stream})
+}
+
+type ExposedPadlock_PostDecryptSegmentedServer interface {
+	Send(*ObjectDecryptSegmentedResponse) error
+	Recv() (*ObjectDecryptSegmentedRequest, error)
+	grpc.ServerStream
+}
+
+type exposedPadlockPostDecryptSegmentedServer struct {
+	grpc.ServerStream
+}
+
+func (x *exposedPadlockPostDecryptSegmentedServer) Send(m *ObjectDecryptSegmentedResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *exposedPadlockPostDecryptSegmentedServer) Recv() (*ObjectDecryptSegmentedRequest, error) {
+	m := new(ObjectDecryptSegmentedRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _ExposedPadlock_PostSign_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectSignRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExposedPadlockServer).PostSign(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.ExposedPadlock/PostSign",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExposedPadlockServer).PostSign(ctx, req.(*ObjectSignRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExposedPadlock_PostSignSegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ExposedPadlockServer).PostSignSegmented(&exposedPadlockPostSignSegmentedServer{stream})
+}
+
+type ExposedPadlock_PostSignSegmentedServer interface {
+	SendAndClose(*ObjectSignSegmentedResponse) error
+	Recv() (*ObjectSignSegmentedRequest, error)
+	grpc.ServerStream
+}
+
+type exposedPadlockPostSignSegmentedServer struct {
+	grpc.ServerStream
+}
+
+func (x *exposedPadlockPostSignSegmentedServer) SendAndClose(m *ObjectSignSegmentedResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *exposedPadlockPostSignSegmentedServer) Recv() (*ObjectSignSegmentedRequest, error) {
+	m := new(ObjectSignSegmentedRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _ExposedPadlock_PostVerify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectVerifyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExposedPadlockServer).PostVerify(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.ExposedPadlock/PostVerify",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExposedPadlockServer).PostVerify(ctx, req.(*ObjectVerifyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExposedPadlock_PostVerifySegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ExposedPadlockServer).PostVerifySegmented(&exposedPadlockPostVerifySegmentedServer{stream})
+}
+
+type ExposedPadlock_PostVerifySegmentedServer interface {
+	SendAndClose(*ObjectVerifySegmentedResponse) error
+	Recv() (*ObjectVerifySegmentedRequest, error)
+	grpc.ServerStream
+}
+
+type exposedPadlockPostVerifySegmentedServer struct {
+	grpc.ServerStream
+}
+
+func (x *exposedPadlockPostVerifySegmentedServer) SendAndClose(m *ObjectVerifySegmentedResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *exposedPadlockPostVerifySegmentedServer) Recv() (*ObjectVerifySegmentedRequest, error) {
+	m := new(ObjectVerifySegmentedRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _ExposedPadlock_PutWrapKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectWrapKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExposedPadlockServer).PutWrapKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.ExposedPadlock/PutWrapKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExposedPadlockServer).PutWrapKey(ctx, req.(*ObjectWrapKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExposedPadlock_PutUnwrapKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectUnwrapKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExposedPadlockServer).PutUnwrapKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.ExposedPadlock/PutUnwrapKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExposedPadlockServer).PutUnwrapKey(ctx, req.(*ObjectUnwrapKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExposedPadlock_DeleteDestroyObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectDestroyObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExposedPadlockServer).DeleteDestroyObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.ExposedPadlock/DeleteDestroyObject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExposedPadlockServer).DeleteDestroyObject(ctx, req.(*ObjectDestroyObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExposedPadlock_PutCopyObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectCopyObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExposedPadlockServer).PutCopyObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.ExposedPadlock/PutCopyObject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExposedPadlockServer).PutCopyObject(ctx, req.(*ObjectCopyObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 var _ExposedPadlock_serviceDesc = grpc.ServiceDesc{
@@ -676,6 +1346,54 @@ var _ExposedPadlock_serviceDesc = grpc.ServiceDesc{
 			MethodName: "PutSessionLogout",
 			Handler:    _ExposedPadlock_PutSessionLogout_Handler,
 		},
+		{
+			MethodName: "PostSessionCreateObject",
+			Handler:    _ExposedPadlock_PostSessionCreateObject_Handler,
+		},
+		{
+			MethodName: "PostSessionGenerateRandom",
+			Handler:    _ExposedPadlock_PostSessionGenerateRandom_Handler,
+		},
+		{
+			MethodName: "PostSessionGenerateKeyPair",
+			Handler:    _ExposedPadlock_PostSessionGenerateKeyPair_Handler,
+		},
+		{
+			MethodName: "PostSessionGenerateKey",
+			Handler:    _ExposedPadlock_PostSessionGenerateKey_Handler,
+		},
+		{
+			MethodName: "PostEncrypt",
+			Handler:    _ExposedPadlock_PostEncrypt_Handler,
+		},
+		{
+			MethodName: "PostDecrypt",
+			Handler:    _ExposedPadlock_PostDecrypt_Handler,
+		},
+		{
+			MethodName: "PostSign",
+			Handler:    _ExposedPadlock_PostSign_Handler,
+		},
+		{
+			MethodName: "PostVerify",
+			Handler:    _ExposedPadlock_PostVerify_Handler,
+		},
+		{
+			MethodName: "PutWrapKey",
+			Handler:    _ExposedPadlock_PutWrapKey_Handler,
+		},
+		{
+			MethodName: "PutUnwrapKey",
+			Handler:    _ExposedPadlock_PutUnwrapKey_Handler,
+		},
+		{
+			MethodName: "DeleteDestroyObject",
+			Handler:    _ExposedPadlock_DeleteDestroyObject_Handler,
+		},
+		{
+			MethodName: "PutCopyObject",
+			Handler:    _ExposedPadlock_PutCopyObject_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -697,6 +1415,28 @@ var _ExposedPadlock_serviceDesc = grpc.ServiceDesc{
 			StreamName:    "GetObjectListAttributeValues",
 			Handler:       _ExposedPadlock_GetObjectListAttributeValues_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "PostEncryptSegmented",
+			Handler:       _ExposedPadlock_PostEncryptSegmented_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "PostDecryptSegmented",
+			Handler:       _ExposedPadlock_PostDecryptSegmented_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "PostSignSegmented",
+			Handler:       _ExposedPadlock_PostSignSegmented_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "PostVerifySegmented",
+			Handler:       _ExposedPadlock_PostVerifySegmented_Handler,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "padlock.proto",
@@ -732,8 +1472,40 @@ type PadlockClient interface {
 	SessionLogout(ctx context.Context, in *SessionID, opts ...grpc.CallOption) (*SessionLogoutResponse, error)
 	// SessionListObjects lists the objects available in the session
 	SessionListObjects(ctx context.Context, in *SessionListObjectsRequest, opts ...grpc.CallOption) (Padlock_SessionListObjectsClient, error)
+	// SessionCreateObject creates an object
+	SessionCreateObject(ctx context.Context, in *SessionCreateObjectRequest, opts ...grpc.CallOption) (*P11Object, error)
+	// SessionGenerateRandom generates random data, exercising the CSPRNG
+	SessionGenerateRandom(ctx context.Context, in *SessionGenerateRandomRequest, opts ...grpc.CallOption) (*SessionGenerateRandomResponse, error)
+	// SessionGenerateKeyPair generates a keypair
+	SessionGenerateKeyPair(ctx context.Context, in *SessionGenerateKeyPairRequest, opts ...grpc.CallOption) (*SessionGenerateKeyPairResponse, error)
+	// SessionGenerateKey generates a key
+	SessionGenerateKey(ctx context.Context, in *SessionGenerateKeyRequest, opts ...grpc.CallOption) (*P11Object, error)
 	// ObjectListAttributeValues lists values for the requested attributes
 	ObjectListAttributeValues(ctx context.Context, in *ObjectListAttributeValuesRequest, opts ...grpc.CallOption) (Padlock_ObjectListAttributeValuesClient, error)
+	// Encrypt encrypts data
+	Encrypt(ctx context.Context, in *ObjectEncryptRequest, opts ...grpc.CallOption) (*ObjectEncryptResponse, error)
+	// EncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	EncryptSegmented(ctx context.Context, opts ...grpc.CallOption) (Padlock_EncryptSegmentedClient, error)
+	// Decrypt decrypts data
+	Decrypt(ctx context.Context, in *ObjectDecryptRequest, opts ...grpc.CallOption) (*ObjectDecryptResponse, error)
+	// DecryptSegmented decrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	DecryptSegmented(ctx context.Context, opts ...grpc.CallOption) (Padlock_DecryptSegmentedClient, error)
+	// Sign signs a message
+	Sign(ctx context.Context, in *ObjectSignRequest, opts ...grpc.CallOption) (*ObjectSignResponse, error)
+	// SignSegmented signs multiple data segments individually then one final part, for those few mechanisms where it matters
+	SignSegmented(ctx context.Context, opts ...grpc.CallOption) (Padlock_SignSegmentedClient, error)
+	// Verify verifies a message and signature
+	Verify(ctx context.Context, in *ObjectVerifyRequest, opts ...grpc.CallOption) (*ObjectVerifyResponse, error)
+	// VerifySegmented verifies multiple data segments individually then the final signature, for those  few mechanisms where it matters.
+	VerifySegmented(ctx context.Context, opts ...grpc.CallOption) (Padlock_VerifySegmentedClient, error)
+	// WrapKey wraps a key
+	WrapKey(ctx context.Context, in *ObjectWrapKeyRequest, opts ...grpc.CallOption) (*ObjectWrapKeyResponse, error)
+	// UnwrapKey unwraps a key
+	UnwrapKey(ctx context.Context, in *ObjectUnwrapKeyRequest, opts ...grpc.CallOption) (*P11Object, error)
+	// DestroyObject destroys an object
+	DestroyObject(ctx context.Context, in *ObjectDestroyObjectRequest, opts ...grpc.CallOption) (*ObjectDestroyObjectResponse, error)
+	// CopyObject copies an object with new attributes if possible
+	CopyObject(ctx context.Context, in *ObjectCopyObjectRequest, opts ...grpc.CallOption) (*P11Object, error)
 }
 
 type padlockClient struct {
@@ -930,6 +1702,42 @@ func (x *padlockSessionListObjectsClient) Recv() (*P11Object, error) {
 	return m, nil
 }
 
+func (c *padlockClient) SessionCreateObject(ctx context.Context, in *SessionCreateObjectRequest, opts ...grpc.CallOption) (*P11Object, error) {
+	out := new(P11Object)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/SessionCreateObject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *padlockClient) SessionGenerateRandom(ctx context.Context, in *SessionGenerateRandomRequest, opts ...grpc.CallOption) (*SessionGenerateRandomResponse, error) {
+	out := new(SessionGenerateRandomResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/SessionGenerateRandom", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *padlockClient) SessionGenerateKeyPair(ctx context.Context, in *SessionGenerateKeyPairRequest, opts ...grpc.CallOption) (*SessionGenerateKeyPairResponse, error) {
+	out := new(SessionGenerateKeyPairResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/SessionGenerateKeyPair", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *padlockClient) SessionGenerateKey(ctx context.Context, in *SessionGenerateKeyRequest, opts ...grpc.CallOption) (*P11Object, error) {
+	out := new(P11Object)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/SessionGenerateKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *padlockClient) ObjectListAttributeValues(ctx context.Context, in *ObjectListAttributeValuesRequest, opts ...grpc.CallOption) (Padlock_ObjectListAttributeValuesClient, error) {
 	stream, err := c.cc.NewStream(ctx, &_Padlock_serviceDesc.Streams[3], "/padlock.Padlock/ObjectListAttributeValues", opts...)
 	if err != nil {
@@ -962,6 +1770,208 @@ func (x *padlockObjectListAttributeValuesClient) Recv() (*ObjectListAttributeVal
 	return m, nil
 }
 
+func (c *padlockClient) Encrypt(ctx context.Context, in *ObjectEncryptRequest, opts ...grpc.CallOption) (*ObjectEncryptResponse, error) {
+	out := new(ObjectEncryptResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/Encrypt", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *padlockClient) EncryptSegmented(ctx context.Context, opts ...grpc.CallOption) (Padlock_EncryptSegmentedClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Padlock_serviceDesc.Streams[4], "/padlock.Padlock/EncryptSegmented", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &padlockEncryptSegmentedClient{stream}
+	return x, nil
+}
+
+type Padlock_EncryptSegmentedClient interface {
+	Send(*ObjectEncryptSegmentedRequest) error
+	Recv() (*ObjectEncryptSegmentedResponse, error)
+	grpc.ClientStream
+}
+
+type padlockEncryptSegmentedClient struct {
+	grpc.ClientStream
+}
+
+func (x *padlockEncryptSegmentedClient) Send(m *ObjectEncryptSegmentedRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *padlockEncryptSegmentedClient) Recv() (*ObjectEncryptSegmentedResponse, error) {
+	m := new(ObjectEncryptSegmentedResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *padlockClient) Decrypt(ctx context.Context, in *ObjectDecryptRequest, opts ...grpc.CallOption) (*ObjectDecryptResponse, error) {
+	out := new(ObjectDecryptResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/Decrypt", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *padlockClient) DecryptSegmented(ctx context.Context, opts ...grpc.CallOption) (Padlock_DecryptSegmentedClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Padlock_serviceDesc.Streams[5], "/padlock.Padlock/DecryptSegmented", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &padlockDecryptSegmentedClient{stream}
+	return x, nil
+}
+
+type Padlock_DecryptSegmentedClient interface {
+	Send(*ObjectDecryptSegmentedRequest) error
+	Recv() (*ObjectDecryptSegmentedResponse, error)
+	grpc.ClientStream
+}
+
+type padlockDecryptSegmentedClient struct {
+	grpc.ClientStream
+}
+
+func (x *padlockDecryptSegmentedClient) Send(m *ObjectDecryptSegmentedRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *padlockDecryptSegmentedClient) Recv() (*ObjectDecryptSegmentedResponse, error) {
+	m := new(ObjectDecryptSegmentedResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *padlockClient) Sign(ctx context.Context, in *ObjectSignRequest, opts ...grpc.CallOption) (*ObjectSignResponse, error) {
+	out := new(ObjectSignResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/Sign", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *padlockClient) SignSegmented(ctx context.Context, opts ...grpc.CallOption) (Padlock_SignSegmentedClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Padlock_serviceDesc.Streams[6], "/padlock.Padlock/SignSegmented", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &padlockSignSegmentedClient{stream}
+	return x, nil
+}
+
+type Padlock_SignSegmentedClient interface {
+	Send(*ObjectSignSegmentedRequest) error
+	CloseAndRecv() (*ObjectSignSegmentedResponse, error)
+	grpc.ClientStream
+}
+
+type padlockSignSegmentedClient struct {
+	grpc.ClientStream
+}
+
+func (x *padlockSignSegmentedClient) Send(m *ObjectSignSegmentedRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *padlockSignSegmentedClient) CloseAndRecv() (*ObjectSignSegmentedResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(ObjectSignSegmentedResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *padlockClient) Verify(ctx context.Context, in *ObjectVerifyRequest, opts ...grpc.CallOption) (*ObjectVerifyResponse, error) {
+	out := new(ObjectVerifyResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/Verify", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *padlockClient) VerifySegmented(ctx context.Context, opts ...grpc.CallOption) (Padlock_VerifySegmentedClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Padlock_serviceDesc.Streams[7], "/padlock.Padlock/VerifySegmented", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &padlockVerifySegmentedClient{stream}
+	return x, nil
+}
+
+type Padlock_VerifySegmentedClient interface {
+	Send(*ObjectVerifySegmentedRequest) error
+	CloseAndRecv() (*ObjectVerifySegmentedResponse, error)
+	grpc.ClientStream
+}
+
+type padlockVerifySegmentedClient struct {
+	grpc.ClientStream
+}
+
+func (x *padlockVerifySegmentedClient) Send(m *ObjectVerifySegmentedRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *padlockVerifySegmentedClient) CloseAndRecv() (*ObjectVerifySegmentedResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(ObjectVerifySegmentedResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *padlockClient) WrapKey(ctx context.Context, in *ObjectWrapKeyRequest, opts ...grpc.CallOption) (*ObjectWrapKeyResponse, error) {
+	out := new(ObjectWrapKeyResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/WrapKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *padlockClient) UnwrapKey(ctx context.Context, in *ObjectUnwrapKeyRequest, opts ...grpc.CallOption) (*P11Object, error) {
+	out := new(P11Object)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/UnwrapKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *padlockClient) DestroyObject(ctx context.Context, in *ObjectDestroyObjectRequest, opts ...grpc.CallOption) (*ObjectDestroyObjectResponse, error) {
+	out := new(ObjectDestroyObjectResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/DestroyObject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *padlockClient) CopyObject(ctx context.Context, in *ObjectCopyObjectRequest, opts ...grpc.CallOption) (*P11Object, error) {
+	out := new(P11Object)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/CopyObject", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PadlockServer is the server API for Padlock service.
 // All implementations must embed UnimplementedPadlockServer
 // for forward compatibility
@@ -992,8 +2002,40 @@ type PadlockServer interface {
 	SessionLogout(context.Context, *SessionID) (*SessionLogoutResponse, error)
 	// SessionListObjects lists the objects available in the session
 	SessionListObjects(*SessionListObjectsRequest, Padlock_SessionListObjectsServer) error
+	// SessionCreateObject creates an object
+	SessionCreateObject(context.Context, *SessionCreateObjectRequest) (*P11Object, error)
+	// SessionGenerateRandom generates random data, exercising the CSPRNG
+	SessionGenerateRandom(context.Context, *SessionGenerateRandomRequest) (*SessionGenerateRandomResponse, error)
+	// SessionGenerateKeyPair generates a keypair
+	SessionGenerateKeyPair(context.Context, *SessionGenerateKeyPairRequest) (*SessionGenerateKeyPairResponse, error)
+	// SessionGenerateKey generates a key
+	SessionGenerateKey(context.Context, *SessionGenerateKeyRequest) (*P11Object, error)
 	// ObjectListAttributeValues lists values for the requested attributes
 	ObjectListAttributeValues(*ObjectListAttributeValuesRequest, Padlock_ObjectListAttributeValuesServer) error
+	// Encrypt encrypts data
+	Encrypt(context.Context, *ObjectEncryptRequest) (*ObjectEncryptResponse, error)
+	// EncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	EncryptSegmented(Padlock_EncryptSegmentedServer) error
+	// Decrypt decrypts data
+	Decrypt(context.Context, *ObjectDecryptRequest) (*ObjectDecryptResponse, error)
+	// DecryptSegmented decrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	DecryptSegmented(Padlock_DecryptSegmentedServer) error
+	// Sign signs a message
+	Sign(context.Context, *ObjectSignRequest) (*ObjectSignResponse, error)
+	// SignSegmented signs multiple data segments individually then one final part, for those few mechanisms where it matters
+	SignSegmented(Padlock_SignSegmentedServer) error
+	// Verify verifies a message and signature
+	Verify(context.Context, *ObjectVerifyRequest) (*ObjectVerifyResponse, error)
+	// VerifySegmented verifies multiple data segments individually then the final signature, for those  few mechanisms where it matters.
+	VerifySegmented(Padlock_VerifySegmentedServer) error
+	// WrapKey wraps a key
+	WrapKey(context.Context, *ObjectWrapKeyRequest) (*ObjectWrapKeyResponse, error)
+	// UnwrapKey unwraps a key
+	UnwrapKey(context.Context, *ObjectUnwrapKeyRequest) (*P11Object, error)
+	// DestroyObject destroys an object
+	DestroyObject(context.Context, *ObjectDestroyObjectRequest) (*ObjectDestroyObjectResponse, error)
+	// CopyObject copies an object with new attributes if possible
+	CopyObject(context.Context, *ObjectCopyObjectRequest) (*P11Object, error)
 	mustEmbedUnimplementedPadlockServer()
 }
 
@@ -1040,8 +2082,56 @@ func (UnimplementedPadlockServer) SessionLogout(context.Context, *SessionID) (*S
 func (UnimplementedPadlockServer) SessionListObjects(*SessionListObjectsRequest, Padlock_SessionListObjectsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SessionListObjects not implemented")
 }
+func (UnimplementedPadlockServer) SessionCreateObject(context.Context, *SessionCreateObjectRequest) (*P11Object, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SessionCreateObject not implemented")
+}
+func (UnimplementedPadlockServer) SessionGenerateRandom(context.Context, *SessionGenerateRandomRequest) (*SessionGenerateRandomResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateRandom not implemented")
+}
+func (UnimplementedPadlockServer) SessionGenerateKeyPair(context.Context, *SessionGenerateKeyPairRequest) (*SessionGenerateKeyPairResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateKeyPair not implemented")
+}
+func (UnimplementedPadlockServer) SessionGenerateKey(context.Context, *SessionGenerateKeyRequest) (*P11Object, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateKey not implemented")
+}
 func (UnimplementedPadlockServer) ObjectListAttributeValues(*ObjectListAttributeValuesRequest, Padlock_ObjectListAttributeValuesServer) error {
 	return status.Errorf(codes.Unimplemented, "method ObjectListAttributeValues not implemented")
+}
+func (UnimplementedPadlockServer) Encrypt(context.Context, *ObjectEncryptRequest) (*ObjectEncryptResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Encrypt not implemented")
+}
+func (UnimplementedPadlockServer) EncryptSegmented(Padlock_EncryptSegmentedServer) error {
+	return status.Errorf(codes.Unimplemented, "method EncryptSegmented not implemented")
+}
+func (UnimplementedPadlockServer) Decrypt(context.Context, *ObjectDecryptRequest) (*ObjectDecryptResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Decrypt not implemented")
+}
+func (UnimplementedPadlockServer) DecryptSegmented(Padlock_DecryptSegmentedServer) error {
+	return status.Errorf(codes.Unimplemented, "method DecryptSegmented not implemented")
+}
+func (UnimplementedPadlockServer) Sign(context.Context, *ObjectSignRequest) (*ObjectSignResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Sign not implemented")
+}
+func (UnimplementedPadlockServer) SignSegmented(Padlock_SignSegmentedServer) error {
+	return status.Errorf(codes.Unimplemented, "method SignSegmented not implemented")
+}
+func (UnimplementedPadlockServer) Verify(context.Context, *ObjectVerifyRequest) (*ObjectVerifyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Verify not implemented")
+}
+func (UnimplementedPadlockServer) VerifySegmented(Padlock_VerifySegmentedServer) error {
+	return status.Errorf(codes.Unimplemented, "method VerifySegmented not implemented")
+}
+func (UnimplementedPadlockServer) WrapKey(context.Context, *ObjectWrapKeyRequest) (*ObjectWrapKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WrapKey not implemented")
+}
+func (UnimplementedPadlockServer) UnwrapKey(context.Context, *ObjectUnwrapKeyRequest) (*P11Object, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnwrapKey not implemented")
+}
+func (UnimplementedPadlockServer) DestroyObject(context.Context, *ObjectDestroyObjectRequest) (*ObjectDestroyObjectResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DestroyObject not implemented")
+}
+func (UnimplementedPadlockServer) CopyObject(context.Context, *ObjectCopyObjectRequest) (*P11Object, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CopyObject not implemented")
 }
 func (UnimplementedPadlockServer) mustEmbedUnimplementedPadlockServer() {}
 
@@ -1299,6 +2389,78 @@ func (x *padlockSessionListObjectsServer) Send(m *P11Object) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Padlock_SessionCreateObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionCreateObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).SessionCreateObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/SessionCreateObject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).SessionCreateObject(ctx, req.(*SessionCreateObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Padlock_SessionGenerateRandom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionGenerateRandomRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).SessionGenerateRandom(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/SessionGenerateRandom",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).SessionGenerateRandom(ctx, req.(*SessionGenerateRandomRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Padlock_SessionGenerateKeyPair_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionGenerateKeyPairRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).SessionGenerateKeyPair(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/SessionGenerateKeyPair",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).SessionGenerateKeyPair(ctx, req.(*SessionGenerateKeyPairRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Padlock_SessionGenerateKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionGenerateKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).SessionGenerateKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/SessionGenerateKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).SessionGenerateKey(ctx, req.(*SessionGenerateKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Padlock_ObjectListAttributeValues_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ObjectListAttributeValuesRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -1318,6 +2480,254 @@ type padlockObjectListAttributeValuesServer struct {
 
 func (x *padlockObjectListAttributeValuesServer) Send(m *ObjectListAttributeValuesUpdate) error {
 	return x.ServerStream.SendMsg(m)
+}
+
+func _Padlock_Encrypt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectEncryptRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).Encrypt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/Encrypt",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).Encrypt(ctx, req.(*ObjectEncryptRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Padlock_EncryptSegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(PadlockServer).EncryptSegmented(&padlockEncryptSegmentedServer{stream})
+}
+
+type Padlock_EncryptSegmentedServer interface {
+	Send(*ObjectEncryptSegmentedResponse) error
+	Recv() (*ObjectEncryptSegmentedRequest, error)
+	grpc.ServerStream
+}
+
+type padlockEncryptSegmentedServer struct {
+	grpc.ServerStream
+}
+
+func (x *padlockEncryptSegmentedServer) Send(m *ObjectEncryptSegmentedResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *padlockEncryptSegmentedServer) Recv() (*ObjectEncryptSegmentedRequest, error) {
+	m := new(ObjectEncryptSegmentedRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Padlock_Decrypt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectDecryptRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).Decrypt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/Decrypt",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).Decrypt(ctx, req.(*ObjectDecryptRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Padlock_DecryptSegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(PadlockServer).DecryptSegmented(&padlockDecryptSegmentedServer{stream})
+}
+
+type Padlock_DecryptSegmentedServer interface {
+	Send(*ObjectDecryptSegmentedResponse) error
+	Recv() (*ObjectDecryptSegmentedRequest, error)
+	grpc.ServerStream
+}
+
+type padlockDecryptSegmentedServer struct {
+	grpc.ServerStream
+}
+
+func (x *padlockDecryptSegmentedServer) Send(m *ObjectDecryptSegmentedResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *padlockDecryptSegmentedServer) Recv() (*ObjectDecryptSegmentedRequest, error) {
+	m := new(ObjectDecryptSegmentedRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Padlock_Sign_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectSignRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).Sign(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/Sign",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).Sign(ctx, req.(*ObjectSignRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Padlock_SignSegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(PadlockServer).SignSegmented(&padlockSignSegmentedServer{stream})
+}
+
+type Padlock_SignSegmentedServer interface {
+	SendAndClose(*ObjectSignSegmentedResponse) error
+	Recv() (*ObjectSignSegmentedRequest, error)
+	grpc.ServerStream
+}
+
+type padlockSignSegmentedServer struct {
+	grpc.ServerStream
+}
+
+func (x *padlockSignSegmentedServer) SendAndClose(m *ObjectSignSegmentedResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *padlockSignSegmentedServer) Recv() (*ObjectSignSegmentedRequest, error) {
+	m := new(ObjectSignSegmentedRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Padlock_Verify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectVerifyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).Verify(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/Verify",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).Verify(ctx, req.(*ObjectVerifyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Padlock_VerifySegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(PadlockServer).VerifySegmented(&padlockVerifySegmentedServer{stream})
+}
+
+type Padlock_VerifySegmentedServer interface {
+	SendAndClose(*ObjectVerifySegmentedResponse) error
+	Recv() (*ObjectVerifySegmentedRequest, error)
+	grpc.ServerStream
+}
+
+type padlockVerifySegmentedServer struct {
+	grpc.ServerStream
+}
+
+func (x *padlockVerifySegmentedServer) SendAndClose(m *ObjectVerifySegmentedResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *padlockVerifySegmentedServer) Recv() (*ObjectVerifySegmentedRequest, error) {
+	m := new(ObjectVerifySegmentedRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Padlock_WrapKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectWrapKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).WrapKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/WrapKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).WrapKey(ctx, req.(*ObjectWrapKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Padlock_UnwrapKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectUnwrapKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).UnwrapKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/UnwrapKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).UnwrapKey(ctx, req.(*ObjectUnwrapKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Padlock_DestroyObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectDestroyObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).DestroyObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/DestroyObject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).DestroyObject(ctx, req.(*ObjectDestroyObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Padlock_CopyObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectCopyObjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).CopyObject(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/CopyObject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).CopyObject(ctx, req.(*ObjectCopyObjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 var _Padlock_serviceDesc = grpc.ServiceDesc{
@@ -1364,6 +2774,54 @@ var _Padlock_serviceDesc = grpc.ServiceDesc{
 			MethodName: "SessionLogout",
 			Handler:    _Padlock_SessionLogout_Handler,
 		},
+		{
+			MethodName: "SessionCreateObject",
+			Handler:    _Padlock_SessionCreateObject_Handler,
+		},
+		{
+			MethodName: "SessionGenerateRandom",
+			Handler:    _Padlock_SessionGenerateRandom_Handler,
+		},
+		{
+			MethodName: "SessionGenerateKeyPair",
+			Handler:    _Padlock_SessionGenerateKeyPair_Handler,
+		},
+		{
+			MethodName: "SessionGenerateKey",
+			Handler:    _Padlock_SessionGenerateKey_Handler,
+		},
+		{
+			MethodName: "Encrypt",
+			Handler:    _Padlock_Encrypt_Handler,
+		},
+		{
+			MethodName: "Decrypt",
+			Handler:    _Padlock_Decrypt_Handler,
+		},
+		{
+			MethodName: "Sign",
+			Handler:    _Padlock_Sign_Handler,
+		},
+		{
+			MethodName: "Verify",
+			Handler:    _Padlock_Verify_Handler,
+		},
+		{
+			MethodName: "WrapKey",
+			Handler:    _Padlock_WrapKey_Handler,
+		},
+		{
+			MethodName: "UnwrapKey",
+			Handler:    _Padlock_UnwrapKey_Handler,
+		},
+		{
+			MethodName: "DestroyObject",
+			Handler:    _Padlock_DestroyObject_Handler,
+		},
+		{
+			MethodName: "CopyObject",
+			Handler:    _Padlock_CopyObject_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -1385,6 +2843,28 @@ var _Padlock_serviceDesc = grpc.ServiceDesc{
 			StreamName:    "ObjectListAttributeValues",
 			Handler:       _Padlock_ObjectListAttributeValues_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "EncryptSegmented",
+			Handler:       _Padlock_EncryptSegmented_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "DecryptSegmented",
+			Handler:       _Padlock_DecryptSegmented_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "SignSegmented",
+			Handler:       _Padlock_SignSegmented_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "VerifySegmented",
+			Handler:       _Padlock_VerifySegmented_Handler,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "padlock.proto",

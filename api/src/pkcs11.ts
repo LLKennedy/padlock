@@ -7,8 +7,8 @@
  */
 
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
-import { MechanismType as padlock__MechanismType } from "./mechanisms";
 import { AttributeType as padlock__AttributeType } from "./attributes";
+import { MechanismType as padlock__MechanismType } from "./mechanisms";
 
 /** A message */
 export class ModuleInfo extends Object implements tsjson.ProtoJSONCompatible {
@@ -172,26 +172,26 @@ export class TokenInfo extends Object implements tsjson.ProtoJSONCompatible {
 /** A message */
 export class Version extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
-	public Major?: number;
+	public major?: number;
 	/** A field */
-	public Minor?: number;
+	public minor?: number;
 	public ToProtoJSON(): Object {
 		return {
-			Major: tsjson.ToProtoJSON.Number(this.Major),
-			Minor: tsjson.ToProtoJSON.Number(this.Minor),
+			major: tsjson.ToProtoJSON.Number(this.major),
+			minor: tsjson.ToProtoJSON.Number(this.minor),
 		};
 	}
 	public static async Parse(data: any): Promise<Version> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new Version();
-		res.Major = await tsjson.Parse.Number(objData, "Major", "Major");
-		res.Minor = await tsjson.Parse.Number(objData, "Minor", "Minor");
+		res.major = await tsjson.Parse.Number(objData, "major", "major");
+		res.minor = await tsjson.Parse.Number(objData, "minor", "minor");
 		return res;
 	}
 }
 
 /** A message */
-export class Mechanism extends Object implements tsjson.ProtoJSONCompatible {
+export class SupportedMechanism extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
 	public type?: padlock__MechanismType;
 	/** A field */
@@ -208,13 +208,154 @@ export class Mechanism extends Object implements tsjson.ProtoJSONCompatible {
 			flags: tsjson.ToProtoJSON.Bytes(this.flags),
 		};
 	}
-	public static async Parse(data: any): Promise<Mechanism> {
+	public static async Parse(data: any): Promise<SupportedMechanism> {
 		let objData: Object = tsjson.AnyToObject(data);
-		let res = new Mechanism();
+		let res = new SupportedMechanism();
 		res.type = await tsjson.Parse.Enum(objData, "type", "type", padlock__MechanismType);
 		res.minKeySize = await tsjson.Parse.Number(objData, "minKeySize", "min_key_size");
 		res.maxKeySize = await tsjson.Parse.Number(objData, "maxKeySize", "max_key_size");
 		res.flags = await tsjson.Parse.Bytes(objData, "flags", "flags");
+		return res;
+	}
+}
+
+/** A message */
+export class Mechanism extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public type?: padlock__MechanismType;
+	/** A field */
+	public raw?: Uint8Array;
+	/** A field */
+	public ecdh1?: MechanismECDH1DeriveParams;
+	/** A field */
+	public gcm?: MechanismGCMParams;
+	/** A field */
+	public oaep?: MechanismOAEPParams;
+	/** A field */
+	public pss?: MechanismPSSParams;
+	public ToProtoJSON(): Object {
+		return {
+			type: tsjson.ToProtoJSON.Enum(padlock__MechanismType, this.type),
+			raw: tsjson.ToProtoJSON.Bytes(this.raw),
+			ecdh1: this.ecdh1?.ToProtoJSON(),
+			gcm: this.gcm?.ToProtoJSON(),
+			oaep: this.oaep?.ToProtoJSON(),
+			pss: this.pss?.ToProtoJSON(),
+		};
+	}
+	public static async Parse(data: any): Promise<Mechanism> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new Mechanism();
+		res.type = await tsjson.Parse.Enum(objData, "type", "type", padlock__MechanismType);
+		res.raw = await tsjson.Parse.Bytes(objData, "raw", "raw");
+		res.ecdh1 = await tsjson.Parse.Message(objData, "ecdh1", "ecdh1", MechanismECDH1DeriveParams.Parse);
+		res.gcm = await tsjson.Parse.Message(objData, "gcm", "gcm", MechanismGCMParams.Parse);
+		res.oaep = await tsjson.Parse.Message(objData, "oaep", "oaep", MechanismOAEPParams.Parse);
+		res.pss = await tsjson.Parse.Message(objData, "pss", "pss", MechanismPSSParams.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class MechanismECDH1DeriveParams extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public kdf?: number;
+	/** A field */
+	public sharedData?: Uint8Array;
+	/** A field */
+	public publicKeyData?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			kdf: tsjson.ToProtoJSON.Number(this.kdf),
+			sharedData: tsjson.ToProtoJSON.Bytes(this.sharedData),
+			publicKeyData: tsjson.ToProtoJSON.Bytes(this.publicKeyData),
+		};
+	}
+	public static async Parse(data: any): Promise<MechanismECDH1DeriveParams> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new MechanismECDH1DeriveParams();
+		res.kdf = await tsjson.Parse.Number(objData, "kdf", "kdf");
+		res.sharedData = await tsjson.Parse.Bytes(objData, "sharedData", "shared_data");
+		res.publicKeyData = await tsjson.Parse.Bytes(objData, "publicKeyData", "public_key_data");
+		return res;
+	}
+}
+
+/** A message */
+export class MechanismGCMParams extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public iv?: Uint8Array;
+	/** A field */
+	public aad?: Uint8Array;
+	/** A field */
+	public tagSize?: number;
+	public ToProtoJSON(): Object {
+		return {
+			iv: tsjson.ToProtoJSON.Bytes(this.iv),
+			aad: tsjson.ToProtoJSON.Bytes(this.aad),
+			tagSize: tsjson.ToProtoJSON.Number(this.tagSize),
+		};
+	}
+	public static async Parse(data: any): Promise<MechanismGCMParams> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new MechanismGCMParams();
+		res.iv = await tsjson.Parse.Bytes(objData, "iv", "iv");
+		res.aad = await tsjson.Parse.Bytes(objData, "aad", "aad");
+		res.tagSize = await tsjson.Parse.Number(objData, "tagSize", "tag_size");
+		return res;
+	}
+}
+
+/** A message */
+export class MechanismOAEPParams extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public hashAlg?: number;
+	/** A field */
+	public mgf?: number;
+	/** A field */
+	public sourceType?: number;
+	/** A field */
+	public sourceData?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			hashAlg: tsjson.ToProtoJSON.Number(this.hashAlg),
+			mgf: tsjson.ToProtoJSON.Number(this.mgf),
+			sourceType: tsjson.ToProtoJSON.Number(this.sourceType),
+			sourceData: tsjson.ToProtoJSON.Bytes(this.sourceData),
+		};
+	}
+	public static async Parse(data: any): Promise<MechanismOAEPParams> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new MechanismOAEPParams();
+		res.hashAlg = await tsjson.Parse.Number(objData, "hashAlg", "hash_alg");
+		res.mgf = await tsjson.Parse.Number(objData, "mgf", "mgf");
+		res.sourceType = await tsjson.Parse.Number(objData, "sourceType", "source_type");
+		res.sourceData = await tsjson.Parse.Bytes(objData, "sourceData", "source_data");
+		return res;
+	}
+}
+
+/** A message */
+export class MechanismPSSParams extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public hashAlg?: number;
+	/** A field */
+	public mgf?: number;
+	/** A field */
+	public saltLength?: number;
+	public ToProtoJSON(): Object {
+		return {
+			hashAlg: tsjson.ToProtoJSON.Number(this.hashAlg),
+			mgf: tsjson.ToProtoJSON.Number(this.mgf),
+			saltLength: tsjson.ToProtoJSON.Number(this.saltLength),
+		};
+	}
+	public static async Parse(data: any): Promise<MechanismPSSParams> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new MechanismPSSParams();
+		res.hashAlg = await tsjson.Parse.Number(objData, "hashAlg", "hash_alg");
+		res.mgf = await tsjson.Parse.Number(objData, "mgf", "mgf");
+		res.saltLength = await tsjson.Parse.Number(objData, "saltLength", "salt_length");
 		return res;
 	}
 }

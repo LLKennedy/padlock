@@ -290,7 +290,7 @@ func (h *handle) SlotListMechanisms(ctx context.Context, req *padlockpb.SlotList
 		}
 		flagData := make([]byte, 8)
 		binary.BigEndian.PutUint64(flagData, uint64(info.Flags))
-		newMech := &padlockpb.Mechanism{
+		newMech := &padlockpb.SupportedMechanism{
 			Type:       MechanismP11toPB(innerMech),
 			MinKeySize: uint64(info.MinKeySize),
 			MaxKeySize: uint64(info.MaxKeySize),
@@ -512,17 +512,17 @@ func (h *handle) SessionListObjects(req *padlockpb.SessionListObjectsRequest, st
 
 // ObjectListAttributeValues lists values for the requested attributes
 func (h *handle) ObjectListAttributeValues(req *padlockpb.ObjectListAttributeValuesRequest, stream padlockpb.Padlock_ObjectListAttributeValuesServer) error {
-	id, err := h.authenticate(req.GetSessionId().GetAuth())
+	id, err := h.authenticate(req.GetObjectId().GetSessionId().GetAuth())
 	if err != nil {
 		return err
 	}
 	log.Printf("Listing attribute values for %s\n", id)
-	sess, err := h.getSession(req.GetSessionId().GetUuid(), id.String())
+	sess, err := h.getSession(req.GetObjectId().GetSessionId().GetUuid(), id.String())
 	if err != nil {
 		return err
 	}
 	defer sess.mx.Unlock()
-	obj, exists := sess.objs[req.GetObjectId()]
+	obj, exists := sess.objs[req.GetObjectId().GetObjectId()]
 	if !exists {
 		return status.Error(codes.NotFound, "object deleted or does not exist")
 	}

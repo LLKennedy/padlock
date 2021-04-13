@@ -8,9 +8,9 @@ import "tsjson.proto";
 option (tsjson.npm_package) = "@llkdemo/padlock";
 option (tsjson.import_path) = "padlock";
 
-import "pkcs11.proto";
-import "attributes.proto";
 import "google/protobuf/empty.proto";
+import "attributes.proto";
+import "pkcs11.proto";
 
 service ExposedPadlock {
 	// Auth RPCs
@@ -60,7 +60,7 @@ service ExposedPadlock {
 	// PostSessionGenerateKeyPair generates a keypair
 	rpc PostSessionGenerateKeyPair(SessionGenerateKeyPairRequest) returns (SessionGenerateKeyPairResponse);
 	// PostSessionGenerateKey generates a key
-	rpc PostSessionGenerateKey(SessionGenerateKeyRequest) returns (SessionGenerateKeyResponse);
+	rpc PostSessionGenerateKey(SessionGenerateKeyRequest) returns (P11Object);
 
 	// Object RPCs
 
@@ -69,19 +69,19 @@ service ExposedPadlock {
 	// PostEncrypt encrypts data
 	rpc PostEncrypt(ObjectEncryptRequest) returns (ObjectEncryptResponse);
 	// PostEncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
-	rpc PostEncryptSegmented(ObjectEncryptSegmentedRequest) returns (ObjectEncryptSegmentedResponse);
+	rpc PostEncryptSegmented(stream ObjectEncryptSegmentedRequest) returns (stream ObjectEncryptSegmentedResponse);
 	// PostDecrypt decrypts data
 	rpc PostDecrypt(ObjectDecryptRequest) returns (ObjectDecryptResponse);
 	// PostDecryptSegmented decrypts multiple data segments individually then one final one, for those few mechanisms where it matters
-	rpc PostDecryptSegmented(ObjectDecryptSegmentedRequest) returns (ObjectDecryptSegmentedResponse);
+	rpc PostDecryptSegmented(stream ObjectDecryptSegmentedRequest) returns (stream ObjectDecryptSegmentedResponse);
 	// PostSign signs a message
 	rpc PostSign(ObjectSignRequest) returns (ObjectSignResponse);
 	// PostSignSegmented signs multiple data segments individually then one final part, for those few mechanisms where it matters
-	rpc PostSignSegmented(ObjectSignSegmentedRequest) returns (ObjectSignSegmentedResponse);
+	rpc PostSignSegmented(stream ObjectSignSegmentedRequest) returns (ObjectSignSegmentedResponse);
 	// PostVerify verifies a message and signature
 	rpc PostVerify(ObjectVerifyRequest) returns (ObjectVerifyResponse);
 	// PostVerifySegmented verifies multiple data segments individually then the final signature, for those  few mechanisms where it matters.
-	rpc PostVerifySegmented(ObjectVerifySegmentedRequest) returns (ObjectVerifySegmentedResponse);
+	rpc PostVerifySegmented(stream ObjectVerifySegmentedRequest) returns (ObjectVerifySegmentedResponse);
 	// PutWrapKey wraps a key
 	rpc PutWrapKey(ObjectWrapKeyRequest) returns (ObjectWrapKeyResponse);
 	// PutUnwrapKey unwraps a key
@@ -229,7 +229,7 @@ message SlotListMechanismsRequest {
 }
 
 message SlotListMechanismsResponse {
-	repeated Mechanism mechanisms = 1;
+	repeated SupportedMechanism mechanisms = 1;
 }
 
 message SlotInitTokenRequest {
@@ -348,73 +348,104 @@ message ObjectEncryptResponse {
 }
 
 message ObjectEncryptSegmentedRequest {
-	ObjectID object_id = 1;
+	oneof stages {
+		ObjectCryptoSegmentedInit first = 1;
+		bytes message_part = 2;
+		google.protobuf.Empty last = 3;
+	}
+}
+
+message ObjectCryptoSegmentedInit {
+	ObjectID id = 1;
 	repeated Mechanism mechs = 2;
-	repeated bytes message_parts = 3;
 }
 
 message ObjectEncryptSegmentedResponse {
-
+	bytes encrypted_part = 1;
 }
 
 message ObjectDecryptRequest {
-	ObjectID object_id = 1;
+	ObjectID object_id = 1; 
+	repeated Mechanism mechs = 2;
+	bytes encrypted = 3;
 }
 
 message ObjectDecryptResponse {
-
+	bytes plain_text = 1;
 }
 
 message ObjectDecryptSegmentedRequest {
-	ObjectID object_id = 1;
+	oneof stages {
+		ObjectCryptoSegmentedInit first = 1;
+		bytes message_part = 2;
+		google.protobuf.Empty last = 3;
+	}
 }
 
 message ObjectDecryptSegmentedResponse {
-
+	bytes plain_text_part = 1;
 }
 
 message ObjectSignRequest {
 	ObjectID object_id = 1;
+	repeated Mechanism mechs = 2;
+	bytes message = 3;
 }
 
 message ObjectSignResponse {
-
+	bytes signature = 1;
 }
 
 message ObjectSignSegmentedRequest {
-	ObjectID object_id = 1;
+	oneof stages {
+		ObjectCryptoSegmentedInit first = 1;
+		bytes message_part = 2;
+		google.protobuf.Empty last = 3;
+	}
 }
 
 message ObjectSignSegmentedResponse {
-
+	bytes signature = 1;
 }
 
 message ObjectVerifyRequest {
 	ObjectID object_id = 1;
+	repeated Mechanism mechs = 2;
+	bytes message = 3;
+	bytes signature = 4;
 }
 
 message ObjectVerifyResponse {
-
+	bool valid = 1;
 }
 
 message ObjectVerifySegmentedRequest {
-	ObjectID object_id = 1;
+	oneof stages {
+		ObjectCryptoSegmentedInit first = 1;
+		bytes message_part = 2;
+		bytes signature = 3;
+	}
 }
 
 message ObjectVerifySegmentedResponse {
-
+	bool valid = 1;
 }
 
 message ObjectWrapKeyRequest {
-	ObjectID object_id = 1;
+	ObjectID wrapping_key = 1;
+	repeated Mechanism mechs = 2;
+	ObjectID key_to_wrap = 3;
 }
 
 message ObjectWrapKeyResponse {
-
+	bytes wrapped = 1;
 }
 
 message ObjectUnwrapKeyRequest {
 	ObjectID object_id = 1;
+	repeated Mechanism mechs = 2;
+	bytes wrapped = 3;
+	repeated Attribute attributes = 4;
 }
 
 message ObjectDestroyObjectRequest {
@@ -427,6 +458,7 @@ message ObjectDestroyObjectResponse {
 
 message ObjectCopyObjectRequest {
 	ObjectID object_id = 1;
+	repeated Attribute attributes = 2;
 }
 
 message ObjectCopyObjectResponse {

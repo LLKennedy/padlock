@@ -7,8 +7,9 @@
  */
 
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
-import { ModuleInfo as padlock__ModuleInfo, SlotInfo as padlock__SlotInfo, Attribute as padlock__Attribute, Mechanism as padlock__Mechanism } from "./pkcs11";
-import { AttributeType as padlock__AttributeType } from "./attributes";
+import { google } from "@llkennedy/protoc-gen-tsjson";
+import { SupportedMechanism as padlock__SupportedMechanism, Attribute as padlock__Attribute, P11Object as padlock__P11Object, ModuleInfo as padlock__ModuleInfo, SlotInfo as padlock__SlotInfo, Mechanism as padlock__Mechanism } from "./pkcs11";
+import { AttributeType as padlock__AttributeType } from "attributes";
 
 /** A message */
 export class AuthHello extends Object implements tsjson.ProtoJSONCompatible {
@@ -237,7 +238,7 @@ export class SlotListMechanismsRequest extends Object implements tsjson.ProtoJSO
 /** A message */
 export class SlotListMechanismsResponse extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
-	public mechanisms?: padlock__Mechanism[];
+	public mechanisms?: padlock__SupportedMechanism[];
 	public ToProtoJSON(): Object {
 		return {
 			mechanisms: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.mechanisms),
@@ -246,7 +247,7 @@ export class SlotListMechanismsResponse extends Object implements tsjson.ProtoJS
 	public static async Parse(data: any): Promise<SlotListMechanismsResponse> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new SlotListMechanismsResponse();
-		res.mechanisms = await tsjson.Parse.Repeated(objData, "mechanisms", "mechanisms", padlock__Mechanism.Parse);
+		res.mechanisms = await tsjson.Parse.Repeated(objData, "mechanisms", "mechanisms", padlock__SupportedMechanism.Parse);
 		return res;
 	}
 }
@@ -455,25 +456,176 @@ export class SessionListObjectsRequest extends Object implements tsjson.ProtoJSO
 }
 
 /** A message */
-export class ObjectListAttributeValuesRequest extends Object implements tsjson.ProtoJSONCompatible {
+export class SessionCreateObjectRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public id?: SessionID;
+	/** A field */
+	public attributes?: padlock__Attribute[];
+	public ToProtoJSON(): Object {
+		return {
+			id: this.id?.ToProtoJSON(),
+			attributes: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.attributes),
+		};
+	}
+	public static async Parse(data: any): Promise<SessionCreateObjectRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new SessionCreateObjectRequest();
+		res.id = await tsjson.Parse.Message(objData, "id", "id", SessionID.Parse);
+		res.attributes = await tsjson.Parse.Repeated(objData, "attributes", "attributes", padlock__Attribute.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class SessionGenerateRandomRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public id?: SessionID;
+	/** A field */
+	public length?: number;
+	public ToProtoJSON(): Object {
+		return {
+			id: this.id?.ToProtoJSON(),
+			length: tsjson.ToProtoJSON.Number(this.length),
+		};
+	}
+	public static async Parse(data: any): Promise<SessionGenerateRandomRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new SessionGenerateRandomRequest();
+		res.id = await tsjson.Parse.Message(objData, "id", "id", SessionID.Parse);
+		res.length = await tsjson.Parse.Number(objData, "length", "length");
+		return res;
+	}
+}
+
+/** A message */
+export class SessionGenerateRandomResponse extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public data?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			data: tsjson.ToProtoJSON.Bytes(this.data),
+		};
+	}
+	public static async Parse(data: any): Promise<SessionGenerateRandomResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new SessionGenerateRandomResponse();
+		res.data = await tsjson.Parse.Bytes(objData, "data", "data");
+		return res;
+	}
+}
+
+/** A message */
+export class SessionGenerateKeyPairRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public id?: SessionID;
+	/** A field */
+	public mech?: padlock__Mechanism;
+	/** A field */
+	public privateAttributes?: padlock__Attribute[];
+	/** A field */
+	public publicAttributes?: padlock__Attribute[];
+	public ToProtoJSON(): Object {
+		return {
+			id: this.id?.ToProtoJSON(),
+			mech: this.mech?.ToProtoJSON(),
+			privateAttributes: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.privateAttributes),
+			publicAttributes: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.publicAttributes),
+		};
+	}
+	public static async Parse(data: any): Promise<SessionGenerateKeyPairRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new SessionGenerateKeyPairRequest();
+		res.id = await tsjson.Parse.Message(objData, "id", "id", SessionID.Parse);
+		res.mech = await tsjson.Parse.Message(objData, "mech", "mech", padlock__Mechanism.Parse);
+		res.privateAttributes = await tsjson.Parse.Repeated(objData, "privateAttributes", "private_attributes", padlock__Attribute.Parse);
+		res.publicAttributes = await tsjson.Parse.Repeated(objData, "publicAttributes", "public_attributes", padlock__Attribute.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class SessionGenerateKeyPairResponse extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public private?: padlock__P11Object;
+	/** A field */
+	public public?: padlock__P11Object;
+	public ToProtoJSON(): Object {
+		return {
+			private: this.private?.ToProtoJSON(),
+			public: this.public?.ToProtoJSON(),
+		};
+	}
+	public static async Parse(data: any): Promise<SessionGenerateKeyPairResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new SessionGenerateKeyPairResponse();
+		res.private = await tsjson.Parse.Message(objData, "private", "private", padlock__P11Object.Parse);
+		res.public = await tsjson.Parse.Message(objData, "public", "public", padlock__P11Object.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class SessionGenerateKeyRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public id?: SessionID;
+	/** A field */
+	public mech?: padlock__Mechanism;
+	/** A field */
+	public attributes?: padlock__Attribute[];
+	public ToProtoJSON(): Object {
+		return {
+			id: this.id?.ToProtoJSON(),
+			mech: this.mech?.ToProtoJSON(),
+			attributes: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.attributes),
+		};
+	}
+	public static async Parse(data: any): Promise<SessionGenerateKeyRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new SessionGenerateKeyRequest();
+		res.id = await tsjson.Parse.Message(objData, "id", "id", SessionID.Parse);
+		res.mech = await tsjson.Parse.Message(objData, "mech", "mech", padlock__Mechanism.Parse);
+		res.attributes = await tsjson.Parse.Repeated(objData, "attributes", "attributes", padlock__Attribute.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectID extends Object implements tsjson.ProtoJSONCompatible {
 	/** A field */
 	public sessionId?: SessionID;
 	/** A field */
 	public objectId?: string;
-	/** A field */
-	public requestedAttributes?: padlock__AttributeType[];
 	public ToProtoJSON(): Object {
 		return {
 			sessionId: this.sessionId?.ToProtoJSON(),
 			objectId: tsjson.ToProtoJSON.String(this.objectId),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectID> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectID();
+		res.sessionId = await tsjson.Parse.Message(objData, "sessionId", "session_id", SessionID.Parse);
+		res.objectId = await tsjson.Parse.String(objData, "objectId", "object_id");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectListAttributeValuesRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public objectId?: ObjectID;
+	/** A field */
+	public requestedAttributes?: padlock__AttributeType[];
+	public ToProtoJSON(): Object {
+		return {
+			objectId: this.objectId?.ToProtoJSON(),
 			requestedAttributes: tsjson.ToProtoJSON.Repeated(val => tsjson.ToProtoJSON.Enum(padlock__AttributeType, val), this.requestedAttributes),
 		};
 	}
 	public static async Parse(data: any): Promise<ObjectListAttributeValuesRequest> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new ObjectListAttributeValuesRequest();
-		res.sessionId = await tsjson.Parse.Message(objData, "sessionId", "session_id", SessionID.Parse);
-		res.objectId = await tsjson.Parse.String(objData, "objectId", "object_id");
+		res.objectId = await tsjson.Parse.Message(objData, "objectId", "object_id", ObjectID.Parse);
 		res.requestedAttributes = await tsjson.Parse.Repeated(objData, "requestedAttributes", "requested_attributes", tsjson.PrimitiveParse.Enum(padlock__AttributeType));
 		return res;
 	}
@@ -496,6 +648,502 @@ export class ObjectListAttributeValuesUpdate extends Object implements tsjson.Pr
 		let res = new ObjectListAttributeValuesUpdate();
 		res.attribute = await tsjson.Parse.Message(objData, "attribute", "attribute", padlock__Attribute.Parse);
 		res.notFound = await tsjson.Parse.Enum(objData, "notFound", "not_found", padlock__AttributeType);
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectEncryptRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public objectId?: ObjectID;
+	/** A field */
+	public mechs?: padlock__Mechanism[];
+	/** A field */
+	public plainText?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			objectId: this.objectId?.ToProtoJSON(),
+			mechs: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.mechs),
+			plainText: tsjson.ToProtoJSON.Bytes(this.plainText),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectEncryptRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectEncryptRequest();
+		res.objectId = await tsjson.Parse.Message(objData, "objectId", "object_id", ObjectID.Parse);
+		res.mechs = await tsjson.Parse.Repeated(objData, "mechs", "mechs", padlock__Mechanism.Parse);
+		res.plainText = await tsjson.Parse.Bytes(objData, "plainText", "plain_text");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectEncryptResponse extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public encrypted?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			encrypted: tsjson.ToProtoJSON.Bytes(this.encrypted),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectEncryptResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectEncryptResponse();
+		res.encrypted = await tsjson.Parse.Bytes(objData, "encrypted", "encrypted");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectEncryptSegmentedRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public first?: ObjectCryptoSegmentedInit;
+	/** A field */
+	public messagePart?: Uint8Array;
+	/** A field */
+	public last?: google.protobuf.Empty;
+	public ToProtoJSON(): Object {
+		return {
+			first: this.first?.ToProtoJSON(),
+			messagePart: tsjson.ToProtoJSON.Bytes(this.messagePart),
+			last: this.last?.ToProtoJSON(),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectEncryptSegmentedRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectEncryptSegmentedRequest();
+		res.first = await tsjson.Parse.Message(objData, "first", "first", ObjectCryptoSegmentedInit.Parse);
+		res.messagePart = await tsjson.Parse.Bytes(objData, "messagePart", "message_part");
+		res.last = await tsjson.Parse.Message(objData, "last", "last", google.protobuf.Empty.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectCryptoSegmentedInit extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public id?: ObjectID;
+	/** A field */
+	public mechs?: padlock__Mechanism[];
+	public ToProtoJSON(): Object {
+		return {
+			id: this.id?.ToProtoJSON(),
+			mechs: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.mechs),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectCryptoSegmentedInit> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectCryptoSegmentedInit();
+		res.id = await tsjson.Parse.Message(objData, "id", "id", ObjectID.Parse);
+		res.mechs = await tsjson.Parse.Repeated(objData, "mechs", "mechs", padlock__Mechanism.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectEncryptSegmentedResponse extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public encryptedPart?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			encryptedPart: tsjson.ToProtoJSON.Bytes(this.encryptedPart),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectEncryptSegmentedResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectEncryptSegmentedResponse();
+		res.encryptedPart = await tsjson.Parse.Bytes(objData, "encryptedPart", "encrypted_part");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectDecryptRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public objectId?: ObjectID;
+	/** A field */
+	public mechs?: padlock__Mechanism[];
+	/** A field */
+	public encrypted?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			objectId: this.objectId?.ToProtoJSON(),
+			mechs: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.mechs),
+			encrypted: tsjson.ToProtoJSON.Bytes(this.encrypted),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectDecryptRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectDecryptRequest();
+		res.objectId = await tsjson.Parse.Message(objData, "objectId", "object_id", ObjectID.Parse);
+		res.mechs = await tsjson.Parse.Repeated(objData, "mechs", "mechs", padlock__Mechanism.Parse);
+		res.encrypted = await tsjson.Parse.Bytes(objData, "encrypted", "encrypted");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectDecryptResponse extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public plainText?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			plainText: tsjson.ToProtoJSON.Bytes(this.plainText),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectDecryptResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectDecryptResponse();
+		res.plainText = await tsjson.Parse.Bytes(objData, "plainText", "plain_text");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectDecryptSegmentedRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public first?: ObjectCryptoSegmentedInit;
+	/** A field */
+	public messagePart?: Uint8Array;
+	/** A field */
+	public last?: google.protobuf.Empty;
+	public ToProtoJSON(): Object {
+		return {
+			first: this.first?.ToProtoJSON(),
+			messagePart: tsjson.ToProtoJSON.Bytes(this.messagePart),
+			last: this.last?.ToProtoJSON(),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectDecryptSegmentedRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectDecryptSegmentedRequest();
+		res.first = await tsjson.Parse.Message(objData, "first", "first", ObjectCryptoSegmentedInit.Parse);
+		res.messagePart = await tsjson.Parse.Bytes(objData, "messagePart", "message_part");
+		res.last = await tsjson.Parse.Message(objData, "last", "last", google.protobuf.Empty.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectDecryptSegmentedResponse extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public plainTextPart?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			plainTextPart: tsjson.ToProtoJSON.Bytes(this.plainTextPart),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectDecryptSegmentedResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectDecryptSegmentedResponse();
+		res.plainTextPart = await tsjson.Parse.Bytes(objData, "plainTextPart", "plain_text_part");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectSignRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public objectId?: ObjectID;
+	/** A field */
+	public mechs?: padlock__Mechanism[];
+	/** A field */
+	public message?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			objectId: this.objectId?.ToProtoJSON(),
+			mechs: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.mechs),
+			message: tsjson.ToProtoJSON.Bytes(this.message),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectSignRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectSignRequest();
+		res.objectId = await tsjson.Parse.Message(objData, "objectId", "object_id", ObjectID.Parse);
+		res.mechs = await tsjson.Parse.Repeated(objData, "mechs", "mechs", padlock__Mechanism.Parse);
+		res.message = await tsjson.Parse.Bytes(objData, "message", "message");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectSignResponse extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public signature?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			signature: tsjson.ToProtoJSON.Bytes(this.signature),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectSignResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectSignResponse();
+		res.signature = await tsjson.Parse.Bytes(objData, "signature", "signature");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectSignSegmentedRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public first?: ObjectCryptoSegmentedInit;
+	/** A field */
+	public messagePart?: Uint8Array;
+	/** A field */
+	public last?: google.protobuf.Empty;
+	public ToProtoJSON(): Object {
+		return {
+			first: this.first?.ToProtoJSON(),
+			messagePart: tsjson.ToProtoJSON.Bytes(this.messagePart),
+			last: this.last?.ToProtoJSON(),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectSignSegmentedRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectSignSegmentedRequest();
+		res.first = await tsjson.Parse.Message(objData, "first", "first", ObjectCryptoSegmentedInit.Parse);
+		res.messagePart = await tsjson.Parse.Bytes(objData, "messagePart", "message_part");
+		res.last = await tsjson.Parse.Message(objData, "last", "last", google.protobuf.Empty.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectSignSegmentedResponse extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public signature?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			signature: tsjson.ToProtoJSON.Bytes(this.signature),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectSignSegmentedResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectSignSegmentedResponse();
+		res.signature = await tsjson.Parse.Bytes(objData, "signature", "signature");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectVerifyRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public objectId?: ObjectID;
+	/** A field */
+	public mechs?: padlock__Mechanism[];
+	/** A field */
+	public message?: Uint8Array;
+	/** A field */
+	public signature?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			objectId: this.objectId?.ToProtoJSON(),
+			mechs: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.mechs),
+			message: tsjson.ToProtoJSON.Bytes(this.message),
+			signature: tsjson.ToProtoJSON.Bytes(this.signature),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectVerifyRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectVerifyRequest();
+		res.objectId = await tsjson.Parse.Message(objData, "objectId", "object_id", ObjectID.Parse);
+		res.mechs = await tsjson.Parse.Repeated(objData, "mechs", "mechs", padlock__Mechanism.Parse);
+		res.message = await tsjson.Parse.Bytes(objData, "message", "message");
+		res.signature = await tsjson.Parse.Bytes(objData, "signature", "signature");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectVerifyResponse extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public valid?: boolean;
+	public ToProtoJSON(): Object {
+		return {
+			valid: tsjson.ToProtoJSON.Bool(this.valid),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectVerifyResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectVerifyResponse();
+		res.valid = await tsjson.Parse.Bool(objData, "valid", "valid");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectVerifySegmentedRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public first?: ObjectCryptoSegmentedInit;
+	/** A field */
+	public messagePart?: Uint8Array;
+	/** A field */
+	public signature?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			first: this.first?.ToProtoJSON(),
+			messagePart: tsjson.ToProtoJSON.Bytes(this.messagePart),
+			signature: tsjson.ToProtoJSON.Bytes(this.signature),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectVerifySegmentedRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectVerifySegmentedRequest();
+		res.first = await tsjson.Parse.Message(objData, "first", "first", ObjectCryptoSegmentedInit.Parse);
+		res.messagePart = await tsjson.Parse.Bytes(objData, "messagePart", "message_part");
+		res.signature = await tsjson.Parse.Bytes(objData, "signature", "signature");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectVerifySegmentedResponse extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public valid?: boolean;
+	public ToProtoJSON(): Object {
+		return {
+			valid: tsjson.ToProtoJSON.Bool(this.valid),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectVerifySegmentedResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectVerifySegmentedResponse();
+		res.valid = await tsjson.Parse.Bool(objData, "valid", "valid");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectWrapKeyRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public wrappingKey?: ObjectID;
+	/** A field */
+	public mechs?: padlock__Mechanism[];
+	/** A field */
+	public keyToWrap?: ObjectID;
+	public ToProtoJSON(): Object {
+		return {
+			wrappingKey: this.wrappingKey?.ToProtoJSON(),
+			mechs: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.mechs),
+			keyToWrap: this.keyToWrap?.ToProtoJSON(),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectWrapKeyRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectWrapKeyRequest();
+		res.wrappingKey = await tsjson.Parse.Message(objData, "wrappingKey", "wrapping_key", ObjectID.Parse);
+		res.mechs = await tsjson.Parse.Repeated(objData, "mechs", "mechs", padlock__Mechanism.Parse);
+		res.keyToWrap = await tsjson.Parse.Message(objData, "keyToWrap", "key_to_wrap", ObjectID.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectWrapKeyResponse extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public wrapped?: Uint8Array;
+	public ToProtoJSON(): Object {
+		return {
+			wrapped: tsjson.ToProtoJSON.Bytes(this.wrapped),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectWrapKeyResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectWrapKeyResponse();
+		res.wrapped = await tsjson.Parse.Bytes(objData, "wrapped", "wrapped");
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectUnwrapKeyRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public objectId?: ObjectID;
+	/** A field */
+	public mechs?: padlock__Mechanism[];
+	/** A field */
+	public wrapped?: Uint8Array;
+	/** A field */
+	public attributes?: padlock__Attribute[];
+	public ToProtoJSON(): Object {
+		return {
+			objectId: this.objectId?.ToProtoJSON(),
+			mechs: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.mechs),
+			wrapped: tsjson.ToProtoJSON.Bytes(this.wrapped),
+			attributes: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.attributes),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectUnwrapKeyRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectUnwrapKeyRequest();
+		res.objectId = await tsjson.Parse.Message(objData, "objectId", "object_id", ObjectID.Parse);
+		res.mechs = await tsjson.Parse.Repeated(objData, "mechs", "mechs", padlock__Mechanism.Parse);
+		res.wrapped = await tsjson.Parse.Bytes(objData, "wrapped", "wrapped");
+		res.attributes = await tsjson.Parse.Repeated(objData, "attributes", "attributes", padlock__Attribute.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectDestroyObjectRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public objectId?: ObjectID;
+	public ToProtoJSON(): Object {
+		return {
+			objectId: this.objectId?.ToProtoJSON(),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectDestroyObjectRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectDestroyObjectRequest();
+		res.objectId = await tsjson.Parse.Message(objData, "objectId", "object_id", ObjectID.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectDestroyObjectResponse extends Object implements tsjson.ProtoJSONCompatible {
+	public ToProtoJSON(): Object {
+		return {
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectDestroyObjectResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectDestroyObjectResponse();
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectCopyObjectRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public objectId?: ObjectID;
+	/** A field */
+	public attributes?: padlock__Attribute[];
+	public ToProtoJSON(): Object {
+		return {
+			objectId: this.objectId?.ToProtoJSON(),
+			attributes: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.attributes),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectCopyObjectRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectCopyObjectRequest();
+		res.objectId = await tsjson.Parse.Message(objData, "objectId", "object_id", ObjectID.Parse);
+		res.attributes = await tsjson.Parse.Repeated(objData, "attributes", "attributes", padlock__Attribute.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectCopyObjectResponse extends Object implements tsjson.ProtoJSONCompatible {
+	public ToProtoJSON(): Object {
+		return {
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectCopyObjectResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectCopyObjectResponse();
 		return res;
 	}
 }
