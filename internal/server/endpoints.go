@@ -473,7 +473,6 @@ func (h *handle) SessionLogout(ctx context.Context, req *padlockpb.SessionID) (*
 
 // SessionListObjects lists the objects available in the session
 func (h *handle) SessionListObjects(req *padlockpb.SessionListObjectsRequest, stream padlockpb.Padlock_SessionListObjectsServer) error {
-	log.Printf("%#v\n", req)
 	id, err := h.authenticate(req.GetId().GetAuth())
 	if err != nil {
 		return err
@@ -511,37 +510,67 @@ func (h *handle) SessionListObjects(req *padlockpb.SessionListObjectsRequest, st
 }
 
 func (h *handle) SessionCreateObject(ctx context.Context, req *padlockpb.SessionCreateObjectRequest) (*padlockpb.P11Object, error) {
+	id, err := h.authenticate(req.GetId().GetAuth())
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Creating object on %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method SessionCreateObject not implemented")
 }
 
 func (h *handle) SessionGenerateRandom(ctx context.Context, req *padlockpb.SessionGenerateRandomRequest) (*padlockpb.SessionGenerateRandomResponse, error) {
+	id, err := h.authenticate(req.GetId().GetAuth())
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Generating random on %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateRandom not implemented")
 }
 
 func (h *handle) SessionGenerateKeyPair(ctx context.Context, req *padlockpb.SessionGenerateKeyPairRequest) (*padlockpb.SessionGenerateKeyPairResponse, error) {
+	id, err := h.authenticate(req.GetId().GetAuth())
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Generating keypair on %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateKeyPair not implemented")
 }
 
 func (h *handle) SessionGenerateKey(ctx context.Context, req *padlockpb.SessionGenerateKeyRequest) (*padlockpb.P11Object, error) {
+	id, err := h.authenticate(req.GetId().GetAuth())
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Generating key on %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateKey not implemented")
+}
+
+func (h *handle) getObject(id *padlockpb.ObjectID) (objID uuid.UUID, sess *serverSession, obj p11.Object, err error) {
+	objID, err = h.authenticate(id.GetSessionId().GetAuth())
+	if err != nil {
+		return
+	}
+	sess, err = h.getSession(id.GetSessionId().GetUuid(), id.String())
+	if err != nil {
+		return
+	}
+	var exists bool
+	obj, exists = sess.objs[id.GetObjectId()]
+	if !exists {
+		sess.mx.Unlock()
+		err = status.Error(codes.NotFound, "object deleted or does not exist")
+	}
+	return
 }
 
 // ObjectListAttributeValues lists values for the requested attributes
 func (h *handle) ObjectListAttributeValues(req *padlockpb.ObjectListAttributeValuesRequest, stream padlockpb.Padlock_ObjectListAttributeValuesServer) error {
-	id, err := h.authenticate(req.GetObjectId().GetSessionId().GetAuth())
-	if err != nil {
-		return err
-	}
-	log.Printf("Listing attribute values for %s\n", id)
-	sess, err := h.getSession(req.GetObjectId().GetSessionId().GetUuid(), id.String())
+	id, sess, obj, err := h.getObject(req.GetObjectId())
 	if err != nil {
 		return err
 	}
 	defer sess.mx.Unlock()
-	obj, exists := sess.objs[req.GetObjectId().GetObjectId()]
-	if !exists {
-		return status.Error(codes.NotFound, "object deleted or does not exist")
-	}
+	log.Printf("Listing attribute values for %s\n", id)
 	for _, attr := range req.GetRequestedAttributes() {
 		val, err := obj.Attribute(AttributePBtoP11(attr))
 		if err != nil {
@@ -570,49 +599,157 @@ func (h *handle) ObjectListAttributeValues(req *padlockpb.ObjectListAttributeVal
 }
 
 func (h *handle) Encrypt(ctx context.Context, req *padlockpb.ObjectEncryptRequest) (*padlockpb.ObjectEncryptResponse, error) {
+	id, sess, _, err := h.getObject(req.GetObjectId())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
+	log.Printf("TODO: %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method Encrypt not implemented")
 }
 
 func (h *handle) EncryptSegmented(srv padlockpb.Padlock_EncryptSegmentedServer) error {
+	firstReq, err := srv.Recv()
+	if err != nil {
+		return status.Errorf(codes.Aborted, "failed to get first request from client: %v", err)
+	}
+	first, ok := firstReq.GetStages().(*padlockpb.ObjectEncryptSegmentedRequest_First)
+	if !ok || first == nil {
+		return status.Errorf(codes.InvalidArgument, "first message must be the First message type, received")
+	}
+	req := first.First
+	id, sess, _, err := h.getObject(req.GetId())
+	if err != nil {
+		return err
+	}
+	defer sess.mx.Unlock()
+	log.Printf("TODO: %s\n", id)
 	return status.Errorf(codes.Unimplemented, "method EncryptSegmented not implemented")
 }
 
 func (h *handle) Decrypt(ctx context.Context, req *padlockpb.ObjectDecryptRequest) (*padlockpb.ObjectDecryptResponse, error) {
+	id, sess, _, err := h.getObject(req.GetObjectId())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
+	log.Printf("TODO: %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method Decrypt not implemented")
 }
 
 func (h *handle) DecryptSegmented(srv padlockpb.Padlock_DecryptSegmentedServer) error {
+	firstReq, err := srv.Recv()
+	if err != nil {
+		return status.Errorf(codes.Aborted, "failed to get first request from client: %v", err)
+	}
+	first, ok := firstReq.GetStages().(*padlockpb.ObjectDecryptSegmentedRequest_First)
+	if !ok || first == nil {
+		return status.Errorf(codes.InvalidArgument, "first message must be the First message type, received")
+	}
+	req := first.First
+	id, sess, _, err := h.getObject(req.GetId())
+	if err != nil {
+		return err
+	}
+	defer sess.mx.Unlock()
+	log.Printf("TODO: %s\n", id)
 	return status.Errorf(codes.Unimplemented, "method DecryptSegmented not implemented")
 }
 
 func (h *handle) Sign(ctx context.Context, req *padlockpb.ObjectSignRequest) (*padlockpb.ObjectSignResponse, error) {
+	id, sess, _, err := h.getObject(req.GetObjectId())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
+	log.Printf("TODO: %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method Sign not implemented")
 }
 
 func (h *handle) SignSegmented(srv padlockpb.Padlock_SignSegmentedServer) error {
+	firstReq, err := srv.Recv()
+	if err != nil {
+		return status.Errorf(codes.Aborted, "failed to get first request from client: %v", err)
+	}
+	first, ok := firstReq.GetStages().(*padlockpb.ObjectSignSegmentedRequest_First)
+	if !ok || first == nil {
+		return status.Errorf(codes.InvalidArgument, "first message must be the First message type, received")
+	}
+	req := first.First
+	id, sess, _, err := h.getObject(req.GetId())
+	if err != nil {
+		return err
+	}
+	defer sess.mx.Unlock()
+	log.Printf("TODO: %s\n", id)
 	return status.Errorf(codes.Unimplemented, "method SignSegmented not implemented")
 }
 
 func (h *handle) Verify(ctx context.Context, req *padlockpb.ObjectVerifyRequest) (*padlockpb.ObjectVerifyResponse, error) {
+	id, sess, _, err := h.getObject(req.GetObjectId())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
+	log.Printf("TODO: %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method Verify not implemented")
 }
 
 func (h *handle) VerifySegmented(srv padlockpb.Padlock_VerifySegmentedServer) error {
+	firstReq, err := srv.Recv()
+	if err != nil {
+		return status.Errorf(codes.Aborted, "failed to get first request from client: %v", err)
+	}
+	first, ok := firstReq.GetStages().(*padlockpb.ObjectVerifySegmentedRequest_First)
+	if !ok || first == nil {
+		return status.Errorf(codes.InvalidArgument, "first message must be the First message type, received")
+	}
+	req := first.First
+	id, sess, _, err := h.getObject(req.GetId())
+	if err != nil {
+		return err
+	}
+	defer sess.mx.Unlock()
+	log.Printf("TODO: %s\n", id)
 	return status.Errorf(codes.Unimplemented, "method VerifySegmented not implemented")
 }
 
 func (h *handle) WrapKey(ctx context.Context, req *padlockpb.ObjectWrapKeyRequest) (*padlockpb.ObjectWrapKeyResponse, error) {
+	id, sess, _, err := h.getObject(req.GetWrappingKey())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
+	log.Printf("TODO: %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method WrapKey not implemented")
 }
 
 func (h *handle) UnwrapKey(ctx context.Context, req *padlockpb.ObjectUnwrapKeyRequest) (*padlockpb.P11Object, error) {
+	id, sess, _, err := h.getObject(req.GetObjectId())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
+	log.Printf("TODO: %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method UnwrapKey not implemented")
 }
 
 func (h *handle) DestroyObject(ctx context.Context, req *padlockpb.ObjectDestroyObjectRequest) (*padlockpb.ObjectDestroyObjectResponse, error) {
+	id, sess, _, err := h.getObject(req.GetObjectId())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
+	log.Printf("TODO: %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method DestroyObject not implemented")
 }
 
 func (h *handle) CopyObject(ctx context.Context, req *padlockpb.ObjectCopyObjectRequest) (*padlockpb.P11Object, error) {
+	id, sess, _, err := h.getObject(req.GetObjectId())
+	if err != nil {
+		return nil, err
+	}
+	defer sess.mx.Unlock()
+	log.Printf("TODO: %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method CopyObject not implemented")
 }
