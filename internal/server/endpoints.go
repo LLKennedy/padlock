@@ -659,13 +659,19 @@ func (h *handle) ObjectListAttributeValues(req *padlockpb.ObjectListAttributeVal
 }
 
 func (h *handle) Encrypt(ctx context.Context, req *padlockpb.ObjectEncryptRequest) (*padlockpb.ObjectEncryptResponse, error) {
-	id, sess, _, err := h.getObject(req.GetObjectId())
+	id, sess, obj, err := h.getObject(req.GetObjectId())
 	if err != nil {
 		return nil, err
 	}
 	defer sess.mx.Unlock()
 	log.Printf("encrypting data on %s\n", id)
-	return nil, status.Errorf(codes.Unimplemented, "method Encrypt not implemented")
+	encrypted, err := sess.sess.Encrypt(obj, MechanismsPBtoP11(req.GetMechs()), req.GetPlainText())
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "encrypting data: %v", err)
+	}
+	return &padlockpb.ObjectEncryptResponse{
+		Encrypted: encrypted,
+	}, nil
 }
 
 func (h *handle) EncryptSegmented(srv padlockpb.Padlock_EncryptSegmentedServer) error {
@@ -678,17 +684,58 @@ func (h *handle) EncryptSegmented(srv padlockpb.Padlock_EncryptSegmentedServer) 
 		return status.Errorf(codes.InvalidArgument, "first message must be the First message type, received")
 	}
 	req := first.First
-	id, sess, _, err := h.getObject(req.GetId())
+	id, sess, obj, err := h.getObject(req.GetId())
 	if err != nil {
 		return err
 	}
+	ctx := srv.Context()
 	defer sess.mx.Unlock()
 	log.Printf("encrypting segmented data on %s\n", id)
-	return status.Errorf(codes.Unimplemented, "method EncryptSegmented not implemented")
+	parts := make(chan []byte, 1)
+	final := make(chan struct{}, 1)
+	defer close(parts)
+	defer close(final)
+	dataChan, errChan := sess.sess.EncryptSegmented(ctx, obj, MechanismsPBtoP11(req.GetMechs()), parts, final)
+	for {
+		done := false
+		msg, err := srv.Recv()
+		if err != nil || msg == nil || msg.GetStages() == nil {
+			return status.Errorf(codes.Aborted, "failed to get next message from client: %v", err)
+		}
+		switch stage := msg.GetStages().(type) {
+		case *padlockpb.ObjectEncryptSegmentedRequest_First:
+			return status.Error(codes.InvalidArgument, "cannot send first stage multiple times")
+		case *padlockpb.ObjectEncryptSegmentedRequest_Last:
+			final <- struct{}{}
+			done = true
+		case *padlockpb.ObjectEncryptSegmentedRequest_MessagePart:
+			var next []byte
+			if stage != nil {
+				next = stage.MessagePart
+			}
+			parts <- next
+		}
+		select {
+		case <-ctx.Done():
+			return status.Error(codes.DeadlineExceeded, "context canceled or expired")
+		case err := <-errChan:
+			return status.Errorf(codes.Aborted, "encrypting segmented data: %v", err)
+		case data := <-dataChan:
+			err = srv.Send(&padlockpb.ObjectEncryptSegmentedResponse{
+				EncryptedPart: data,
+			})
+			if err != nil {
+				return status.Errorf(codes.Aborted, "encrypting segmented data: %v", err)
+			}
+			if done {
+				return nil
+			}
+		}
+	}
 }
 
 func (h *handle) Decrypt(ctx context.Context, req *padlockpb.ObjectDecryptRequest) (*padlockpb.ObjectDecryptResponse, error) {
-	id, sess, _, err := h.getObject(req.GetObjectId())
+	id, sess, obj, err := h.getObject(req.GetObjectId())
 	if err != nil {
 		return nil, err
 	}
@@ -707,17 +754,58 @@ func (h *handle) DecryptSegmented(srv padlockpb.Padlock_DecryptSegmentedServer) 
 		return status.Errorf(codes.InvalidArgument, "first message must be the First message type, received")
 	}
 	req := first.First
-	id, sess, _, err := h.getObject(req.GetId())
+	id, sess, obj, err := h.getObject(req.GetId())
 	if err != nil {
 		return err
 	}
+	ctx := srv.Context()
 	defer sess.mx.Unlock()
 	log.Printf("decrypting segmented data on %s\n", id)
-	return status.Errorf(codes.Unimplemented, "method DecryptSegmented not implemented")
+	parts := make(chan []byte, 1)
+	final := make(chan struct{}, 1)
+	defer close(parts)
+	defer close(final)
+	dataChan, errChan := sess.sess.DecryptSegmented(ctx, obj, MechanismsPBtoP11(req.GetMechs()), parts, final)
+	for {
+		done := false
+		msg, err := srv.Recv()
+		if err != nil || msg == nil || msg.GetStages() == nil {
+			return status.Errorf(codes.Aborted, "failed to get next message from client: %v", err)
+		}
+		switch stage := msg.GetStages().(type) {
+		case *padlockpb.ObjectDecryptSegmentedRequest_First:
+			return status.Error(codes.InvalidArgument, "cannot send first stage multiple times")
+		case *padlockpb.ObjectDecryptSegmentedRequest_Last:
+			final <- struct{}{}
+			done = true
+		case *padlockpb.ObjectDecryptSegmentedRequest_MessagePart:
+			var next []byte
+			if stage != nil {
+				next = stage.MessagePart
+			}
+			parts <- next
+		}
+		select {
+		case <-ctx.Done():
+			return status.Error(codes.DeadlineExceeded, "context canceled or expired")
+		case err := <-errChan:
+			return status.Errorf(codes.Aborted, "decrypting segmented data: %v", err)
+		case data := <-dataChan:
+			err = srv.Send(&padlockpb.ObjectDecryptSegmentedResponse{
+				PlainTextPart: data,
+			})
+			if err != nil {
+				return status.Errorf(codes.Aborted, "decrypting segmented data: %v", err)
+			}
+			if done {
+				return nil
+			}
+		}
+	}
 }
 
 func (h *handle) Sign(ctx context.Context, req *padlockpb.ObjectSignRequest) (*padlockpb.ObjectSignResponse, error) {
-	id, sess, _, err := h.getObject(req.GetObjectId())
+	id, sess, obj, err := h.getObject(req.GetObjectId())
 	if err != nil {
 		return nil, err
 	}
@@ -736,17 +824,54 @@ func (h *handle) SignSegmented(srv padlockpb.Padlock_SignSegmentedServer) error 
 		return status.Errorf(codes.InvalidArgument, "first message must be the First message type, received")
 	}
 	req := first.First
-	id, sess, _, err := h.getObject(req.GetId())
+	id, sess, obj, err := h.getObject(req.GetId())
 	if err != nil {
 		return err
 	}
+	ctx := srv.Context()
 	defer sess.mx.Unlock()
 	log.Printf("signing segmented data on %s\n", id)
-	return status.Errorf(codes.Unimplemented, "method SignSegmented not implemented")
+	parts := make(chan []byte, 1)
+	final := make(chan struct{}, 1)
+	defer close(parts)
+	defer close(final)
+	dataChan, errChan := sess.sess.SignSegmented(ctx, obj, MechanismsPBtoP11(req.GetMechs()), parts, final)
+	for {
+		msg, err := srv.Recv()
+		if err != nil || msg == nil || msg.GetStages() == nil {
+			return status.Errorf(codes.Aborted, "failed to get next message from client: %v", err)
+		}
+		switch stage := msg.GetStages().(type) {
+		case *padlockpb.ObjectSignSegmentedRequest_First:
+			return status.Error(codes.InvalidArgument, "cannot send first stage multiple times")
+		case *padlockpb.ObjectSignSegmentedRequest_Last:
+			final <- struct{}{}
+		case *padlockpb.ObjectSignSegmentedRequest_MessagePart:
+			var next []byte
+			if stage != nil {
+				next = stage.MessagePart
+			}
+			parts <- next
+		}
+		select {
+		case <-ctx.Done():
+			return status.Error(codes.DeadlineExceeded, "context canceled or expired")
+		case err := <-errChan:
+			return status.Errorf(codes.Aborted, "signing segmented data: %v", err)
+		case data := <-dataChan:
+			err = srv.SendAndClose(&padlockpb.ObjectSignSegmentedResponse{
+				Signature: data,
+			})
+			if err != nil {
+				return status.Errorf(codes.Aborted, "signing segmented data: %v", err)
+			}
+			return nil
+		}
+	}
 }
 
 func (h *handle) Verify(ctx context.Context, req *padlockpb.ObjectVerifyRequest) (*padlockpb.ObjectVerifyResponse, error) {
-	id, sess, _, err := h.getObject(req.GetObjectId())
+	id, sess, obj, err := h.getObject(req.GetObjectId())
 	if err != nil {
 		return nil, err
 	}
@@ -765,17 +890,59 @@ func (h *handle) VerifySegmented(srv padlockpb.Padlock_VerifySegmentedServer) er
 		return status.Errorf(codes.InvalidArgument, "first message must be the First message type, received")
 	}
 	req := first.First
-	id, sess, _, err := h.getObject(req.GetId())
+	id, sess, obj, err := h.getObject(req.GetId())
 	if err != nil {
 		return err
 	}
+	ctx := srv.Context()
 	defer sess.mx.Unlock()
 	log.Printf("verifying segmented data and signature on %s\n", id)
-	return status.Errorf(codes.Unimplemented, "method VerifySegmented not implemented")
+	parts := make(chan []byte, 1)
+	signature := make(chan []byte, 1)
+	defer close(parts)
+	defer close(signature)
+	errChan := sess.sess.VerifySegmented(ctx, obj, MechanismsPBtoP11(req.GetMechs()), parts, signature)
+	for {
+		msg, err := srv.Recv()
+		if err != nil || msg == nil || msg.GetStages() == nil {
+			return status.Errorf(codes.Aborted, "failed to get next message from client: %v", err)
+		}
+		switch stage := msg.GetStages().(type) {
+		case *padlockpb.ObjectVerifySegmentedRequest_First:
+			return status.Error(codes.InvalidArgument, "cannot send first stage multiple times")
+		case *padlockpb.ObjectVerifySegmentedRequest_Signature:
+			var sig []byte
+			if stage != nil {
+				sig = stage.Signature
+			}
+			signature <- sig
+		case *padlockpb.ObjectVerifySegmentedRequest_MessagePart:
+			var next []byte
+			if stage != nil {
+				next = stage.MessagePart
+			}
+			parts <- next
+		}
+		select {
+		case <-ctx.Done():
+			return status.Error(codes.DeadlineExceeded, "context canceled or expired")
+		case err := <-errChan:
+			if err != nil {
+				return status.Errorf(codes.Aborted, "signing segmented data: %v", err)
+			}
+			err = srv.SendAndClose(&padlockpb.ObjectVerifySegmentedResponse{
+				Valid: true,
+			})
+			if err != nil {
+				return status.Errorf(codes.Aborted, "signing segmented data: %v", err)
+			}
+			return nil
+		}
+	}
 }
 
 func (h *handle) WrapKey(ctx context.Context, req *padlockpb.ObjectWrapKeyRequest) (*padlockpb.ObjectWrapKeyResponse, error) {
-	id, sess, _, err := h.getObject(req.GetWrappingKey())
+	id, sess, obj, err := h.getObject(req.GetWrappingKey())
 	if err != nil {
 		return nil, err
 	}
@@ -785,7 +952,7 @@ func (h *handle) WrapKey(ctx context.Context, req *padlockpb.ObjectWrapKeyReques
 }
 
 func (h *handle) UnwrapKey(ctx context.Context, req *padlockpb.ObjectUnwrapKeyRequest) (*padlockpb.P11Object, error) {
-	id, sess, _, err := h.getObject(req.GetObjectId())
+	id, sess, obj, err := h.getObject(req.GetObjectId())
 	if err != nil {
 		return nil, err
 	}
@@ -795,7 +962,7 @@ func (h *handle) UnwrapKey(ctx context.Context, req *padlockpb.ObjectUnwrapKeyRe
 }
 
 func (h *handle) DestroyObject(ctx context.Context, req *padlockpb.ObjectDestroyObjectRequest) (*padlockpb.ObjectDestroyObjectResponse, error) {
-	id, sess, _, err := h.getObject(req.GetObjectId())
+	id, sess, obj, err := h.getObject(req.GetObjectId())
 	if err != nil {
 		return nil, err
 	}
@@ -805,7 +972,7 @@ func (h *handle) DestroyObject(ctx context.Context, req *padlockpb.ObjectDestroy
 }
 
 func (h *handle) CopyObject(ctx context.Context, req *padlockpb.ObjectCopyObjectRequest) (*padlockpb.P11Object, error) {
-	id, sess, _, err := h.getObject(req.GetObjectId())
+	id, sess, obj, err := h.getObject(req.GetObjectId())
 	if err != nil {
 		return nil, err
 	}
