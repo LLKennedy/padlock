@@ -607,7 +607,14 @@ func (h *handle) SessionGenerateKey(ctx context.Context, req *padlockpb.SessionG
 		return nil, err
 	}
 	defer sess.mx.Unlock()
-	return nil, status.Errorf(codes.Unimplemented, "method SessionGenerateKey not implemented")
+	key, err := sess.sess.GenerateKey(p11.GenerateKeyRequest{
+		Mechanism:     *MechanismPBtoP11(req.GetMech()),
+		KeyAttributes: AttributesPBtoP11(req.GetAttributes()),
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Aborted, "generating key: %v", err)
+	}
+	return h.addObject(sess, p11.Object(*key))
 }
 
 func (h *handle) getObject(id *padlockpb.ObjectID) (objID uuid.UUID, sess *serverSession, obj p11.Object, err error) {
