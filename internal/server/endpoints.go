@@ -664,7 +664,7 @@ func (h *handle) Encrypt(ctx context.Context, req *padlockpb.ObjectEncryptReques
 		return nil, err
 	}
 	defer sess.mx.Unlock()
-	log.Printf("TODO: %s\n", id)
+	log.Printf("encrypting data on %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method Encrypt not implemented")
 }
 
@@ -683,7 +683,7 @@ func (h *handle) EncryptSegmented(srv padlockpb.Padlock_EncryptSegmentedServer) 
 		return err
 	}
 	defer sess.mx.Unlock()
-	log.Printf("TODO: %s\n", id)
+	log.Printf("encrypting segmented data on %s\n", id)
 	return status.Errorf(codes.Unimplemented, "method EncryptSegmented not implemented")
 }
 
@@ -693,7 +693,7 @@ func (h *handle) Decrypt(ctx context.Context, req *padlockpb.ObjectDecryptReques
 		return nil, err
 	}
 	defer sess.mx.Unlock()
-	log.Printf("TODO: %s\n", id)
+	log.Printf("decrypting data on %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method Decrypt not implemented")
 }
 
@@ -712,7 +712,7 @@ func (h *handle) DecryptSegmented(srv padlockpb.Padlock_DecryptSegmentedServer) 
 		return err
 	}
 	defer sess.mx.Unlock()
-	log.Printf("TODO: %s\n", id)
+	log.Printf("decrypting segmented data on %s\n", id)
 	return status.Errorf(codes.Unimplemented, "method DecryptSegmented not implemented")
 }
 
@@ -722,7 +722,7 @@ func (h *handle) Sign(ctx context.Context, req *padlockpb.ObjectSignRequest) (*p
 		return nil, err
 	}
 	defer sess.mx.Unlock()
-	log.Printf("TODO: %s\n", id)
+	log.Printf("signing data on %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method Sign not implemented")
 }
 
@@ -741,7 +741,7 @@ func (h *handle) SignSegmented(srv padlockpb.Padlock_SignSegmentedServer) error 
 		return err
 	}
 	defer sess.mx.Unlock()
-	log.Printf("TODO: %s\n", id)
+	log.Printf("signing segmented data on %s\n", id)
 	return status.Errorf(codes.Unimplemented, "method SignSegmented not implemented")
 }
 
@@ -751,7 +751,7 @@ func (h *handle) Verify(ctx context.Context, req *padlockpb.ObjectVerifyRequest)
 		return nil, err
 	}
 	defer sess.mx.Unlock()
-	log.Printf("TODO: %s\n", id)
+	log.Printf("verifying data and signature on %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method Verify not implemented")
 }
 
@@ -770,7 +770,7 @@ func (h *handle) VerifySegmented(srv padlockpb.Padlock_VerifySegmentedServer) er
 		return err
 	}
 	defer sess.mx.Unlock()
-	log.Printf("TODO: %s\n", id)
+	log.Printf("verifying segmented data and signature on %s\n", id)
 	return status.Errorf(codes.Unimplemented, "method VerifySegmented not implemented")
 }
 
@@ -780,7 +780,7 @@ func (h *handle) WrapKey(ctx context.Context, req *padlockpb.ObjectWrapKeyReques
 		return nil, err
 	}
 	defer sess.mx.Unlock()
-	log.Printf("TODO: %s\n", id)
+	log.Printf("wrapping key on %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method WrapKey not implemented")
 }
 
@@ -790,7 +790,7 @@ func (h *handle) UnwrapKey(ctx context.Context, req *padlockpb.ObjectUnwrapKeyRe
 		return nil, err
 	}
 	defer sess.mx.Unlock()
-	log.Printf("TODO: %s\n", id)
+	log.Printf("unwrapping key on %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method UnwrapKey not implemented")
 }
 
@@ -800,7 +800,7 @@ func (h *handle) DestroyObject(ctx context.Context, req *padlockpb.ObjectDestroy
 		return nil, err
 	}
 	defer sess.mx.Unlock()
-	log.Printf("TODO: %s\n", id)
+	log.Printf("destroying object on %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method DestroyObject not implemented")
 }
 
@@ -810,6 +810,6 @@ func (h *handle) CopyObject(ctx context.Context, req *padlockpb.ObjectCopyObject
 		return nil, err
 	}
 	defer sess.mx.Unlock()
-	log.Printf("TODO: %s\n", id)
+	log.Printf("copying object on %s\n", id)
 	return nil, status.Errorf(codes.Unimplemented, "method CopyObject not implemented")
 }
