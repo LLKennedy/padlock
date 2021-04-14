@@ -35,7 +35,7 @@ export class Module extends React.Component<Props, State> {
 					alert(errString);
 				}
 			}
-		}, 10000);
+		}, 60000);
 		this.state = state;
 	}
 	async componentDidMount() {

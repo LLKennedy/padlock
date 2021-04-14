@@ -37,13 +37,17 @@ export class GenerateKey extends React.Component<GenerateKeyProps, State> {
 					MakeAttribute(AttributeType.CKA_TOKEN, CKTrue),
 					MakeAttribute(AttributeType.CKA_SENSITIVE, CKTrue),
 					MakeAttribute(AttributeType.CKA_PRIVATE, CKTrue),
-					// MakeAttribute(AttributeType.CKA_ENCRYPT, CKTrue),
-					// MakeAttribute(AttributeType.CKA_DECRYPT, CKTrue),
-					// MakeAttribute(AttributeType.CKA_WRAP, CKTrue),
-					// MakeAttribute(AttributeType.CKA_UNWRAP, CKTrue),
-					// MakeAttribute(AttributeType.CKA_SIGN, CKFalse),
-					// MakeAttribute(AttributeType.CKA_VERIFY, CKFalse),
-					// MakeAttribute(AttributeType.CKA_, CKTrue),
+					MakeAttribute(AttributeType.CKA_EXTRACTABLE, CKTrue),
+					// MakeAttribute(AttributeType.CKA_COPYABLE, CKFalse), // Inconsistent
+					MakeAttribute(AttributeType.CKA_ENCRYPT, CKTrue),
+					MakeAttribute(AttributeType.CKA_DECRYPT, CKTrue),
+					MakeAttribute(AttributeType.CKA_WRAP, CKTrue),
+					MakeAttribute(AttributeType.CKA_UNWRAP, CKTrue),
+					MakeAttribute(AttributeType.CKA_SIGN, CKFalse),
+					MakeAttribute(AttributeType.CKA_VERIFY, CKFalse),
+					// MakeAttribute(AttributeType.CKA_APPLICATION, CKFalse),
+					// MakeAttribute(AttributeType.CKA_DESTROYABLE, CKTrue), 
+					MakeAttribute(AttributeType.CKA_ID, EncodeString("0")),
 				];
 				try {
 					let newObj = await this.props.client.SessionGenerateKey(req);

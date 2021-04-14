@@ -11,9 +11,10 @@ import (
 func AttributesPBtoP11(attrs []*padlockpb.Attribute) []*pkcs11.Attribute {
 	var template []*pkcs11.Attribute
 	for _, attr := range attrs {
+		log.Printf("%s=%x ", attr.GetType(), attr.GetValue())
 		template = append(template, pkcs11.NewAttribute(AttributePBtoP11(attr.GetType()), attr.GetValue()))
 	}
-	log.Println(template)
+	log.Println("")
 	return template
 }
 

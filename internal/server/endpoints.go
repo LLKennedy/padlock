@@ -355,7 +355,7 @@ func (h *handle) SlotOpenSession(req *padlockpb.SlotOpenSessionRequest, stream p
 			ss.mx.Lock()
 			latest := ss.lastUsed
 			ss.mx.Unlock()
-			if time.Now().Sub(latest) > time.Minute {
+			if time.Now().Sub(latest) > 5*time.Minute {
 				ticker.Stop()
 				h.sessionMx.Lock()
 				delete(h.sessions, sessID)
@@ -404,7 +404,14 @@ func (h *handle) SessionKeepAlive(ctx context.Context, req *padlockpb.SessionID)
 	if err != nil {
 		return nil, err
 	}
-	sess.mx.Unlock()
+	defer sess.mx.Unlock()
+	// find nothing
+	sess.sess.FindObjects([]*pkcs11.Attribute{
+		{
+			Type:  pkcs11.CKA_COLOR,
+			Value: []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		},
+	})
 	return &emptypb.Empty{}, nil
 }
 
