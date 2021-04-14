@@ -605,12 +605,12 @@ func (h *handle) SessionGenerateKey(ctx context.Context, req *padlockpb.SessionG
 	return h.addObject(sess, p11.Object(*key)), nil
 }
 
-func (h *handle) getObject(id *padlockpb.ObjectID) (objID uuid.UUID, sess *serverSession, obj p11.Object, err error) {
-	objID, err = h.authenticate(id.GetSessionId().GetAuth())
+func (h *handle) getObject(id *padlockpb.ObjectID) (authID uuid.UUID, sess *serverSession, obj p11.Object, err error) {
+	authID, err = h.authenticate(id.GetSessionId().GetAuth())
 	if err != nil {
 		return
 	}
-	sess, err = h.getSession(id.GetSessionId().GetUuid(), id.String())
+	sess, err = h.getSession(id.GetSessionId().GetUuid(), authID.String())
 	if err != nil {
 		return
 	}
