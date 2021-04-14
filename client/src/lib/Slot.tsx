@@ -185,8 +185,10 @@ export class Slot extends React.Component<Props, State> {
 											View
 										</button>
 										<button onClick={async () => {
+											// TODO: edit attribute as endpoint
+											window.alert("Editing attributes of existing objects is not yet implemented, check back later")
 										}}>
-											Copy
+											Edit
 										</button>
 										<button onClick={async () => {
 											if (window.confirm(`Are you sure you want to delete this object with label "${val.label}"? This object will not be recoverable!`)) {
@@ -248,6 +250,7 @@ export class Slot extends React.Component<Props, State> {
 				}}>Logout</button></div>
 				<button>Generate</button>
 				<button>Inject</button>
+				<button>Copy</button>
 				<button>Extract</button>
 				<button>Derive</button>
 				<button>Encrypt</button>
