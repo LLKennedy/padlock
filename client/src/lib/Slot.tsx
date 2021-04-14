@@ -4,8 +4,15 @@ import { AttributeType, ObjectDestroyObjectRequest, ObjectID, ObjectListAttribut
 import { EOFError, ServerStream } from "@llkennedy/mercury";
 import { sleep } from "@llkennedy/sleep.js";
 import { P11Object as ReactP11Object } from "./P11Object";
+import { GenerateKeyProps } from "./actions/GenerateKey";
+import { InjectKeyProps } from "./actions/InjectKey";
+import { CopyObjectProps } from "./actions/CopyObject";
+import { ExtractKeyProps } from "./actions/ExtractKey";
+import { DeriveKeyProps } from "./actions/DeriveKey";
+import { EncryptDataProps } from "./actions/EncryptData";
+import { DecryptDataProps } from "./actions/DecryptData";
 
-type styleNames = "container" | "inner-container" | "column" | "table" | "heading" | "actions" | "object-row";
+type styleNames = "container" | "inner-container" | "column" | "table" | "heading" | "actions" | "object-row" | "selected-action";
 
 const styles: ReadonlyMap<styleNames, React.CSSProperties> = new Map<styleNames, React.CSSProperties>([
 	["container", {
@@ -60,6 +67,9 @@ const styles: ReadonlyMap<styleNames, React.CSSProperties> = new Map<styleNames,
 	}],
 	["object-row", {
 		border: "0.5pt solid rebeccapurple"
+	}],
+	["selected-action", {
+		background: "rgb(23, 59, 23)"
 	}]
 ]);
 
@@ -76,6 +86,7 @@ export class State {
 	selectedObject?: P11Object;
 	loadingObject: boolean = false;
 	selectedObjectKeyType?: Uint8Array;
+	actionState?: GenerateKeyProps | InjectKeyProps | CopyObjectProps | ExtractKeyProps | DeriveKeyProps | EncryptDataProps | DecryptDataProps;
 }
 
 export class Slot extends React.Component<Props, State> {
@@ -129,7 +140,7 @@ export class Slot extends React.Component<Props, State> {
 								<th>Label</th>
 								<th>Controls</th>
 							</tr>
-							{this.state.objects.map((val, i) => {
+							{this.state.objects.map((val) => {
 								return <tr style={styles.get("object-row")}>
 									<td>{val.label}</td>
 									<td>
@@ -248,13 +259,13 @@ export class Slot extends React.Component<Props, State> {
 					}
 					this.props.logout();
 				}}>Logout</button></div>
-				<button>Generate</button>
-				<button>Inject</button>
-				<button>Copy</button>
-				<button>Extract</button>
-				<button>Derive</button>
-				<button>Encrypt</button>
-				<button>Decrypt</button>
+				<button onClick={() => this.setState({ actionState: new GenerateKeyProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof GenerateKeyProps ? styles.get("selected-action") : undefined}>Generate</button>
+				<button onClick={() => this.setState({ actionState: new InjectKeyProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof InjectKeyProps ? styles.get("selected-action") : undefined}>Inject</button>
+				<button onClick={() => this.setState({ actionState: new CopyObjectProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof CopyObjectProps ? styles.get("selected-action") : undefined}>Copy</button>
+				<button onClick={() => this.setState({ actionState: new ExtractKeyProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof ExtractKeyProps ? styles.get("selected-action") : undefined}>Extract</button>
+				<button onClick={() => this.setState({ actionState: new DeriveKeyProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof DeriveKeyProps ? styles.get("selected-action") : undefined}>Derive</button>
+				<button onClick={() => this.setState({ actionState: new EncryptDataProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof EncryptDataProps ? styles.get("selected-action") : undefined}>Encrypt</button>
+				<button onClick={() => this.setState({ actionState: new DecryptDataProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof DecryptDataProps ? styles.get("selected-action") : undefined}>Decrypt</button>
 			</div>
 		</div>
 
