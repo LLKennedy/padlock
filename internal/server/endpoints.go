@@ -330,7 +330,12 @@ func (h *handle) SlotOpenSession(req *padlockpb.SlotOpenSessionRequest, stream p
 	if err != nil {
 		return err
 	}
-	session, err := slot.OpenSession()
+	var session p11.Session
+	if req.GetWriteSession() {
+		session, err = slot.OpenWriteSession()
+	} else {
+		session, err = slot.OpenSession()
+	}
 	if err != nil {
 		return status.Errorf(codes.Aborted, "opening session: %v", err)
 	}

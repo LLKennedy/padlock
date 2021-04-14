@@ -243,10 +243,10 @@ export class P11Object extends React.Component<Props, State> {
 	render() {
 		return <div>
 			<h2>{this.props.obj.label}</h2>
-			<div>{KeyTypes[this.state.keyType]}={this.state.keyType}</div>
-			<div>
-				{this.state.attrs === undefined ? null : Array.from(this.state.attrs).map(([type, val]) => {
-					return <div>{AttributeType[type]}={Decode(type, val)}</div>
+			<div key={this.props.obj.uuid + "-0"}>{KeyTypes[this.state.keyType]}={this.state.keyType}</div>
+			<div key={this.props.obj.uuid + "-1"}>
+				{this.state.attrs === undefined ? null : Array.from(this.state.attrs).map(([type, val], i) => {
+					return <div key={this.props.obj.uuid + "-1" + i}>{AttributeType[type]}={Decode(type, val)}</div>
 				})}
 			</div>
 		</div>

@@ -1,6 +1,6 @@
 import Client from "./Client";
 import React from "react";
-import { AttributeType, ObjectID, ObjectListAttributeValuesRequest, ObjectListAttributeValuesUpdate, P11Object, SessionID, SessionListObjectsRequest } from "@llkennedy/padlock-api";
+import { AttributeType, ObjectDestroyObjectRequest, ObjectID, ObjectListAttributeValuesRequest, ObjectListAttributeValuesUpdate, P11Object, SessionID, SessionListObjectsRequest } from "@llkennedy/padlock-api";
 import { EOFError, ServerStream } from "@llkennedy/mercury";
 import { sleep } from "@llkennedy/sleep.js";
 import { P11Object as ReactP11Object } from "./P11Object";
@@ -189,6 +189,38 @@ export class Slot extends React.Component<Props, State> {
 											Copy
 										</button>
 										<button onClick={async () => {
+											if (window.confirm(`Are you sure you want to delete this object with label "${val.label}"? This object will not be recoverable!`)) {
+												let req = new ObjectDestroyObjectRequest();
+												req.objectId = new ObjectID();
+												req.objectId.objectId = val.uuid;
+												req.objectId.sessionId = this.props.session;
+												let objsCopy: P11Object[] = [];
+												for (let obj of this.state.objects) {
+													if (obj.uuid !== val.uuid) {
+														objsCopy.push(obj);
+													}
+												}
+												this.setState({
+													loadingObject: true
+												})
+												try {
+													await this.props.client.DestroyObject(req);
+													this.setState({
+														selectedObject: undefined,
+														selectedObjectKeyType: undefined,
+														objects: objsCopy
+													})
+												} catch (err) {
+													const errString = `Failed to delete object: ${err}`;
+													console.error(errString);
+													alert(errString);
+													return;
+												} finally {
+													this.setState({
+														loadingObject: false
+													})
+												}
+											}
 										}}>
 											Delete
 										</button>
