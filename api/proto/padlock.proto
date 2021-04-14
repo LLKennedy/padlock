@@ -68,20 +68,20 @@ service ExposedPadlock {
 	rpc GetObjectListAttributeValues(ObjectListAttributeValuesRequest) returns (stream ObjectListAttributeValuesUpdate);
 	// PostEncrypt encrypts data
 	rpc PostEncrypt(ObjectEncryptRequest) returns (ObjectEncryptResponse);
-	// PostEncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
-	rpc PostEncryptSegmented(stream ObjectEncryptSegmentedRequest) returns (stream ObjectEncryptSegmentedResponse);
+	// GetEncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	rpc GetEncryptSegmented(stream ObjectEncryptSegmentedRequest) returns (stream ObjectEncryptSegmentedResponse);
 	// PostDecrypt decrypts data
 	rpc PostDecrypt(ObjectDecryptRequest) returns (ObjectDecryptResponse);
-	// PostDecryptSegmented decrypts multiple data segments individually then one final one, for those few mechanisms where it matters
-	rpc PostDecryptSegmented(stream ObjectDecryptSegmentedRequest) returns (stream ObjectDecryptSegmentedResponse);
+	// GetDecryptSegmented decrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	rpc GetDecryptSegmented(stream ObjectDecryptSegmentedRequest) returns (stream ObjectDecryptSegmentedResponse);
 	// PostSign signs a message
 	rpc PostSign(ObjectSignRequest) returns (ObjectSignResponse);
-	// PostSignSegmented signs multiple data segments individually then one final part, for those few mechanisms where it matters
-	rpc PostSignSegmented(stream ObjectSignSegmentedRequest) returns (ObjectSignSegmentedResponse);
+	// GetSignSegmented signs multiple data segments individually then one final part, for those few mechanisms where it matters
+	rpc GetSignSegmented(stream ObjectSignSegmentedRequest) returns (ObjectSignSegmentedResponse);
 	// PostVerify verifies a message and signature
 	rpc PostVerify(ObjectVerifyRequest) returns (ObjectVerifyResponse);
-	// PostVerifySegmented verifies multiple data segments individually then the final signature, for those  few mechanisms where it matters.
-	rpc PostVerifySegmented(stream ObjectVerifySegmentedRequest) returns (ObjectVerifySegmentedResponse);
+	// GetVerifySegmented verifies multiple data segments individually then the final signature, for those  few mechanisms where it matters.
+	rpc GetVerifySegmented(stream ObjectVerifySegmentedRequest) returns (ObjectVerifySegmentedResponse);
 	// PutWrapKey wraps a key
 	rpc PutWrapKey(ObjectWrapKeyRequest) returns (ObjectWrapKeyResponse);
 	// PutUnwrapKey unwraps a key

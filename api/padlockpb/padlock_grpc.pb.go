@@ -56,20 +56,20 @@ type ExposedPadlockClient interface {
 	GetObjectListAttributeValues(ctx context.Context, in *ObjectListAttributeValuesRequest, opts ...grpc.CallOption) (ExposedPadlock_GetObjectListAttributeValuesClient, error)
 	// PostEncrypt encrypts data
 	PostEncrypt(ctx context.Context, in *ObjectEncryptRequest, opts ...grpc.CallOption) (*ObjectEncryptResponse, error)
-	// PostEncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
-	PostEncryptSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostEncryptSegmentedClient, error)
+	// GetEncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	GetEncryptSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_GetEncryptSegmentedClient, error)
 	// PostDecrypt decrypts data
 	PostDecrypt(ctx context.Context, in *ObjectDecryptRequest, opts ...grpc.CallOption) (*ObjectDecryptResponse, error)
-	// PostDecryptSegmented decrypts multiple data segments individually then one final one, for those few mechanisms where it matters
-	PostDecryptSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostDecryptSegmentedClient, error)
+	// GetDecryptSegmented decrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	GetDecryptSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_GetDecryptSegmentedClient, error)
 	// PostSign signs a message
 	PostSign(ctx context.Context, in *ObjectSignRequest, opts ...grpc.CallOption) (*ObjectSignResponse, error)
-	// PostSignSegmented signs multiple data segments individually then one final part, for those few mechanisms where it matters
-	PostSignSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostSignSegmentedClient, error)
+	// GetSignSegmented signs multiple data segments individually then one final part, for those few mechanisms where it matters
+	GetSignSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_GetSignSegmentedClient, error)
 	// PostVerify verifies a message and signature
 	PostVerify(ctx context.Context, in *ObjectVerifyRequest, opts ...grpc.CallOption) (*ObjectVerifyResponse, error)
-	// PostVerifySegmented verifies multiple data segments individually then the final signature, for those  few mechanisms where it matters.
-	PostVerifySegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostVerifySegmentedClient, error)
+	// GetVerifySegmented verifies multiple data segments individually then the final signature, for those  few mechanisms where it matters.
+	GetVerifySegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_GetVerifySegmentedClient, error)
 	// PutWrapKey wraps a key
 	PutWrapKey(ctx context.Context, in *ObjectWrapKeyRequest, opts ...grpc.CallOption) (*ObjectWrapKeyResponse, error)
 	// PutUnwrapKey unwraps a key
@@ -351,30 +351,30 @@ func (c *exposedPadlockClient) PostEncrypt(ctx context.Context, in *ObjectEncryp
 	return out, nil
 }
 
-func (c *exposedPadlockClient) PostEncryptSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostEncryptSegmentedClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[4], "/padlock.ExposedPadlock/PostEncryptSegmented", opts...)
+func (c *exposedPadlockClient) GetEncryptSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_GetEncryptSegmentedClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[4], "/padlock.ExposedPadlock/GetEncryptSegmented", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &exposedPadlockPostEncryptSegmentedClient{stream}
+	x := &exposedPadlockGetEncryptSegmentedClient{stream}
 	return x, nil
 }
 
-type ExposedPadlock_PostEncryptSegmentedClient interface {
+type ExposedPadlock_GetEncryptSegmentedClient interface {
 	Send(*ObjectEncryptSegmentedRequest) error
 	Recv() (*ObjectEncryptSegmentedResponse, error)
 	grpc.ClientStream
 }
 
-type exposedPadlockPostEncryptSegmentedClient struct {
+type exposedPadlockGetEncryptSegmentedClient struct {
 	grpc.ClientStream
 }
 
-func (x *exposedPadlockPostEncryptSegmentedClient) Send(m *ObjectEncryptSegmentedRequest) error {
+func (x *exposedPadlockGetEncryptSegmentedClient) Send(m *ObjectEncryptSegmentedRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *exposedPadlockPostEncryptSegmentedClient) Recv() (*ObjectEncryptSegmentedResponse, error) {
+func (x *exposedPadlockGetEncryptSegmentedClient) Recv() (*ObjectEncryptSegmentedResponse, error) {
 	m := new(ObjectEncryptSegmentedResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -391,30 +391,30 @@ func (c *exposedPadlockClient) PostDecrypt(ctx context.Context, in *ObjectDecryp
 	return out, nil
 }
 
-func (c *exposedPadlockClient) PostDecryptSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostDecryptSegmentedClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[5], "/padlock.ExposedPadlock/PostDecryptSegmented", opts...)
+func (c *exposedPadlockClient) GetDecryptSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_GetDecryptSegmentedClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[5], "/padlock.ExposedPadlock/GetDecryptSegmented", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &exposedPadlockPostDecryptSegmentedClient{stream}
+	x := &exposedPadlockGetDecryptSegmentedClient{stream}
 	return x, nil
 }
 
-type ExposedPadlock_PostDecryptSegmentedClient interface {
+type ExposedPadlock_GetDecryptSegmentedClient interface {
 	Send(*ObjectDecryptSegmentedRequest) error
 	Recv() (*ObjectDecryptSegmentedResponse, error)
 	grpc.ClientStream
 }
 
-type exposedPadlockPostDecryptSegmentedClient struct {
+type exposedPadlockGetDecryptSegmentedClient struct {
 	grpc.ClientStream
 }
 
-func (x *exposedPadlockPostDecryptSegmentedClient) Send(m *ObjectDecryptSegmentedRequest) error {
+func (x *exposedPadlockGetDecryptSegmentedClient) Send(m *ObjectDecryptSegmentedRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *exposedPadlockPostDecryptSegmentedClient) Recv() (*ObjectDecryptSegmentedResponse, error) {
+func (x *exposedPadlockGetDecryptSegmentedClient) Recv() (*ObjectDecryptSegmentedResponse, error) {
 	m := new(ObjectDecryptSegmentedResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -431,30 +431,30 @@ func (c *exposedPadlockClient) PostSign(ctx context.Context, in *ObjectSignReque
 	return out, nil
 }
 
-func (c *exposedPadlockClient) PostSignSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostSignSegmentedClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[6], "/padlock.ExposedPadlock/PostSignSegmented", opts...)
+func (c *exposedPadlockClient) GetSignSegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_GetSignSegmentedClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[6], "/padlock.ExposedPadlock/GetSignSegmented", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &exposedPadlockPostSignSegmentedClient{stream}
+	x := &exposedPadlockGetSignSegmentedClient{stream}
 	return x, nil
 }
 
-type ExposedPadlock_PostSignSegmentedClient interface {
+type ExposedPadlock_GetSignSegmentedClient interface {
 	Send(*ObjectSignSegmentedRequest) error
 	CloseAndRecv() (*ObjectSignSegmentedResponse, error)
 	grpc.ClientStream
 }
 
-type exposedPadlockPostSignSegmentedClient struct {
+type exposedPadlockGetSignSegmentedClient struct {
 	grpc.ClientStream
 }
 
-func (x *exposedPadlockPostSignSegmentedClient) Send(m *ObjectSignSegmentedRequest) error {
+func (x *exposedPadlockGetSignSegmentedClient) Send(m *ObjectSignSegmentedRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *exposedPadlockPostSignSegmentedClient) CloseAndRecv() (*ObjectSignSegmentedResponse, error) {
+func (x *exposedPadlockGetSignSegmentedClient) CloseAndRecv() (*ObjectSignSegmentedResponse, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
@@ -474,30 +474,30 @@ func (c *exposedPadlockClient) PostVerify(ctx context.Context, in *ObjectVerifyR
 	return out, nil
 }
 
-func (c *exposedPadlockClient) PostVerifySegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_PostVerifySegmentedClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[7], "/padlock.ExposedPadlock/PostVerifySegmented", opts...)
+func (c *exposedPadlockClient) GetVerifySegmented(ctx context.Context, opts ...grpc.CallOption) (ExposedPadlock_GetVerifySegmentedClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_ExposedPadlock_serviceDesc.Streams[7], "/padlock.ExposedPadlock/GetVerifySegmented", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &exposedPadlockPostVerifySegmentedClient{stream}
+	x := &exposedPadlockGetVerifySegmentedClient{stream}
 	return x, nil
 }
 
-type ExposedPadlock_PostVerifySegmentedClient interface {
+type ExposedPadlock_GetVerifySegmentedClient interface {
 	Send(*ObjectVerifySegmentedRequest) error
 	CloseAndRecv() (*ObjectVerifySegmentedResponse, error)
 	grpc.ClientStream
 }
 
-type exposedPadlockPostVerifySegmentedClient struct {
+type exposedPadlockGetVerifySegmentedClient struct {
 	grpc.ClientStream
 }
 
-func (x *exposedPadlockPostVerifySegmentedClient) Send(m *ObjectVerifySegmentedRequest) error {
+func (x *exposedPadlockGetVerifySegmentedClient) Send(m *ObjectVerifySegmentedRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *exposedPadlockPostVerifySegmentedClient) CloseAndRecv() (*ObjectVerifySegmentedResponse, error) {
+func (x *exposedPadlockGetVerifySegmentedClient) CloseAndRecv() (*ObjectVerifySegmentedResponse, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
@@ -586,20 +586,20 @@ type ExposedPadlockServer interface {
 	GetObjectListAttributeValues(*ObjectListAttributeValuesRequest, ExposedPadlock_GetObjectListAttributeValuesServer) error
 	// PostEncrypt encrypts data
 	PostEncrypt(context.Context, *ObjectEncryptRequest) (*ObjectEncryptResponse, error)
-	// PostEncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
-	PostEncryptSegmented(ExposedPadlock_PostEncryptSegmentedServer) error
+	// GetEncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	GetEncryptSegmented(ExposedPadlock_GetEncryptSegmentedServer) error
 	// PostDecrypt decrypts data
 	PostDecrypt(context.Context, *ObjectDecryptRequest) (*ObjectDecryptResponse, error)
-	// PostDecryptSegmented decrypts multiple data segments individually then one final one, for those few mechanisms where it matters
-	PostDecryptSegmented(ExposedPadlock_PostDecryptSegmentedServer) error
+	// GetDecryptSegmented decrypts multiple data segments individually then one final one, for those few mechanisms where it matters
+	GetDecryptSegmented(ExposedPadlock_GetDecryptSegmentedServer) error
 	// PostSign signs a message
 	PostSign(context.Context, *ObjectSignRequest) (*ObjectSignResponse, error)
-	// PostSignSegmented signs multiple data segments individually then one final part, for those few mechanisms where it matters
-	PostSignSegmented(ExposedPadlock_PostSignSegmentedServer) error
+	// GetSignSegmented signs multiple data segments individually then one final part, for those few mechanisms where it matters
+	GetSignSegmented(ExposedPadlock_GetSignSegmentedServer) error
 	// PostVerify verifies a message and signature
 	PostVerify(context.Context, *ObjectVerifyRequest) (*ObjectVerifyResponse, error)
-	// PostVerifySegmented verifies multiple data segments individually then the final signature, for those  few mechanisms where it matters.
-	PostVerifySegmented(ExposedPadlock_PostVerifySegmentedServer) error
+	// GetVerifySegmented verifies multiple data segments individually then the final signature, for those  few mechanisms where it matters.
+	GetVerifySegmented(ExposedPadlock_GetVerifySegmentedServer) error
 	// PutWrapKey wraps a key
 	PutWrapKey(context.Context, *ObjectWrapKeyRequest) (*ObjectWrapKeyResponse, error)
 	// PutUnwrapKey unwraps a key
@@ -672,26 +672,26 @@ func (UnimplementedExposedPadlockServer) GetObjectListAttributeValues(*ObjectLis
 func (UnimplementedExposedPadlockServer) PostEncrypt(context.Context, *ObjectEncryptRequest) (*ObjectEncryptResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostEncrypt not implemented")
 }
-func (UnimplementedExposedPadlockServer) PostEncryptSegmented(ExposedPadlock_PostEncryptSegmentedServer) error {
-	return status.Errorf(codes.Unimplemented, "method PostEncryptSegmented not implemented")
+func (UnimplementedExposedPadlockServer) GetEncryptSegmented(ExposedPadlock_GetEncryptSegmentedServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetEncryptSegmented not implemented")
 }
 func (UnimplementedExposedPadlockServer) PostDecrypt(context.Context, *ObjectDecryptRequest) (*ObjectDecryptResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostDecrypt not implemented")
 }
-func (UnimplementedExposedPadlockServer) PostDecryptSegmented(ExposedPadlock_PostDecryptSegmentedServer) error {
-	return status.Errorf(codes.Unimplemented, "method PostDecryptSegmented not implemented")
+func (UnimplementedExposedPadlockServer) GetDecryptSegmented(ExposedPadlock_GetDecryptSegmentedServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetDecryptSegmented not implemented")
 }
 func (UnimplementedExposedPadlockServer) PostSign(context.Context, *ObjectSignRequest) (*ObjectSignResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostSign not implemented")
 }
-func (UnimplementedExposedPadlockServer) PostSignSegmented(ExposedPadlock_PostSignSegmentedServer) error {
-	return status.Errorf(codes.Unimplemented, "method PostSignSegmented not implemented")
+func (UnimplementedExposedPadlockServer) GetSignSegmented(ExposedPadlock_GetSignSegmentedServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetSignSegmented not implemented")
 }
 func (UnimplementedExposedPadlockServer) PostVerify(context.Context, *ObjectVerifyRequest) (*ObjectVerifyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PostVerify not implemented")
 }
-func (UnimplementedExposedPadlockServer) PostVerifySegmented(ExposedPadlock_PostVerifySegmentedServer) error {
-	return status.Errorf(codes.Unimplemented, "method PostVerifySegmented not implemented")
+func (UnimplementedExposedPadlockServer) GetVerifySegmented(ExposedPadlock_GetVerifySegmentedServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetVerifySegmented not implemented")
 }
 func (UnimplementedExposedPadlockServer) PutWrapKey(context.Context, *ObjectWrapKeyRequest) (*ObjectWrapKeyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PutWrapKey not implemented")
@@ -1072,25 +1072,25 @@ func _ExposedPadlock_PostEncrypt_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ExposedPadlock_PostEncryptSegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(ExposedPadlockServer).PostEncryptSegmented(&exposedPadlockPostEncryptSegmentedServer{stream})
+func _ExposedPadlock_GetEncryptSegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ExposedPadlockServer).GetEncryptSegmented(&exposedPadlockGetEncryptSegmentedServer{stream})
 }
 
-type ExposedPadlock_PostEncryptSegmentedServer interface {
+type ExposedPadlock_GetEncryptSegmentedServer interface {
 	Send(*ObjectEncryptSegmentedResponse) error
 	Recv() (*ObjectEncryptSegmentedRequest, error)
 	grpc.ServerStream
 }
 
-type exposedPadlockPostEncryptSegmentedServer struct {
+type exposedPadlockGetEncryptSegmentedServer struct {
 	grpc.ServerStream
 }
 
-func (x *exposedPadlockPostEncryptSegmentedServer) Send(m *ObjectEncryptSegmentedResponse) error {
+func (x *exposedPadlockGetEncryptSegmentedServer) Send(m *ObjectEncryptSegmentedResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *exposedPadlockPostEncryptSegmentedServer) Recv() (*ObjectEncryptSegmentedRequest, error) {
+func (x *exposedPadlockGetEncryptSegmentedServer) Recv() (*ObjectEncryptSegmentedRequest, error) {
 	m := new(ObjectEncryptSegmentedRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -1116,25 +1116,25 @@ func _ExposedPadlock_PostDecrypt_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ExposedPadlock_PostDecryptSegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(ExposedPadlockServer).PostDecryptSegmented(&exposedPadlockPostDecryptSegmentedServer{stream})
+func _ExposedPadlock_GetDecryptSegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ExposedPadlockServer).GetDecryptSegmented(&exposedPadlockGetDecryptSegmentedServer{stream})
 }
 
-type ExposedPadlock_PostDecryptSegmentedServer interface {
+type ExposedPadlock_GetDecryptSegmentedServer interface {
 	Send(*ObjectDecryptSegmentedResponse) error
 	Recv() (*ObjectDecryptSegmentedRequest, error)
 	grpc.ServerStream
 }
 
-type exposedPadlockPostDecryptSegmentedServer struct {
+type exposedPadlockGetDecryptSegmentedServer struct {
 	grpc.ServerStream
 }
 
-func (x *exposedPadlockPostDecryptSegmentedServer) Send(m *ObjectDecryptSegmentedResponse) error {
+func (x *exposedPadlockGetDecryptSegmentedServer) Send(m *ObjectDecryptSegmentedResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *exposedPadlockPostDecryptSegmentedServer) Recv() (*ObjectDecryptSegmentedRequest, error) {
+func (x *exposedPadlockGetDecryptSegmentedServer) Recv() (*ObjectDecryptSegmentedRequest, error) {
 	m := new(ObjectDecryptSegmentedRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -1160,25 +1160,25 @@ func _ExposedPadlock_PostSign_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ExposedPadlock_PostSignSegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(ExposedPadlockServer).PostSignSegmented(&exposedPadlockPostSignSegmentedServer{stream})
+func _ExposedPadlock_GetSignSegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ExposedPadlockServer).GetSignSegmented(&exposedPadlockGetSignSegmentedServer{stream})
 }
 
-type ExposedPadlock_PostSignSegmentedServer interface {
+type ExposedPadlock_GetSignSegmentedServer interface {
 	SendAndClose(*ObjectSignSegmentedResponse) error
 	Recv() (*ObjectSignSegmentedRequest, error)
 	grpc.ServerStream
 }
 
-type exposedPadlockPostSignSegmentedServer struct {
+type exposedPadlockGetSignSegmentedServer struct {
 	grpc.ServerStream
 }
 
-func (x *exposedPadlockPostSignSegmentedServer) SendAndClose(m *ObjectSignSegmentedResponse) error {
+func (x *exposedPadlockGetSignSegmentedServer) SendAndClose(m *ObjectSignSegmentedResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *exposedPadlockPostSignSegmentedServer) Recv() (*ObjectSignSegmentedRequest, error) {
+func (x *exposedPadlockGetSignSegmentedServer) Recv() (*ObjectSignSegmentedRequest, error) {
 	m := new(ObjectSignSegmentedRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -1204,25 +1204,25 @@ func _ExposedPadlock_PostVerify_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ExposedPadlock_PostVerifySegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(ExposedPadlockServer).PostVerifySegmented(&exposedPadlockPostVerifySegmentedServer{stream})
+func _ExposedPadlock_GetVerifySegmented_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ExposedPadlockServer).GetVerifySegmented(&exposedPadlockGetVerifySegmentedServer{stream})
 }
 
-type ExposedPadlock_PostVerifySegmentedServer interface {
+type ExposedPadlock_GetVerifySegmentedServer interface {
 	SendAndClose(*ObjectVerifySegmentedResponse) error
 	Recv() (*ObjectVerifySegmentedRequest, error)
 	grpc.ServerStream
 }
 
-type exposedPadlockPostVerifySegmentedServer struct {
+type exposedPadlockGetVerifySegmentedServer struct {
 	grpc.ServerStream
 }
 
-func (x *exposedPadlockPostVerifySegmentedServer) SendAndClose(m *ObjectVerifySegmentedResponse) error {
+func (x *exposedPadlockGetVerifySegmentedServer) SendAndClose(m *ObjectVerifySegmentedResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *exposedPadlockPostVerifySegmentedServer) Recv() (*ObjectVerifySegmentedRequest, error) {
+func (x *exposedPadlockGetVerifySegmentedServer) Recv() (*ObjectVerifySegmentedRequest, error) {
 	m := new(ObjectVerifySegmentedRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -1417,25 +1417,25 @@ var _ExposedPadlock_serviceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 		{
-			StreamName:    "PostEncryptSegmented",
-			Handler:       _ExposedPadlock_PostEncryptSegmented_Handler,
+			StreamName:    "GetEncryptSegmented",
+			Handler:       _ExposedPadlock_GetEncryptSegmented_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
 		{
-			StreamName:    "PostDecryptSegmented",
-			Handler:       _ExposedPadlock_PostDecryptSegmented_Handler,
+			StreamName:    "GetDecryptSegmented",
+			Handler:       _ExposedPadlock_GetDecryptSegmented_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
 		{
-			StreamName:    "PostSignSegmented",
-			Handler:       _ExposedPadlock_PostSignSegmented_Handler,
+			StreamName:    "GetSignSegmented",
+			Handler:       _ExposedPadlock_GetSignSegmented_Handler,
 			ClientStreams: true,
 		},
 		{
-			StreamName:    "PostVerifySegmented",
-			Handler:       _ExposedPadlock_PostVerifySegmented_Handler,
+			StreamName:    "GetVerifySegmented",
+			Handler:       _ExposedPadlock_GetVerifySegmented_Handler,
 			ClientStreams: true,
 		},
 	},

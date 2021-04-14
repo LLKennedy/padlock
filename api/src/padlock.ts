@@ -9,12 +9,12 @@
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
 import { google } from "@llkennedy/protoc-gen-tsjson";
 import { 
+	ModuleInfo as padlock__ModuleInfo,
 	SlotInfo as padlock__SlotInfo,
+	Attribute as padlock__Attribute,
 	Mechanism as padlock__Mechanism,
 	SupportedMechanism as padlock__SupportedMechanism,
-	P11Object as padlock__P11Object,
-	Attribute as padlock__Attribute,
-	ModuleInfo as padlock__ModuleInfo
+	P11Object as padlock__P11Object
 } from "./pkcs11";
 import { 
 	AttributeType as padlock__AttributeType
