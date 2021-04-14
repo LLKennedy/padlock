@@ -21,4 +21,7 @@ export class EncryptData extends React.Component<EncryptDataProps, State> {
 		let state = new State();
 		this.state = state;
 	}
+	render() {
+		return <div>Encrypt</div>
+	}
 }

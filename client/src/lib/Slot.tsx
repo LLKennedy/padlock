@@ -4,13 +4,13 @@ import { AttributeType, ObjectDestroyObjectRequest, ObjectID, ObjectListAttribut
 import { EOFError, ServerStream } from "@llkennedy/mercury";
 import { sleep } from "@llkennedy/sleep.js";
 import { P11Object as ReactP11Object } from "./P11Object";
-import { GenerateKeyProps } from "./actions/GenerateKey";
-import { InjectKeyProps } from "./actions/InjectKey";
-import { CopyObjectProps } from "./actions/CopyObject";
-import { ExtractKeyProps } from "./actions/ExtractKey";
-import { DeriveKeyProps } from "./actions/DeriveKey";
-import { EncryptDataProps } from "./actions/EncryptData";
-import { DecryptDataProps } from "./actions/DecryptData";
+import { GenerateKey, GenerateKeyProps } from "./actions/GenerateKey";
+import { InjectKey, InjectKeyProps } from "./actions/InjectKey";
+import { CopyObject, CopyObjectProps } from "./actions/CopyObject";
+import { ExtractKey, ExtractKeyProps } from "./actions/ExtractKey";
+import { DeriveKey, DeriveKeyProps } from "./actions/DeriveKey";
+import { EncryptData, EncryptDataProps } from "./actions/EncryptData";
+import { DecryptData, DecryptDataProps } from "./actions/DecryptData";
 
 type styleNames = "container" | "inner-container" | "column" | "table" | "heading" | "actions" | "object-row" | "selected-action";
 
@@ -140,8 +140,8 @@ export class Slot extends React.Component<Props, State> {
 								<th>Label</th>
 								<th>Controls</th>
 							</tr>
-							{this.state.objects.map((val) => {
-								return <tr style={styles.get("object-row")}>
+							{this.state.objects.map((val, i) => {
+								return <tr key={`slot-object-${i}`} style={styles.get("object-row")}>
 									<td>{val.label}</td>
 									<td>
 										<button onClick={async () => {
@@ -175,7 +175,7 @@ export class Slot extends React.Component<Props, State> {
 													throw new Error("not found");
 												}
 												keyType = attr.attribute.value ?? new Uint8Array();
-												// await stream.Recv();
+												await stream.Recv();
 											} catch (err) {
 												if (!(err instanceof EOFError)) {
 													this.setState({
@@ -249,23 +249,60 @@ export class Slot extends React.Component<Props, State> {
 			</div>
 			<div style={styles.get("actions")}>
 				<h2 style={styles.get("heading")}>Actions</h2>
-				<div><button onClick={async () => {
-					try {
-						await this.props.client.SessionLogout(this.props.session);
-					} catch (err) {
-						const errString = `Failed to log out of session: ${err}`;
-						console.error(errString);
-						alert(errString);
-					}
-					this.props.logout();
-				}}>Logout</button></div>
-				<button onClick={() => this.setState({ actionState: new GenerateKeyProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof GenerateKeyProps ? styles.get("selected-action") : undefined}>Generate</button>
-				<button onClick={() => this.setState({ actionState: new InjectKeyProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof InjectKeyProps ? styles.get("selected-action") : undefined}>Inject</button>
-				<button onClick={() => this.setState({ actionState: new CopyObjectProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof CopyObjectProps ? styles.get("selected-action") : undefined}>Copy</button>
-				<button onClick={() => this.setState({ actionState: new ExtractKeyProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof ExtractKeyProps ? styles.get("selected-action") : undefined}>Extract</button>
-				<button onClick={() => this.setState({ actionState: new DeriveKeyProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof DeriveKeyProps ? styles.get("selected-action") : undefined}>Derive</button>
-				<button onClick={() => this.setState({ actionState: new EncryptDataProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof EncryptDataProps ? styles.get("selected-action") : undefined}>Encrypt</button>
-				<button onClick={() => this.setState({ actionState: new DecryptDataProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof DecryptDataProps ? styles.get("selected-action") : undefined}>Decrypt</button>
+				<div>
+					<button onClick={async () => {
+						try {
+							await this.props.client.SessionLogout(this.props.session);
+						} catch (err) {
+							const errString = `Failed to log out of session: ${err}`;
+							console.error(errString);
+							alert(errString);
+						}
+						this.props.logout();
+					}}>Logout</button>
+					<button onClick={async () => {
+						this.setState({
+							actionState: undefined,
+						})
+					}}>
+						Clear Action
+					</button>
+				</div>
+				<button onClick={async () => this.setState({ actionState: new GenerateKeyProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof GenerateKeyProps ? styles.get("selected-action") : undefined}>Generate</button>
+				<button onClick={async () => this.setState({ actionState: new InjectKeyProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof InjectKeyProps ? styles.get("selected-action") : undefined}>Inject</button>
+				<button onClick={async () => this.setState({ actionState: new CopyObjectProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof CopyObjectProps ? styles.get("selected-action") : undefined}>Copy</button>
+				<button onClick={async () => this.setState({ actionState: new ExtractKeyProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof ExtractKeyProps ? styles.get("selected-action") : undefined}>Extract</button>
+				<button onClick={async () => this.setState({ actionState: new DeriveKeyProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof DeriveKeyProps ? styles.get("selected-action") : undefined}>Derive</button>
+				<button onClick={async () => this.setState({ actionState: new EncryptDataProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof EncryptDataProps ? styles.get("selected-action") : undefined}>Encrypt</button>
+				<button onClick={async () => this.setState({ actionState: new DecryptDataProps(this.props.client, this.props.session, this.state.objects) })} style={this.state.actionState instanceof DecryptDataProps ? styles.get("selected-action") : undefined}>Decrypt</button>
+				{
+					(() => {
+						if (this.state.actionState instanceof GenerateKeyProps) {
+							return <GenerateKey client={this.state.actionState.client} session={this.state.actionState.session} objects={this.state.objects} />;
+						}
+						else if (this.state.actionState instanceof InjectKeyProps) {
+							return <InjectKey client={this.state.actionState.client} session={this.state.actionState.session} objects={this.state.objects} />;
+						}
+						else if (this.state.actionState instanceof CopyObjectProps) {
+							return <CopyObject client={this.state.actionState.client} session={this.state.actionState.session} objects={this.state.objects} />;
+						}
+						else if (this.state.actionState instanceof ExtractKeyProps) {
+							return <ExtractKey client={this.state.actionState.client} session={this.state.actionState.session} objects={this.state.objects} />;
+						}
+						else if (this.state.actionState instanceof DeriveKeyProps) {
+							return <DeriveKey client={this.state.actionState.client} session={this.state.actionState.session} objects={this.state.objects} />;
+						}
+						else if (this.state.actionState instanceof EncryptDataProps) {
+							return <EncryptData client={this.state.actionState.client} session={this.state.actionState.session} objects={this.state.objects} />;
+						}
+						else if (this.state.actionState instanceof DecryptDataProps) {
+							return <DecryptData client={this.state.actionState.client} session={this.state.actionState.session} objects={this.state.objects} />;
+						}
+						else {
+							return null;
+						}
+					})()
+				}
 			</div>
 		</div>
 

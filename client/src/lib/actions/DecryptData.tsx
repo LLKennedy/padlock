@@ -21,4 +21,7 @@ export class DecryptData extends React.Component<DecryptDataProps, State> {
 		let state = new State();
 		this.state = state;
 	}
+	render() {
+		return <div>Decrypt</div>
+	}
 }

@@ -21,4 +21,7 @@ export class ExtractKey extends React.Component<ExtractKeyProps, State> {
 		let state = new State();
 		this.state = state;
 	}
+	render() {
+		return <div>Extract</div>
+	}
 }

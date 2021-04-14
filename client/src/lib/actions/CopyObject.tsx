@@ -21,4 +21,7 @@ export class CopyObject extends React.Component<CopyObjectProps, State> {
 		let state = new State();
 		this.state = state;
 	}
+	render() {
+		return <div>Copy</div>
+	}
 }

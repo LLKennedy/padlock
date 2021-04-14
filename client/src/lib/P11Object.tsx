@@ -1,9 +1,9 @@
 import Client from "./Client";
 import React from "react";
 import { AttributeType, ObjectID, ObjectListAttributeValuesRequest, ObjectListAttributeValuesUpdate, P11Object as protoP11, SessionID } from "@llkennedy/padlock-api";
-import { AttrToKeyType, KeyTypes } from "./const/KeyType";
+import { AttrToKeyType, KeyTypes } from "./util/KeyType";
 import { EOFError, ServerStream } from "@llkennedy/mercury";
-import { Decode } from "./const/Decode";
+import { Decode } from "./util/Decode";
 
 export interface Props {
 	client: Client,

@@ -21,4 +21,7 @@ export class InjectKey extends React.Component<InjectKeyProps, State> {
 		let state = new State();
 		this.state = state;
 	}
+	render() {
+		return <div>Inject</div>
+	}
 }

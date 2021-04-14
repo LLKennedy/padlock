@@ -21,4 +21,7 @@ export class DeriveKey extends React.Component<DeriveKeyProps, State> {
 		let state = new State();
 		this.state = state;
 	}
+	render() {
+		return <div>Derive</div>
+	}
 }

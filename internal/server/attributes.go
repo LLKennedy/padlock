@@ -1,6 +1,8 @@
 package server
 
 import (
+	"log"
+
 	"github.com/LLKennedy/padlock/api/padlockpb"
 	"github.com/llkennedy/pkcs11"
 )
@@ -11,6 +13,7 @@ func AttributesPBtoP11(attrs []*padlockpb.Attribute) []*pkcs11.Attribute {
 	for _, attr := range attrs {
 		template = append(template, pkcs11.NewAttribute(AttributePBtoP11(attr.GetType()), attr.GetValue()))
 	}
+	log.Println(template)
 	return template
 }
 
