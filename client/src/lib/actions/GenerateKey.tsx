@@ -3,6 +3,7 @@ import React from "react";
 import { AttributeType, Mechanism, MechanismType, P11Object, SessionGenerateKeyPairRequest, SessionGenerateKeyRequest, SessionID } from "@llkennedy/padlock-api";
 import { CKFalse, CKTrue, EncodeString, MakeAttribute } from "../util/Encode";
 import { KeyTypes } from "../util/KeyType";
+import { AttributeBuilder } from "../AttributeBuilder";
 
 export class GenerateKeyProps {
 	client: Client;
@@ -26,6 +27,7 @@ export class GenerateKey extends React.Component<GenerateKeyProps, State> {
 	render() {
 		return <div>
 			<div>Generate</div>
+			<AttributeBuilder knownTypes={[]} />
 			<button onClick={async () => {
 				let req = new SessionGenerateKeyPairRequest();
 				req.mech = new Mechanism();
