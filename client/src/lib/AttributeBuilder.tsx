@@ -1,10 +1,33 @@
 import { AttributeType } from "@llkennedy/padlock-api";
 import React from "react";
 import { CKFalse, CKTrue, EncodeString } from "./util/Encode";
+import { KeyTypes } from "./util/KeyType";
+
+export class Data extends Object { }
+
+export class Uint8Data extends Data {
+	value?: Uint8Array;
+}
+
+export class StringData extends Data {
+	value?: string;
+}
+
+export class BoolData extends Data {
+	value?: boolean;
+}
+
+export class ObjectClassData extends Data {
+	value?: ObjectClass;
+}
+
+export class KeyTypesData extends Data {
+	value?: KeyTypes
+}
 
 export interface Props {
 	initial?: AttributeType;
-	initialData?: Uint8Array | string | boolean;
+	initialData?: Data;
 	knownTypes: AttributeType[];
 	defaultOverride?: boolean;
 	onChange(type: AttributeType, value?: Uint8Array): Promise<void>;
@@ -13,7 +36,7 @@ export interface Props {
 export class State {
 	selected: AttributeType = AttributeType.CKA_CLASS;
 	dataType: DataType = DataType.RawBytes;
-	data?: Uint8Array | string | boolean
+	data?: Data
 	override: boolean = false;
 }
 
@@ -36,7 +59,7 @@ export class AttributeBuilder extends React.Component<Props, State> {
 		}
 		this.state = state;
 	}
-	async omponentDidUpdate(prevProps: Props, prevState: State) {
+	async omponentDidUpdate(_: Props, prevState: State) {
 		if (prevState.selected !== this.state.selected || this.state.data !== prevState.data) {
 			let parsedType: Uint8Array | undefined;
 			switch (typeof this.state.data) {
@@ -58,10 +81,22 @@ export class AttributeBuilder extends React.Component<Props, State> {
 			await this.props.onChange(this.state.selected, parsedType);
 		}
 	}
-	changeType(newType: AttributeType) {
-		let currentDT = this.state.dataType;
-		let newDT = AttributeTypeKeys.get(newType);
-
+	async changeType(newType: AttributeType) {
+		const currentDT = this.state.dataType;
+		const newDT = AttributeTypeKeys.get(newType);
+		if (newDT === currentDT) {
+			return this.setState({
+				selected: newType
+			});
+		}
+		let newData: Data;
+		switch (newDT) {
+			case DataType.Bool:
+				newData = false;
+				break;
+			case DataType.Class:
+				newData
+		}
 	}
 	toggleOverride() {
 		const override = this.state.override;
