@@ -1,11 +1,13 @@
 import { AttributeType } from "@llkennedy/padlock-api";
 import React from "react";
+import { CKFalse, CKTrue, EncodeString } from "./util/Encode";
 
 export interface Props {
 	initial?: AttributeType;
 	initialData?: Uint8Array | string | boolean;
 	knownTypes: AttributeType[];
 	defaultOverride?: boolean;
+	onChange(type: AttributeType, value?: Uint8Array): Promise<void>;
 }
 
 export class State {
@@ -33,6 +35,28 @@ export class AttributeBuilder extends React.Component<Props, State> {
 			state.override = true;
 		}
 		this.state = state;
+	}
+	async omponentDidUpdate(prevProps: Props, prevState: State) {
+		if (prevState.selected !== this.state.selected || this.state.data !== prevState.data) {
+			let parsedType: Uint8Array | undefined;
+			switch (typeof this.state.data) {
+				case "undefined":
+					parsedType = undefined;
+					break;
+				case "string":
+					parsedType = EncodeString(this.state.data);
+					break;
+				case "boolean":
+					parsedType = this.state.data ? CKTrue : CKFalse;
+					break;
+				case "object":
+					parsedType = this.state.data;
+					break;
+				default:
+					throw new Error("unsupported data type")
+			}
+			await this.props.onChange(this.state.selected, parsedType);
+		}
 	}
 	changeType(newType: AttributeType) {
 		let currentDT = this.state.dataType;
@@ -65,7 +89,7 @@ export class AttributeBuilder extends React.Component<Props, State> {
 				{
 					(() => {
 						for (let [key, _] of AttributeTypeKeys) {
-							return <option key={key} value={key}>{`${key}`}</option>
+							return <option key={key} value={key}>{`${AttributeType[key]}`}</option>
 						}
 					})()
 				}
