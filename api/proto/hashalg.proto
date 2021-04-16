@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package padlock;
+
+import "tsjson.proto";
+option (tsjson.npm_package) = "@llkdemo/padlock";
+option (tsjson.import_path) = "hashalg";
+
+option go_package = "github.com/LLKennedy/padlock/padlockpb";
+
+enum HashingAlgorithm {
+	CKG_MGF1_UNDEFINED_UNKNOWN = 0;
+	CKG_MGF1_SHA1     = 0x00000001;
+	CKG_MGF1_SHA224   = 0x00000005;
+	CKG_MGF1_SHA256   = 0x00000002;
+	CKG_MGF1_SHA384   = 0x00000003;
+	CKG_MGF1_SHA512   = 0x00000004;
+	CKG_MGF1_SHA3_224 = 0x00000006;
+	CKG_MGF1_SHA3_256 = 0x00000007;
+	CKG_MGF1_SHA3_384 = 0x00000008;
+	CKG_MGF1_SHA3_512 = 0x00000009;
+};

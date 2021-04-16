@@ -146,6 +146,8 @@ service Padlock {
 
 	// ObjectListAttributeValues lists values for the requested attributes
 	rpc ObjectListAttributeValues(ObjectListAttributeValuesRequest) returns (stream ObjectListAttributeValuesUpdate);
+	// ObjectSetAttributeValues attempts to set specific attributes and values
+	rpc ObjectSetAttributeValues(ObjectSetAttributeValuesRequest) returns (ObjectSetAttributeValuesResponse);
 	// Encrypt encrypts data
 	rpc Encrypt(ObjectEncryptRequest) returns (ObjectEncryptResponse);
 	// EncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
@@ -462,5 +464,14 @@ message ObjectCopyObjectRequest {
 }
 
 message ObjectCopyObjectResponse {
+
+}
+
+message ObjectSetAttributeValuesRequest {
+	ObjectID object_id = 1;
+	repeated Attribute attributes = 2;
+}
+
+message ObjectSetAttributeValuesResponse {
 
 }

@@ -1482,6 +1482,8 @@ type PadlockClient interface {
 	SessionGenerateKey(ctx context.Context, in *SessionGenerateKeyRequest, opts ...grpc.CallOption) (*P11Object, error)
 	// ObjectListAttributeValues lists values for the requested attributes
 	ObjectListAttributeValues(ctx context.Context, in *ObjectListAttributeValuesRequest, opts ...grpc.CallOption) (Padlock_ObjectListAttributeValuesClient, error)
+	// ObjectSetAttributeValues attempts to set specific attributes and values
+	ObjectSetAttributeValues(ctx context.Context, in *ObjectSetAttributeValuesRequest, opts ...grpc.CallOption) (*ObjectSetAttributeValuesResponse, error)
 	// Encrypt encrypts data
 	Encrypt(ctx context.Context, in *ObjectEncryptRequest, opts ...grpc.CallOption) (*ObjectEncryptResponse, error)
 	// EncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
@@ -1770,6 +1772,15 @@ func (x *padlockObjectListAttributeValuesClient) Recv() (*ObjectListAttributeVal
 	return m, nil
 }
 
+func (c *padlockClient) ObjectSetAttributeValues(ctx context.Context, in *ObjectSetAttributeValuesRequest, opts ...grpc.CallOption) (*ObjectSetAttributeValuesResponse, error) {
+	out := new(ObjectSetAttributeValuesResponse)
+	err := c.cc.Invoke(ctx, "/padlock.Padlock/ObjectSetAttributeValues", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *padlockClient) Encrypt(ctx context.Context, in *ObjectEncryptRequest, opts ...grpc.CallOption) (*ObjectEncryptResponse, error) {
 	out := new(ObjectEncryptResponse)
 	err := c.cc.Invoke(ctx, "/padlock.Padlock/Encrypt", in, out, opts...)
@@ -2012,6 +2023,8 @@ type PadlockServer interface {
 	SessionGenerateKey(context.Context, *SessionGenerateKeyRequest) (*P11Object, error)
 	// ObjectListAttributeValues lists values for the requested attributes
 	ObjectListAttributeValues(*ObjectListAttributeValuesRequest, Padlock_ObjectListAttributeValuesServer) error
+	// ObjectSetAttributeValues attempts to set specific attributes and values
+	ObjectSetAttributeValues(context.Context, *ObjectSetAttributeValuesRequest) (*ObjectSetAttributeValuesResponse, error)
 	// Encrypt encrypts data
 	Encrypt(context.Context, *ObjectEncryptRequest) (*ObjectEncryptResponse, error)
 	// EncryptSegmented encrypts multiple data segments individually then one final one, for those few mechanisms where it matters
@@ -2096,6 +2109,9 @@ func (UnimplementedPadlockServer) SessionGenerateKey(context.Context, *SessionGe
 }
 func (UnimplementedPadlockServer) ObjectListAttributeValues(*ObjectListAttributeValuesRequest, Padlock_ObjectListAttributeValuesServer) error {
 	return status.Errorf(codes.Unimplemented, "method ObjectListAttributeValues not implemented")
+}
+func (UnimplementedPadlockServer) ObjectSetAttributeValues(context.Context, *ObjectSetAttributeValuesRequest) (*ObjectSetAttributeValuesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ObjectSetAttributeValues not implemented")
 }
 func (UnimplementedPadlockServer) Encrypt(context.Context, *ObjectEncryptRequest) (*ObjectEncryptResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Encrypt not implemented")
@@ -2482,6 +2498,24 @@ func (x *padlockObjectListAttributeValuesServer) Send(m *ObjectListAttributeValu
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Padlock_ObjectSetAttributeValues_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ObjectSetAttributeValuesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PadlockServer).ObjectSetAttributeValues(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/padlock.Padlock/ObjectSetAttributeValues",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PadlockServer).ObjectSetAttributeValues(ctx, req.(*ObjectSetAttributeValuesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Padlock_Encrypt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ObjectEncryptRequest)
 	if err := dec(in); err != nil {
@@ -2789,6 +2823,10 @@ var _Padlock_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SessionGenerateKey",
 			Handler:    _Padlock_SessionGenerateKey_Handler,
+		},
+		{
+			MethodName: "ObjectSetAttributeValues",
+			Handler:    _Padlock_ObjectSetAttributeValues_Handler,
 		},
 		{
 			MethodName: "Encrypt",

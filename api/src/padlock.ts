@@ -9,12 +9,12 @@
 import * as tsjson from "@llkennedy/protoc-gen-tsjson";
 import { google } from "@llkennedy/protoc-gen-tsjson";
 import { 
-	ModuleInfo as padlock__ModuleInfo,
-	SlotInfo as padlock__SlotInfo,
+	P11Object as padlock__P11Object,
 	Attribute as padlock__Attribute,
-	Mechanism as padlock__Mechanism,
 	SupportedMechanism as padlock__SupportedMechanism,
-	P11Object as padlock__P11Object
+	ModuleInfo as padlock__ModuleInfo,
+	Mechanism as padlock__Mechanism,
+	SlotInfo as padlock__SlotInfo
 } from "./pkcs11";
 import { 
 	AttributeType as padlock__AttributeType
@@ -1153,6 +1153,40 @@ export class ObjectCopyObjectResponse extends Object implements tsjson.ProtoJSON
 	public static async Parse(data: any): Promise<ObjectCopyObjectResponse> {
 		let objData: Object = tsjson.AnyToObject(data);
 		let res = new ObjectCopyObjectResponse();
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectSetAttributeValuesRequest extends Object implements tsjson.ProtoJSONCompatible {
+	/** A field */
+	public objectId?: ObjectID;
+	/** A field */
+	public attributes?: padlock__Attribute[];
+	public ToProtoJSON(): Object {
+		return {
+			objectId: this.objectId?.ToProtoJSON(),
+			attributes: tsjson.ToProtoJSON.Repeated(val => val.ToProtoJSON(), this.attributes),
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectSetAttributeValuesRequest> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectSetAttributeValuesRequest();
+		res.objectId = await tsjson.Parse.Message(objData, "objectId", "object_id", ObjectID.Parse);
+		res.attributes = await tsjson.Parse.Repeated(objData, "attributes", "attributes", padlock__Attribute.Parse);
+		return res;
+	}
+}
+
+/** A message */
+export class ObjectSetAttributeValuesResponse extends Object implements tsjson.ProtoJSONCompatible {
+	public ToProtoJSON(): Object {
+		return {
+		};
+	}
+	public static async Parse(data: any): Promise<ObjectSetAttributeValuesResponse> {
+		let objData: Object = tsjson.AnyToObject(data);
+		let res = new ObjectSetAttributeValuesResponse();
 		return res;
 	}
 }

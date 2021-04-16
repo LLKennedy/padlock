@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package padlock;
+
+import "tsjson.proto";
+option (tsjson.npm_package) = "@llkdemo/padlock";
+option (tsjson.import_path) = "objectclass";
+
+option go_package = "github.com/LLKennedy/padlock/padlockpb";
+
+enum ObjectClass {
+	CKO_UNDEFINED_UNKNOWN  = 0;
+	CKO_DATA               = 1;
+	CKO_CERTIFICATE        = 2;
+	CKO_PUBLIC_KEY         = 3;
+	CKO_PRIVATE_KEY        = 4;
+	CKO_SECRET_KEY         = 5;
+	CKO_HW_FEATURE         = 6;
+	CKO_DOMAIN_PARAMETERS  = 7;
+	CKO_MECHANISM          = 8;
+	CKO_OTP_KEY            = 9;
+	CKO_VENDOR_DEFINED     = 10;
+};
