@@ -16,7 +16,9 @@ export class GenerateKeyProps {
 	}
 }
 
-export class State { }
+export class State {
+	attributes: ReadonlyMap<AttributeType, Uint8Array | undefined> = new Map<AttributeType, Uint8Array | undefined>();
+}
 
 export class GenerateKey extends React.Component<GenerateKeyProps, State> {
 	constructor(props: GenerateKeyProps) {
@@ -27,7 +29,15 @@ export class GenerateKey extends React.Component<GenerateKeyProps, State> {
 	render() {
 		return <div>
 			<div>Generate</div>
-			<AttributeBuilder knownTypes={[]} />
+			{(() => {
+				let attrs: JSX.Element[] = [];
+				for (let [t, v] of this.state.attributes) {
+					attrs.push(<AttributeBuilder initial={t} initialData={v} knownTypes={[/* TODO */]} onChange={async (t, v) => this.setState({
+						attributes: new Map(this.state.attributes).set(t, v),
+					})} />);
+				}
+				return attrs;
+			})()}
 			<button onClick={async () => {
 				let req = new SessionGenerateKeyPairRequest();
 				req.mech = new Mechanism();

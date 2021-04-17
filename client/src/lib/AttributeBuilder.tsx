@@ -2,6 +2,7 @@ import { AttributeType } from "@llkennedy/padlock-api";
 import React from "react";
 import { CKFalse, CKTrue, EncodeString } from "./util/Encode";
 import { KeyTypes } from "./util/KeyType";
+import { EncodeObjectClass, ObjectClass } from "./util/ObjectClass";
 
 export class Data extends Object { }
 
@@ -61,22 +62,18 @@ export class AttributeBuilder extends React.Component<Props, State> {
 	}
 	async omponentDidUpdate(_: Props, prevState: State) {
 		if (prevState.selected !== this.state.selected || this.state.data !== prevState.data) {
+			let data = this.state.data;
 			let parsedType: Uint8Array | undefined;
-			switch (typeof this.state.data) {
-				case "undefined":
-					parsedType = undefined;
-					break;
-				case "string":
-					parsedType = EncodeString(this.state.data);
-					break;
-				case "boolean":
-					parsedType = this.state.data ? CKTrue : CKFalse;
-					break;
-				case "object":
-					parsedType = this.state.data;
-					break;
-				default:
-					throw new Error("unsupported data type")
+			if (data === undefined) {
+				parsedType = undefined;
+			} else if (data instanceof StringData) {
+				parsedType = EncodeString(data.value);
+			} else if (data instanceof BoolData) {
+				parsedType = data.value ? CKTrue : CKFalse;
+			} else if (data instanceof Uint8Data) {
+				parsedType = data.value;
+			} else if (data instanceof ObjectClassData) {
+				parsedType = await EncodeObjectClass(data.value);
 			}
 			await this.props.onChange(this.state.selected, parsedType);
 		}
@@ -95,7 +92,7 @@ export class AttributeBuilder extends React.Component<Props, State> {
 				newData = false;
 				break;
 			case DataType.Class:
-				newData
+			// newData
 		}
 	}
 	toggleOverride() {
