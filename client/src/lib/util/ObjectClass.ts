@@ -1,4 +1,8 @@
+import { DecodeUint32 } from "./Decode";
+import { EncodeUint32 } from "./Encode";
+
 export enum ObjectClass {
+	INVALID = -1,
 	CKO_DATA = 0x00000000,
 	CKO_CERTIFICATE = 0x00000001,
 	CKO_PUBLIC_KEY = 0x00000002,
@@ -11,32 +15,39 @@ export enum ObjectClass {
 	CKO_VENDOR_DEFINED = 0x80000000,
 }
 
-export async function EncodeObjectClass(cl?: ObjectClass): Promise<Uint8Array | undefined> {
-	if (cl === undefined) {
-		return undefined;
+export async function DecodeObjectClass(raw?: Uint8Array): Promise<ObjectClass | undefined> {
+	let parsed: number | undefined;
+	try {
+		parsed = await DecodeUint32(raw);
+	} catch (err) {
+		console.error(err);
+		return ObjectClass.INVALID;
 	}
-	switch (cl) {
+	if (parsed === undefined) {
+		return ObjectClass.INVALID;
+	}
+	switch (parsed) {
+		case ObjectClass.INVALID:
 		case ObjectClass.CKO_DATA:
-			return new Uint8Array([0, 0, 0, 1]);
 		case ObjectClass.CKO_CERTIFICATE:
-			return new Uint8Array([0, 0, 0, 2]);
 		case ObjectClass.CKO_PUBLIC_KEY:
-			return new Uint8Array([0, 0, 0, 3]);
 		case ObjectClass.CKO_PRIVATE_KEY:
-			return new Uint8Array([0, 0, 0, 4]);
 		case ObjectClass.CKO_SECRET_KEY:
-			return new Uint8Array([0, 0, 0, 5]);
 		case ObjectClass.CKO_HW_FEATURE:
-			return new Uint8Array([0, 0, 0, 6]);
 		case ObjectClass.CKO_DOMAIN_PARAMETERS:
-			return new Uint8Array([0, 0, 0, 7]);
 		case ObjectClass.CKO_MECHANISM:
-			return new Uint8Array([0, 0, 0, 8]);
 		case ObjectClass.CKO_OTP_KEY:
-			return new Uint8Array([0, 0, 0, 1]);
 		case ObjectClass.CKO_VENDOR_DEFINED:
-			return new Uint8Array([0x80, 0, 0, 0]);
+			return parsed as ObjectClass;
 		default:
-			throw new Error("cannot encode invalid object class");
+			console.error(`invalid object class: ${parsed}`);
+			return ObjectClass.INVALID;
 	}
+}
+
+export function EncodeObjectClass(cl?: ObjectClass): Promise<Uint8Array | undefined> {
+	if (cl === ObjectClass.INVALID) {
+		throw new Error("cannot encode invalid object class");
+	}
+	return EncodeUint32(cl as (number | undefined));
 }

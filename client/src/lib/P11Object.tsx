@@ -1,7 +1,7 @@
 import Client from "./Client";
 import React from "react";
 import { AttributeType, ObjectID, ObjectListAttributeValuesRequest, ObjectListAttributeValuesUpdate, P11Object as protoP11, SessionID } from "@llkennedy/padlock-api";
-import { AttrToKeyType, KeyTypes } from "./util/KeyType";
+import { DecodeKeyType, KeyTypes } from "./util/KeyType";
 import { EOFError, ServerStream } from "@llkennedy/mercury";
 import { Decode } from "./util/Decode";
 
@@ -14,7 +14,7 @@ export interface Props {
 
 export class State {
 	keyType: KeyTypes = KeyTypes.INVALID;
-	attrs?: ReadonlyMap<AttributeType, Uint8Array>;
+	attrs?: ReadonlyMap<AttributeType, [Uint8Array, string]>;
 }
 
 const requestAttrs: ReadonlyMap<KeyTypes, readonly AttributeType[]> = new Map<KeyTypes, readonly AttributeType[]>([
@@ -192,10 +192,12 @@ export class P11Object extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 		let state = new State();
-		state.keyType = AttrToKeyType(props.type);
 		this.state = state;
 	}
 	async componentDidMount() {
+		this.setState({
+			keyType: await DecodeKeyType(this.props.type),
+		})
 		let req = new ObjectListAttributeValuesRequest();
 		let objID = new ObjectID();
 		objID.objectId = this.props.obj.uuid;
@@ -216,12 +218,12 @@ export class P11Object extends React.Component<Props, State> {
 			alert(errString);
 			return;
 		}
-		let attrs = new Map<AttributeType, Uint8Array>();
+		let attrs = new Map<AttributeType, [Uint8Array, string]>();
 		while (true) {
 			try {
 				let attr = await stream.Recv();
 				if (attr.attribute?.value !== undefined && attr.attribute?.type !== undefined) {
-					attrs.set(attr.attribute.type, attr.attribute.value);
+					attrs.set(attr.attribute.type, [attr.attribute.value, await Decode(attr.attribute.type, attr.attribute.value)]);
 				}
 				this.setState({
 					attrs: attrs,
@@ -246,7 +248,7 @@ export class P11Object extends React.Component<Props, State> {
 			<div key={this.props.obj.uuid + "-0"}>{KeyTypes[this.state.keyType]}={this.state.keyType}</div>
 			<div key={this.props.obj.uuid + "-1"}>
 				{this.state.attrs === undefined ? null : Array.from(this.state.attrs).map(([type, val], i) => {
-					return <div key={this.props.obj.uuid + "-1" + i}>{AttributeType[type]}={Decode(type, val)}</div>
+					return <div key={this.props.obj.uuid + "-1" + i}>{AttributeType[type]}={val[1]}</div>
 				})}
 			</div>
 		</div>

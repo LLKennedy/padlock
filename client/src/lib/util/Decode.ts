@@ -1,10 +1,13 @@
 import { AttributeType } from "@llkennedy/padlock-api";
-import { AttrToKeyType, KeyTypes } from "./KeyType";
+import { DecodeKeyType, KeyTypes } from "./KeyType";
+import { DecodeObjectClass, ObjectClass } from "./ObjectClass";
 
-export function Decode(type: AttributeType, value: Uint8Array) {
+export async function Decode(type: AttributeType, value: Uint8Array): Promise<string> {
 	switch (type) {
 		case AttributeType.CKA_KEY_TYPE:
-			return KeyTypes[AttrToKeyType(value)];
+			return KeyTypes[await DecodeKeyType(value)];
+		case AttributeType.CKA_CLASS:
+			return ObjectClass[await DecodeObjectClass(value) ?? ObjectClass.INVALID];
 		default:
 			if (value.length === 0) {
 				return "NULL";
@@ -23,4 +26,22 @@ function toHex(n: number): string {
 		hex = "0" + hex;
 	}
 	return hex.toUpperCase();
+}
+
+export async function DecodeBool(val?: Uint8Array): Promise<boolean | undefined> {
+	if (val === undefined || val.length === 0) {
+		return undefined;
+	}
+	return val[0] === 1;
+}
+
+export async function DecodeUint32(val?: Uint8Array): Promise<number | undefined> {
+	if (val === undefined || val.length === 0) {
+		return undefined;
+	}
+	let result = 0;
+	for (let i = 0; i < val.length && i < 4; i++) {
+		result = result | (val[i] << (i * 8));
+	}
+	return result;
 }
