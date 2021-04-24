@@ -53,7 +53,7 @@ export enum KeyTypes {
 	CKK_VENDOR_DEFINED = 0x80000000,
 }
 
-export async function DecodeKeyType(raw: Uint8Array): Promise<KeyTypes> {
+export async function DecodeKeyType(raw?: Uint8Array): Promise<KeyTypes> {
 	let parsed: number | undefined;
 	try {
 		parsed = await DecodeUint32(raw);

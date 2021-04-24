@@ -1,28 +1,48 @@
 import { AttributeType } from "@llkennedy/padlock-api";
 import React from "react";
 import { CKFalse, CKTrue, EncodeString } from "./util/Encode";
-import { KeyTypes } from "./util/KeyType";
+import { DecodeKeyType, EncodeKeyType, KeyTypes } from "./util/KeyType";
 import { EncodeObjectClass, ObjectClass } from "./util/ObjectClass";
 
 export class Data extends Object { }
 
 export class Uint8Data extends Data {
+	constructor(val?: Uint8Array) {
+		super(val);
+		this.value = val;
+	}
 	value?: Uint8Array;
 }
 
 export class StringData extends Data {
+	constructor(val?: string) {
+		super(val);
+		this.value = val;
+	}
 	value?: string;
 }
 
 export class BoolData extends Data {
+	constructor(val?: boolean) {
+		super(val);
+		this.value = val;
+	}
 	value?: boolean;
 }
 
 export class ObjectClassData extends Data {
+	constructor(val?: ObjectClass) {
+		super(val);
+		this.value = val;
+	}
 	value?: ObjectClass;
 }
 
 export class KeyTypesData extends Data {
+	constructor(val?: KeyTypes) {
+		super(val);
+		this.value = val;
+	}
 	value?: KeyTypes
 }
 
@@ -60,7 +80,7 @@ export class AttributeBuilder extends React.Component<Props, State> {
 		}
 		this.state = state;
 	}
-	async omponentDidUpdate(_: Props, prevState: State) {
+	async componentDidUpdate(_: Props, prevState: State) {
 		if (prevState.selected !== this.state.selected || this.state.data !== prevState.data) {
 			let data = this.state.data;
 			let parsedType: Uint8Array | undefined;
@@ -74,6 +94,10 @@ export class AttributeBuilder extends React.Component<Props, State> {
 				parsedType = data.value;
 			} else if (data instanceof ObjectClassData) {
 				parsedType = await EncodeObjectClass(data.value);
+			} else if (data instanceof KeyTypesData) {
+				parsedType = await EncodeKeyType(data.value);
+			} else {
+				throw new Error("invalid data type")
 			}
 			await this.props.onChange(this.state.selected, parsedType);
 		}
@@ -89,10 +113,22 @@ export class AttributeBuilder extends React.Component<Props, State> {
 		let newData: Data;
 		switch (newDT) {
 			case DataType.Bool:
-				newData = false;
+				newData = new BoolData(false);
 				break;
 			case DataType.Class:
-			// newData
+				newData = new ObjectClassData(ObjectClass.CKO_SECRET_KEY);
+				break;
+			case DataType.KeyType:
+				newData = new KeyTypesData(KeyTypes.CKK_AES);
+				break;
+			case DataType.RawBytes:
+				newData = new Uint8Data(undefined);
+				break;
+			case DataType.String:
+				newData = new StringData("");
+				break;
+			default:
+				throw new Error("unsupported type")
 		}
 	}
 	toggleOverride() {
@@ -106,7 +142,7 @@ export class AttributeBuilder extends React.Component<Props, State> {
 	}
 	render() {
 		return <div style={style}>
-			<input title="Show ALL types (I know what I'm doing)" type="checkbox" checked={this.state.override} onChange={() => {
+			<input title="Show ALL types (I know what I'm doing)" type="checkbox" checked={this.state.override} onChange={async () => {
 				this.toggleOverride();
 			}} />
 			<select value={this.state.selected} onChange={async e => {

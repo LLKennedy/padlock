@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"github.com/LLKennedy/mercury"
-	"github.com/LLKennedy/mercury/httpapi"
 	"github.com/LLKennedy/mercury/logs"
 	"github.com/LLKennedy/padlock/api/padlockpb"
 	"github.com/LLKennedy/padlock/padlocklib"
@@ -132,11 +131,13 @@ func Serve(cfg Config) error {
 	mainCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	srv := grpc.NewServer(grpc.Creds(credentials.NewTLS(tlsConfig)), grpc.StreamInterceptor(h.StreamInterceptor), grpc.UnaryInterceptor(h.UnaryInterceptor))
-	d := &dProxy{
-		srv: nil,
+	d := &dProxy{}
+	d.srv, err = mercury.NewServer(d, srv)
+	if err != nil {
+		return fmt.Errorf("setting up mercury proxy: %v", err)
 	}
-	httpapi.RegisterExposedServiceServer(srv, d)
 	padlockpb.RegisterPadlockServer(srv, h)
+
 	errChan := make(chan error, 2)
 	go func() {
 		errChan <- srv.Serve(grpcListener)
@@ -156,17 +157,21 @@ func Serve(cfg Config) error {
 				aborted = true
 			case <-ticker.C:
 				client, err = grpc.Dial(addr.String(), grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+				if err == nil {
+					err = d.srv.SetSelfConnection(client)
+					if err != nil {
+						return fmt.Errorf("connecting mercury proxy: %v", err)
+					}
+				}
 			}
 		}
 		ticker.Stop()
 	}
 	var httpSrv *http.Server
 	if !aborted {
-		real, err := mercury.NewServer(&padlockpb.UnimplementedExposedPadlockServer{}, padlockpb.NewPadlockClient(client), srv, false)
 		if err != nil {
 			return fmt.Errorf("creating mercury proxy: %v", err)
 		}
-		d.srv = real
 		httpSrv = &http.Server{
 			Handler: http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 				rw.Header().Add("Access-Control-Allow-Origin", "https://localhost:3000")
